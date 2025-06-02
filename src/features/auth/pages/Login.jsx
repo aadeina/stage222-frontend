@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import PageWrapper from '@/components/layout/PageWrapper';
 
 const Login = () => {
     const [activeTab, setActiveTab] = useState('student');
@@ -55,7 +54,7 @@ const Login = () => {
     };
 
     return (
-        <PageWrapper className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-12">
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-12">
             <motion.div
                 initial={{ scale: 0.95 }}
                 animate={{ scale: 1 }}
@@ -166,8 +165,7 @@ const Login = () => {
                             name="email"
                             value={formData.email}
                             onChange={handleChange}
-                            className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#00A55F] focus:border-[#00A55F] outline-none transition-colors ${errors.email ? 'border-red-500' : 'border-gray-300'
-                                }`}
+                            className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#00A55F] focus:border-[#00A55F] outline-none transition-colors ${errors.email ? 'border-red-500' : 'border-gray-300'}`}
                             placeholder="Enter your email"
                         />
                         {errors.email && (
@@ -193,8 +191,7 @@ const Login = () => {
                             name="password"
                             value={formData.password}
                             onChange={handleChange}
-                            className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#00A55F] focus:border-[#00A55F] outline-none transition-colors ${errors.password ? 'border-red-500' : 'border-gray-300'
-                                }`}
+                            className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#00A55F] focus:border-[#00A55F] outline-none transition-colors ${errors.password ? 'border-red-500' : 'border-gray-300'}`}
                             placeholder="Enter your password"
                         />
                         {errors.password && (
@@ -243,7 +240,7 @@ const Login = () => {
                     </p>
                 </motion.div>
             </motion.div>
-        </PageWrapper>
+        </div>
     );
 };
 

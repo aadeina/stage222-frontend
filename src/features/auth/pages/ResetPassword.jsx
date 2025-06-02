@@ -99,10 +99,10 @@ const ResetPassword = () => {
                 // Redirect to login
                 window.location.href = '/login';
             }, 1500);
-        }
-    };
+    }
+  };
 
-    return (
+  return (
         <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -301,7 +301,7 @@ const ResetPassword = () => {
                                         {errors.confirmPassword}
                                     </motion.p>
                                 )}
-                            </div>
+    </div>
 
                             <motion.button
                                 whileHover={{ scale: 1.02 }}

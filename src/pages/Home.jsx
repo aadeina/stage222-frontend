@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useState } from 'react';
 import Navbar from '@/components/layout/Navbar';
+import { motion } from 'framer-motion';
 
 const Home = () => {
     const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
@@ -71,7 +72,7 @@ const Home = () => {
     return (
         <div className="min-h-screen bg-gray-50">
             {/* Header */}
-            <Navbar />
+            {/* <Navbar /> */}
 
             {/* Login Modal */}
             {isLoginModalOpen && (
@@ -195,12 +196,19 @@ const Home = () => {
             {/* Hero Section */}
             <section className="bg-gradient-to-b from-[#00A55F]/10 to-white py-20">
                 <div className="container mx-auto px-4 text-center">
-                    <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-                        Mauritania's #1 platform for internships and fresh jobs
-                    </h1>
-                    <p className="text-lg text-gray-600 mb-12 max-w-2xl mx-auto">
-                        Connect with top employers and kickstart your career journey in Mauritania
-                    </p>
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5 }}
+                        className="text-center"
+                    >
+                        <h1 className="text-4xl font-bold text-gray-900 mb-4">
+                            Welcome to Stage222
+                        </h1>
+                        <p className="text-xl text-gray-600 mb-8">
+                            Your platform for finding the best opportunities
+                        </p>
+                    </motion.div>
                     <div className="flex flex-col md:flex-row justify-center gap-4 mb-16">
                         <Link
                             to="/register/student"

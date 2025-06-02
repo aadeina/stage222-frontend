@@ -1,16 +1,20 @@
 import { motion } from 'framer-motion';
+import Navbar from './Navbar';
 
 const PageWrapper = ({ children, className = '' }) => {
     return (
-        <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -30 }}
-            transition={{ duration: 0.4 }}
-            className={className}
-        >
-            {children}
-        </motion.div>
+        <div className="min-h-screen bg-gray-50">
+            <Navbar />
+            <motion.main
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.3 }}
+                className={className}
+            >
+                {children}
+            </motion.main>
+        </div>
     );
 };
 
