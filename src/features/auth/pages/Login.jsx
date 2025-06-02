@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import PageWrapper from '@/components/layout/PageWrapper';
 
 const Login = () => {
     const [activeTab, setActiveTab] = useState('student');
@@ -7,7 +9,6 @@ const Login = () => {
         email: '',
         password: ''
     });
-
     const [errors, setErrors] = useState({});
 
     const handleChange = (e) => {
@@ -54,21 +55,33 @@ const Login = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-12">
-            <div className="max-w-md w-full bg-white rounded-xl shadow-lg p-8">
+        <PageWrapper className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-12">
+            <motion.div
+                initial={{ scale: 0.95 }}
+                animate={{ scale: 1 }}
+                transition={{ duration: 0.3 }}
+                className="max-w-md w-full bg-white rounded-xl shadow-lg p-8"
+            >
                 {/* Header */}
-                <div className="text-center mb-8">
+                <motion.div
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2 }}
+                    className="text-center mb-8"
+                >
                     <h1 className="text-2xl font-bold text-gray-900 mb-2">
                         Login to Stage222
                     </h1>
                     <p className="text-gray-600">
                         Access your account
                     </p>
-                </div>
+                </motion.div>
 
                 {/* Tabs */}
                 <div className="flex border-b mb-6">
-                    <button
+                    <motion.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
                         className={`flex-1 px-4 py-2 font-medium text-sm ${activeTab === 'student'
                             ? 'text-[#00A55F] border-b-2 border-[#00A55F]'
                             : 'text-gray-500 hover:text-gray-700'
@@ -76,8 +89,10 @@ const Login = () => {
                         onClick={() => setActiveTab('student')}
                     >
                         Student
-                    </button>
-                    <button
+                    </motion.button>
+                    <motion.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
                         className={`flex-1 px-4 py-2 font-medium text-sm ${activeTab === 'employer'
                             ? 'text-[#00A55F] border-b-2 border-[#00A55F]'
                             : 'text-gray-500 hover:text-gray-700'
@@ -85,13 +100,19 @@ const Login = () => {
                         onClick={() => setActiveTab('employer')}
                     >
                         Employer
-                    </button>
+                    </motion.button>
                 </div>
 
                 {/* Google Login Button - Only show for students */}
                 {activeTab === 'student' && (
-                    <>
-                        <button
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.3 }}
+                    >
+                        <motion.button
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
                             onClick={handleGoogleLogin}
                             className="w-full flex items-center justify-center gap-3 bg-white border border-gray-300 text-gray-700 px-4 py-3 rounded-lg hover:bg-gray-50 transition-colors mb-6"
                         >
@@ -114,7 +135,7 @@ const Login = () => {
                                 />
                             </svg>
                             Login with Google
-                        </button>
+                        </motion.button>
 
                         {/* Divider */}
                         <div className="relative flex items-center justify-center mb-6">
@@ -122,16 +143,24 @@ const Login = () => {
                             <span className="flex-shrink mx-4 text-gray-500 text-sm">OR</span>
                             <div className="flex-grow border-t border-gray-300"></div>
                         </div>
-                    </>
+                    </motion.div>
                 )}
 
                 {/* Login Form */}
-                <form onSubmit={handleSubmit} className="space-y-4">
+                <motion.form
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.4 }}
+                    onSubmit={handleSubmit}
+                    className="space-y-4"
+                >
                     <div>
                         <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
                             Email
                         </label>
-                        <input
+                        <motion.input
+                            whileFocus={{ scale: 1.02, borderColor: "#00A55F" }}
+                            transition={{ type: "spring", stiffness: 300 }}
                             type="email"
                             id="email"
                             name="email"
@@ -142,7 +171,13 @@ const Login = () => {
                             placeholder="Enter your email"
                         />
                         {errors.email && (
-                            <p className="mt-1 text-sm text-red-500">{errors.email}</p>
+                            <motion.p
+                                initial={{ opacity: 0, y: -10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="mt-1 text-sm text-red-500"
+                            >
+                                {errors.email}
+                            </motion.p>
                         )}
                     </div>
 
@@ -150,7 +185,9 @@ const Login = () => {
                         <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
                             Password
                         </label>
-                        <input
+                        <motion.input
+                            whileFocus={{ scale: 1.02, borderColor: "#00A55F" }}
+                            transition={{ type: "spring", stiffness: 300 }}
                             type="password"
                             id="password"
                             name="password"
@@ -161,26 +198,40 @@ const Login = () => {
                             placeholder="Enter your password"
                         />
                         {errors.password && (
-                            <p className="mt-1 text-sm text-red-500">{errors.password}</p>
+                            <motion.p
+                                initial={{ opacity: 0, y: -10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="mt-1 text-sm text-red-500"
+                            >
+                                {errors.password}
+                            </motion.p>
                         )}
                     </div>
 
                     <div className="flex justify-end">
-                        <Link to="/forgot-password" className="text-sm text-[#00A55F] hover:text-[#008c4f] transition-colors">
+                        <Link to="/reset-password" className="text-sm text-[#00A55F] hover:text-[#008c4f] transition-colors">
                             Forgot password?
                         </Link>
                     </div>
 
-                    <button
+                    <motion.button
+                        whileHover={{ scale: 1.03 }}
+                        whileTap={{ scale: 0.97 }}
+                        transition={{ duration: 0.2 }}
                         type="submit"
                         className="w-full bg-[#00A55F] text-white px-4 py-3 rounded-lg hover:bg-[#008c4f] transition-colors font-medium"
                     >
                         Login
-                    </button>
-                </form>
+                    </motion.button>
+                </motion.form>
 
                 {/* Footer */}
-                <div className="mt-8 text-center">
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.5 }}
+                    className="mt-8 text-center"
+                >
                     <p className="text-sm text-gray-600">
                         New to Stage222?{' '}
                         <Link
@@ -190,9 +241,9 @@ const Login = () => {
                             Register as {activeTab === 'student' ? 'Student' : 'Employer'}
                         </Link>
                     </p>
-                </div>
-            </div>
-        </div>
+                </motion.div>
+            </motion.div>
+        </PageWrapper>
     );
 };
 

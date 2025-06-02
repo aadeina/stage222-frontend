@@ -1,23 +1,20 @@
-// File: src/features/recruiter/pages/RecruiterSignup.jsx
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import ReCAPTCHA from 'react-google-recaptcha';
+import PageWrapper from '@/components/layout/PageWrapper';
 
 const RecruiterSignup = () => {
-    // Form state
     const [formData, setFormData] = useState({
-        email: "",
-        password: "",
-        firstName: "",
-        lastName: "",
-        mobileNumber: "",
+        email: '',
+        password: '',
+        firstName: '',
+        lastName: '',
+        mobileNumber: '',
     });
-
-    // Validation state
     const [errors, setErrors] = useState({});
     const [recaptchaToken, setRecaptchaToken] = useState(null);
 
-    // Handle input changes
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({
@@ -33,7 +30,6 @@ const RecruiterSignup = () => {
         }
     };
 
-    // Handle reCAPTCHA change
     const handleRecaptchaChange = (token) => {
         setRecaptchaToken(token);
         if (errors.recaptcha) {
@@ -44,25 +40,21 @@ const RecruiterSignup = () => {
         }
     };
 
-    // Validate form
     const validateForm = () => {
         const newErrors = {};
 
-        // Email validation
         if (!formData.email) {
             newErrors.email = 'Email is required';
         } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
             newErrors.email = 'Please enter a valid email';
         }
 
-        // Password validation
         if (!formData.password) {
             newErrors.password = 'Password is required';
         } else if (formData.password.length < 6) {
             newErrors.password = 'Password must be at least 6 characters';
         }
 
-        // Name validation
         if (!formData.firstName) {
             newErrors.firstName = 'First name is required';
         }
@@ -70,14 +62,12 @@ const RecruiterSignup = () => {
             newErrors.lastName = 'Last name is required';
         }
 
-        // Mobile number validation
         if (!formData.mobileNumber) {
             newErrors.mobileNumber = 'Mobile number is required';
         } else if (!/^\+?[0-9]{10,15}$/.test(formData.mobileNumber.replace(/\s+/g, ''))) {
             newErrors.mobileNumber = 'Please enter a valid mobile number';
         }
 
-        // reCAPTCHA validation
         if (!recaptchaToken) {
             newErrors.recaptcha = 'Please complete the reCAPTCHA';
         }
@@ -86,7 +76,6 @@ const RecruiterSignup = () => {
         return Object.keys(newErrors).length === 0;
     };
 
-    // Handle form submission
     const handleSubmit = (e) => {
         e.preventDefault();
 
@@ -97,12 +86,17 @@ const RecruiterSignup = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <PageWrapper className="min-h-screen bg-gray-50">
             <div className="container mx-auto px-4 py-12">
                 <div className="max-w-6xl mx-auto">
                     <div className="grid md:grid-cols-2 gap-12 items-center">
                         {/* Left Column - Text Content */}
-                        <div className="text-center md:text-left">
+                        <motion.div
+                            initial={{ opacity: 0, x: -50 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ duration: 0.5 }}
+                            className="text-center md:text-left"
+                        >
                             <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
                                 Hire Interns & Freshers faster
                             </h1>
@@ -111,41 +105,73 @@ const RecruiterSignup = () => {
                                 Post internships and jobs, manage applications, and build your employer brand.
                             </p>
                             <div className="hidden md:block">
-                                <div className="flex items-center space-x-4 mb-6">
+                                <motion.div
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: 0.2 }}
+                                    className="flex items-center space-x-4 mb-6"
+                                >
                                     <div className="w-12 h-12 bg-[#00A55F]/10 rounded-full flex items-center justify-center">
                                         <svg className="w-6 h-6 text-[#00A55F]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                                         </svg>
                                     </div>
                                     <p className="text-gray-700">Access to 10,000+ active students</p>
-                                </div>
-                                <div className="flex items-center space-x-4 mb-6">
+                                </motion.div>
+                                <motion.div
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: 0.3 }}
+                                    className="flex items-center space-x-4 mb-6"
+                                >
                                     <div className="w-12 h-12 bg-[#00A55F]/10 rounded-full flex items-center justify-center">
                                         <svg className="w-6 h-6 text-[#00A55F]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
                                         </svg>
                                     </div>
                                     <p className="text-gray-700">Post unlimited internships and jobs</p>
-                                </div>
-                                <div className="flex items-center space-x-4">
+                                </motion.div>
+                                <motion.div
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: 0.4 }}
+                                    className="flex items-center space-x-4"
+                                >
                                     <div className="w-12 h-12 bg-[#00A55F]/10 rounded-full flex items-center justify-center">
                                         <svg className="w-6 h-6 text-[#00A55F]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                                         </svg>
                                     </div>
                                     <p className="text-gray-700">Advanced application management</p>
-                                </div>
+                                </motion.div>
                             </div>
-                        </div>
+                        </motion.div>
 
                         {/* Right Column - Registration Form */}
-                        <div className="bg-white rounded-xl shadow-lg p-8">
-                            <form onSubmit={handleSubmit} className="space-y-6">
-                                <div>
+                        <motion.div
+                            initial={{ opacity: 0, x: 50 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ duration: 0.5 }}
+                            className="bg-white rounded-xl shadow-lg p-8"
+                        >
+                            <motion.form
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                transition={{ delay: 0.2 }}
+                                onSubmit={handleSubmit}
+                                className="space-y-6"
+                            >
+                                <motion.div
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: 0.3 }}
+                                >
                                     <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
                                         Official Email Id
                                     </label>
-                                    <input
+                                    <motion.input
+                                        whileFocus={{ scale: 1.02, borderColor: "#00A55F" }}
+                                        transition={{ type: "spring", stiffness: 300 }}
                                         type="email"
                                         id="email"
                                         name="email"
@@ -156,15 +182,27 @@ const RecruiterSignup = () => {
                                         placeholder="Enter your official email"
                                     />
                                     {errors.email && (
-                                        <p className="mt-1 text-sm text-red-500">{errors.email}</p>
+                                        <motion.p
+                                            initial={{ opacity: 0, y: -10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            className="mt-1 text-sm text-red-500"
+                                        >
+                                            {errors.email}
+                                        </motion.p>
                                     )}
-                                </div>
+                                </motion.div>
 
-                                <div>
+                                <motion.div
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: 0.4 }}
+                                >
                                     <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
                                         Password
                                     </label>
-                                    <input
+                                    <motion.input
+                                        whileFocus={{ scale: 1.02, borderColor: "#00A55F" }}
+                                        transition={{ type: "spring", stiffness: 300 }}
                                         type="password"
                                         id="password"
                                         name="password"
@@ -175,16 +213,29 @@ const RecruiterSignup = () => {
                                         placeholder="Enter your password"
                                     />
                                     {errors.password && (
-                                        <p className="mt-1 text-sm text-red-500">{errors.password}</p>
+                                        <motion.p
+                                            initial={{ opacity: 0, y: -10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            className="mt-1 text-sm text-red-500"
+                                        >
+                                            {errors.password}
+                                        </motion.p>
                                     )}
-                                </div>
+                                </motion.div>
 
-                                <div className="grid grid-cols-2 gap-4">
+                                <motion.div
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: 0.5 }}
+                                    className="grid grid-cols-2 gap-4"
+                                >
                                     <div>
                                         <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-1">
                                             First Name
                                         </label>
-                                        <input
+                                        <motion.input
+                                            whileFocus={{ scale: 1.02, borderColor: "#00A55F" }}
+                                            transition={{ type: "spring", stiffness: 300 }}
                                             type="text"
                                             id="firstName"
                                             name="firstName"
@@ -195,7 +246,13 @@ const RecruiterSignup = () => {
                                             placeholder="Enter first name"
                                         />
                                         {errors.firstName && (
-                                            <p className="mt-1 text-sm text-red-500">{errors.firstName}</p>
+                                            <motion.p
+                                                initial={{ opacity: 0, y: -10 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                className="mt-1 text-sm text-red-500"
+                                            >
+                                                {errors.firstName}
+                                            </motion.p>
                                         )}
                                     </div>
 
@@ -203,7 +260,9 @@ const RecruiterSignup = () => {
                                         <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-1">
                                             Last Name
                                         </label>
-                                        <input
+                                        <motion.input
+                                            whileFocus={{ scale: 1.02, borderColor: "#00A55F" }}
+                                            transition={{ type: "spring", stiffness: 300 }}
                                             type="text"
                                             id="lastName"
                                             name="lastName"
@@ -214,12 +273,22 @@ const RecruiterSignup = () => {
                                             placeholder="Enter last name"
                                         />
                                         {errors.lastName && (
-                                            <p className="mt-1 text-sm text-red-500">{errors.lastName}</p>
+                                            <motion.p
+                                                initial={{ opacity: 0, y: -10 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                className="mt-1 text-sm text-red-500"
+                                            >
+                                                {errors.lastName}
+                                            </motion.p>
                                         )}
                                     </div>
-                                </div>
+                                </motion.div>
 
-                                <div>
+                                <motion.div
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: 0.6 }}
+                                >
                                     <label htmlFor="mobileNumber" className="block text-sm font-medium text-gray-700 mb-1">
                                         Mobile Number
                                     </label>
@@ -227,7 +296,9 @@ const RecruiterSignup = () => {
                                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                             <span className="text-gray-500">+222</span>
                                         </div>
-                                        <input
+                                        <motion.input
+                                            whileFocus={{ scale: 1.02, borderColor: "#00A55F" }}
+                                            transition={{ type: "spring", stiffness: 300 }}
                                             type="tel"
                                             id="mobileNumber"
                                             name="mobileNumber"
@@ -239,42 +310,67 @@ const RecruiterSignup = () => {
                                         />
                                     </div>
                                     {errors.mobileNumber && (
-                                        <p className="mt-1 text-sm text-red-500">{errors.mobileNumber}</p>
+                                        <motion.p
+                                            initial={{ opacity: 0, y: -10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            className="mt-1 text-sm text-red-500"
+                                        >
+                                            {errors.mobileNumber}
+                                        </motion.p>
                                     )}
-                                </div>
+                                </motion.div>
 
-                                <div className="flex justify-center">
+                                <motion.div
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: 0.7 }}
+                                    className="flex justify-center"
+                                >
                                     <ReCAPTCHA
                                         sitekey={import.meta.env.VITE_RECAPTCHA_SITE_KEY}
                                         onChange={handleRecaptchaChange}
                                     />
-                                </div>
+                                </motion.div>
                                 {errors.recaptcha && (
-                                    <p className="text-sm text-red-500 text-center">{errors.recaptcha}</p>
+                                    <motion.p
+                                        initial={{ opacity: 0, y: -10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        className="text-sm text-red-500 text-center"
+                                    >
+                                        {errors.recaptcha}
+                                    </motion.p>
                                 )}
 
-                                <button
+                                <motion.button
+                                    whileHover={{ scale: 1.03 }}
+                                    whileTap={{ scale: 0.97 }}
+                                    transition={{ duration: 0.2 }}
                                     type="submit"
                                     className="w-full bg-[#00A55F] text-white px-6 py-3 rounded-lg hover:bg-[#008c4f] transition-colors font-medium text-lg"
                                 >
                                     Post for Free
-                                </button>
+                                </motion.button>
 
-                                <div className="text-center">
+                                <motion.div
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    transition={{ delay: 0.8 }}
+                                    className="text-center"
+                                >
                                     <p className="text-gray-600">
                                         Already registered?{' '}
                                         <Link to="/login" className="text-[#00A55F] hover:text-[#008c4f] font-medium transition-colors">
                                             Login
                                         </Link>
                                     </p>
-                                </div>
-                            </form>
-                        </div>
+                                </motion.div>
+                            </motion.form>
+                        </motion.div>
                     </div>
                 </div>
             </div>
-        </div>
+        </PageWrapper>
     );
 };
 
-export default RecruiterSignup;
+export default RecruiterSignup; 

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
 
 const Navbar = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -32,6 +33,13 @@ const Navbar = () => {
                         </Link>
                         <Link to="/register/employer" className="text-gray-700 hover:text-[#00A55F] font-medium transition-colors">
                             For Employers
+                        </Link>
+                        {/* Test Links */}
+                        <Link to="/verify-otp" className="text-gray-700 hover:text-[#00A55F] font-medium transition-colors">
+                            Test OTP
+                        </Link>
+                        <Link to="/reset-password" className="text-gray-700 hover:text-[#00A55F] font-medium transition-colors">
+                            Test Reset
                         </Link>
                     </div>
 
@@ -109,6 +117,21 @@ const Navbar = () => {
                             onClick={() => setIsMenuOpen(false)}
                         >
                             For Employers
+                        </Link>
+                        {/* Test Links */}
+                        <Link
+                            to="/verify-otp"
+                            className="block text-gray-700 hover:text-[#00A55F] font-medium transition-colors"
+                            onClick={() => setIsMenuOpen(false)}
+                        >
+                            Test OTP
+                        </Link>
+                        <Link
+                            to="/reset-password"
+                            className="block text-gray-700 hover:text-[#00A55F] font-medium transition-colors"
+                            onClick={() => setIsMenuOpen(false)}
+                        >
+                            Test Reset
                         </Link>
                     </div>
                 )}
