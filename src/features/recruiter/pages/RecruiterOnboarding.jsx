@@ -32,9 +32,36 @@ const RecruiterOnboarding = () => {
     const [errors, setErrors] = useState({});
 
     const steps = [
-        { number: 1, title: 'Personal Details' },
-        { number: 2, title: 'Organization Details' },
-        { number: 3, title: 'Final Step' }
+        {
+            number: 1,
+            title: 'Personal Details',
+            icon: (
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+            ),
+            description: 'Tell us about yourself'
+        },
+        {
+            number: 2,
+            title: 'Organization Details',
+            icon: (
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                </svg>
+            ),
+            description: 'Company information'
+        },
+        {
+            number: 3,
+            title: 'Post Internship/Job',
+            icon: (
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+            ),
+            description: 'Final setup'
+        }
     ];
 
     const validateStep = (step) => {
@@ -171,27 +198,36 @@ const RecruiterOnboarding = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="min-h-screen bg-gray-50 py-6 sm:py-8 md:py-12 px-4 sm:px-6 lg:px-8">
             <div className="max-w-3xl mx-auto">
                 {/* Progress Bar */}
-                <div className="mb-8">
-                    <div className="flex items-center justify-between">
+                <div className="mb-8 sm:mb-12">
+                    <div className="flex flex-col sm:flex-row items-center justify-between space-y-4 sm:space-y-0">
                         {steps.map((step) => (
-                            <div key={step.number} className="flex items-center">
-                                <div
-                                    className={`flex items-center justify-center w-8 h-8 rounded-full ${currentStep >= step.number
+                            <div key={step.number} className="flex items-center w-full sm:w-auto">
+                                <motion.div
+                                    className={`flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full ${currentStep >= step.number
                                         ? 'bg-[#00A55F] text-white'
                                         : 'bg-gray-200 text-gray-600'
                                         }`}
+                                    animate={{
+                                        scale: currentStep === step.number ? [1, 1.1, 1] : 1,
+                                        transition: { duration: 0.5 }
+                                    }}
                                 >
-                                    {step.number}
-                                </div>
-                                <div className="ml-2 text-sm font-medium text-gray-900">
-                                    {step.title}
+                                    {step.icon}
+                                </motion.div>
+                                <div className="ml-3 flex-1 sm:flex-none">
+                                    <div className="text-sm font-medium text-gray-900">
+                                        {step.title}
+                                    </div>
+                                    <div className="text-xs text-gray-500">
+                                        {step.description}
+                                    </div>
                                 </div>
                                 {step.number < steps.length && (
                                     <div
-                                        className={`w-24 h-1 mx-4 ${currentStep > step.number
+                                        className={`hidden sm:block w-12 md:w-24 h-1 mx-2 md:mx-4 ${currentStep > step.number
                                             ? 'bg-[#00A55F]'
                                             : 'bg-gray-200'
                                             }`}
@@ -203,16 +239,20 @@ const RecruiterOnboarding = () => {
                 </div>
 
                 {/* Form Container */}
-                <div className="bg-white rounded-xl shadow-lg p-8">
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="bg-white rounded-xl shadow-lg p-4 sm:p-6 md:p-8"
+                >
                     <AnimatePresence mode="wait">
                         {currentStep === 1 && (
                             <motion.div
                                 initial={{ opacity: 0, x: 20 }}
                                 animate={{ opacity: 1, x: 0 }}
                                 exit={{ opacity: 0, x: -20 }}
-                                className="space-y-4"
+                                className="space-y-4 sm:space-y-6"
                             >
-                                <div className="grid grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-1">
                                             First Name
@@ -222,7 +262,8 @@ const RecruiterOnboarding = () => {
                                             name="firstName"
                                             value={formData.firstName}
                                             onChange={handleChange}
-                                            className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#00A55F] focus:border-[#00A55F] outline-none transition-colors ${errors.firstName ? 'border-red-500' : 'border-gray-300'}`}
+                                            className={`w-full px-3 sm:px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#00A55F] focus:border-[#00A55F] outline-none transition-colors ${errors.firstName ? 'border-red-500' : 'border-gray-300'
+                                                }`}
                                         />
                                         {errors.firstName && (
                                             <p className="mt-1 text-sm text-red-500">{errors.firstName}</p>
@@ -237,7 +278,8 @@ const RecruiterOnboarding = () => {
                                             name="lastName"
                                             value={formData.lastName}
                                             onChange={handleChange}
-                                            className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#00A55F] focus:border-[#00A55F] outline-none transition-colors ${errors.lastName ? 'border-red-500' : 'border-gray-300'}`}
+                                            className={`w-full px-3 sm:px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#00A55F] focus:border-[#00A55F] outline-none transition-colors ${errors.lastName ? 'border-red-500' : 'border-gray-300'
+                                                }`}
                                         />
                                         {errors.lastName && (
                                             <p className="mt-1 text-sm text-red-500">{errors.lastName}</p>
@@ -254,7 +296,8 @@ const RecruiterOnboarding = () => {
                                         name="email"
                                         value={formData.email}
                                         onChange={handleChange}
-                                        className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#00A55F] focus:border-[#00A55F] outline-none transition-colors ${errors.email ? 'border-red-500' : 'border-gray-300'}`}
+                                        className={`w-full px-3 sm:px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#00A55F] focus:border-[#00A55F] outline-none transition-colors ${errors.email ? 'border-red-500' : 'border-gray-300'
+                                            }`}
                                     />
                                     {errors.email && (
                                         <p className="mt-1 text-sm text-red-500">{errors.email}</p>
@@ -270,7 +313,8 @@ const RecruiterOnboarding = () => {
                                         name="designation"
                                         value={formData.designation}
                                         onChange={handleChange}
-                                        className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#00A55F] focus:border-[#00A55F] outline-none transition-colors ${errors.designation ? 'border-red-500' : 'border-gray-300'}`}
+                                        className={`w-full px-3 sm:px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#00A55F] focus:border-[#00A55F] outline-none transition-colors ${errors.designation ? 'border-red-500' : 'border-gray-300'
+                                            }`}
                                     />
                                     {errors.designation && (
                                         <p className="mt-1 text-sm text-red-500">{errors.designation}</p>
@@ -281,29 +325,32 @@ const RecruiterOnboarding = () => {
                                     <label className="block text-sm font-medium text-gray-700 mb-1">
                                         Phone Number
                                     </label>
-                                    <div className="flex gap-2">
-                                        <input
-                                            type="text"
-                                            value="+222"
-                                            disabled
-                                            className="w-20 px-4 py-2 border border-gray-300 bg-gray-50 text-gray-500 rounded-lg"
-                                        />
-                                        <input
-                                            type="tel"
-                                            name="phone"
-                                            value={formData.phone}
-                                            onChange={handleChange}
-                                            placeholder="Enter your phone number"
-                                            className={`flex-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#00A55F] focus:border-[#00A55F] outline-none transition-colors ${errors.phone ? 'border-red-500' : 'border-gray-300'}`}
-                                        />
+                                    <div className="flex flex-col sm:flex-row gap-2">
+                                        <div className="flex gap-2">
+                                            <input
+                                                type="text"
+                                                value="+222"
+                                                disabled
+                                                className="w-16 sm:w-20 px-3 sm:px-4 py-2 border border-gray-300 bg-gray-50 text-gray-500 rounded-lg"
+                                            />
+                                            <input
+                                                type="tel"
+                                                name="phone"
+                                                value={formData.phone}
+                                                onChange={handleChange}
+                                                placeholder="Enter your phone number"
+                                                className={`flex-1 px-3 sm:px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#00A55F] focus:border-[#00A55F] outline-none transition-colors ${errors.phone ? 'border-red-500' : 'border-gray-300'
+                                                    }`}
+                                            />
+                                        </div>
                                         <button
                                             type="button"
                                             onClick={handleSendOtp}
                                             disabled={isSendingOtp || !formData.phone || !/^\d{8}$/.test(formData.phone)}
-                                            className="px-4 py-2 bg-[#00A55F] text-white rounded-lg hover:bg-[#008c4f] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#00A55F] disabled:opacity-50 disabled:cursor-not-allowed"
+                                            className="w-full sm:w-auto px-4 py-2 bg-[#00A55F] text-white rounded-lg hover:bg-[#008c4f] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#00A55F] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                                         >
                                             {isSendingOtp ? (
-                                                <div className="flex items-center">
+                                                <div className="flex items-center justify-center">
                                                     <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -321,26 +368,31 @@ const RecruiterOnboarding = () => {
                                 </div>
 
                                 {showOtpField && !phoneVerified && (
-                                    <div className="mt-4 space-y-3">
+                                    <motion.div
+                                        initial={{ opacity: 0, height: 0 }}
+                                        animate={{ opacity: 1, height: 'auto' }}
+                                        exit={{ opacity: 0, height: 0 }}
+                                        className="mt-4 space-y-3"
+                                    >
                                         <p className="text-sm text-gray-600">
                                             OTP sent to your mobile. Valid for 10 minutes.
                                         </p>
-                                        <div className="flex gap-2">
+                                        <div className="flex flex-col sm:flex-row gap-2">
                                             <input
                                                 type="text"
                                                 value={otp}
                                                 onChange={handleOtpChange}
                                                 placeholder="Enter 6-digit OTP"
-                                                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00A55F] focus:border-[#00A55F] outline-none transition-colors"
+                                                className="flex-1 px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00A55F] focus:border-[#00A55F] outline-none transition-colors"
                                             />
                                             <button
                                                 type="button"
                                                 onClick={handleVerifyOtp}
                                                 disabled={isVerifyingOtp || !otp || otp.length !== 6}
-                                                className="px-4 py-2 bg-[#00A55F] text-white rounded-lg hover:bg-[#008c4f] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#00A55F] disabled:opacity-50 disabled:cursor-not-allowed"
+                                                className="w-full sm:w-auto px-4 py-2 bg-[#00A55F] text-white rounded-lg hover:bg-[#008c4f] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#00A55F] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                                             >
                                                 {isVerifyingOtp ? (
-                                                    <div className="flex items-center">
+                                                    <div className="flex items-center justify-center">
                                                         <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                                             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                                             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -352,16 +404,20 @@ const RecruiterOnboarding = () => {
                                                 )}
                                             </button>
                                         </div>
-                                    </div>
+                                    </motion.div>
                                 )}
 
                                 {phoneVerified && (
-                                    <div className="flex items-center text-sm text-[#00A55F]">
+                                    <motion.div
+                                        initial={{ opacity: 0, scale: 0.9 }}
+                                        animate={{ opacity: 1, scale: 1 }}
+                                        className="flex items-center text-sm text-[#00A55F]"
+                                    >
                                         <svg className="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
                                         </svg>
                                         Phone number verified
-                                    </div>
+                                    </motion.div>
                                 )}
                             </motion.div>
                         )}
@@ -526,34 +582,40 @@ const RecruiterOnboarding = () => {
                     </AnimatePresence>
 
                     {/* Navigation Buttons */}
-                    <div className="mt-8 flex justify-between">
+                    <div className="mt-6 sm:mt-8 flex flex-col-reverse sm:flex-row justify-between gap-4 sm:gap-0">
                         {currentStep > 1 && (
-                            <button
+                            <motion.button
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
                                 type="button"
                                 onClick={handleBack}
-                                className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#00A55F]"
+                                className="w-full sm:w-auto px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#00A55F] transition-colors"
                             >
                                 Back
-                            </button>
+                            </motion.button>
                         )}
                         <div className="flex-1" />
                         {currentStep < steps.length ? (
-                            <button
+                            <motion.button
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
                                 type="button"
                                 onClick={handleNext}
-                                className="px-4 py-2 bg-[#00A55F] text-white rounded-lg hover:bg-[#008c4f] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#00A55F]"
+                                className="w-full sm:w-auto px-4 py-2 bg-[#00A55F] text-white rounded-lg hover:bg-[#008c4f] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#00A55F] transition-colors"
                             >
                                 Next
-                            </button>
+                            </motion.button>
                         ) : (
-                            <button
+                            <motion.button
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
                                 type="button"
                                 onClick={handleSubmit}
                                 disabled={isLoading}
-                                className="px-4 py-2 bg-[#00A55F] text-white rounded-lg hover:bg-[#008c4f] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#00A55F] disabled:opacity-70 disabled:cursor-not-allowed"
+                                className="w-full sm:w-auto px-4 py-2 bg-[#00A55F] text-white rounded-lg hover:bg-[#008c4f] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#00A55F] disabled:opacity-70 disabled:cursor-not-allowed transition-colors"
                             >
                                 {isLoading ? (
-                                    <div className="flex items-center">
+                                    <div className="flex items-center justify-center">
                                         <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -563,10 +625,10 @@ const RecruiterOnboarding = () => {
                                 ) : (
                                     'Complete Onboarding'
                                 )}
-                            </button>
+                            </motion.button>
                         )}
                     </div>
-                </div>
+                </motion.div>
             </div>
         </div>
     );
