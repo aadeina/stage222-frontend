@@ -24,3 +24,12 @@ export const resendOtp = (email) => {
 export const resetPassword = (data) => {
     return api.post('/auth/reset-password-confirm/', data);
 };
+
+// ✅ Recruiter phone OTP (add these)
+export const sendOtp = (phone, lang = 'fr') => {
+    return api.post('/recruiters/send-otp/', { phone, lang });
+};
+
+export const verifyRecruiterOtp = (phone, otp) => {
+    return api.post('/recruiters/verify-otp/', { phone, otp });
+};

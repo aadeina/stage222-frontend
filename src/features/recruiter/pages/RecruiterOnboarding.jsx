@@ -2,12 +2,18 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { submitRecruiterOnboarding } from '../api/onboardingApi';
+import { sendOtp, verifyRecruiterOtp } from '../../../services/authApi';
 import toast from 'react-hot-toast';
 
 const RecruiterOnboarding = () => {
     const navigate = useNavigate();
     const [currentStep, setCurrentStep] = useState(1);
     const [isLoading, setIsLoading] = useState(false);
+    const [isSendingOtp, setIsSendingOtp] = useState(false);
+    const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
+    const [otp, setOtp] = useState('');
+    const [phoneVerified, setPhoneVerified] = useState(false);
+    const [showOtpField, setShowOtpField] = useState(false);
     const [formData, setFormData] = useState({
         // Step 1: Personal Details
         firstName: '',
@@ -42,6 +48,8 @@ const RecruiterOnboarding = () => {
                 else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = 'Invalid email format';
                 if (!formData.designation) newErrors.designation = 'Designation is required';
                 if (!formData.phone) newErrors.phone = 'Phone number is required';
+                else if (!/^\d{8}$/.test(formData.phone)) newErrors.phone = 'Phone number must be 8 digits';
+                if (!phoneVerified) newErrors.phone = 'Please verify your phone number first';
                 break;
             case 2:
                 if (!formData.orgName) newErrors.orgName = 'Organization name is required';
@@ -117,6 +125,49 @@ const RecruiterOnboarding = () => {
         } finally {
             setIsLoading(false);
         }
+    };
+
+    const handleSendOtp = async () => {
+        if (!formData.phone || !/^\d{8}$/.test(formData.phone)) {
+            setErrors(prev => ({ ...prev, phone: 'Please enter a valid 8-digit phone number' }));
+            return;
+        }
+
+        setIsSendingOtp(true);
+        try {
+            await sendOtp(formData.phone);
+            setShowOtpField(true);
+            toast.success('OTP sent successfully!');
+        } catch (error) {
+            toast.error(error?.response?.data?.message || 'Failed to send OTP');
+        } finally {
+            setIsSendingOtp(false);
+        }
+    };
+
+    const handleVerifyOtp = async () => {
+        if (!otp || otp.length !== 6) {
+            toast.error('Please enter a valid 6-digit OTP');
+            return;
+        }
+
+        setIsVerifyingOtp(true);
+        try {
+            await verifyRecruiterOtp(formData.phone, otp);
+            setPhoneVerified(true);
+            toast.success('Phone number verified successfully!');
+            // Automatically proceed to next step after successful verification
+            setCurrentStep(2);
+        } catch (error) {
+            toast.error(error?.response?.data?.message || 'Invalid OTP');
+        } finally {
+            setIsVerifyingOtp(false);
+        }
+    };
+
+    const handleOtpChange = (e) => {
+        const value = e.target.value.replace(/[^0-9]/g, '').slice(0, 6);
+        setOtp(value);
     };
 
     return (
@@ -230,17 +281,88 @@ const RecruiterOnboarding = () => {
                                     <label className="block text-sm font-medium text-gray-700 mb-1">
                                         Phone Number
                                     </label>
-                                    <input
-                                        type="tel"
-                                        name="phone"
-                                        value={formData.phone}
-                                        onChange={handleChange}
-                                        className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#00A55F] focus:border-[#00A55F] outline-none transition-colors ${errors.phone ? 'border-red-500' : 'border-gray-300'}`}
-                                    />
+                                    <div className="flex gap-2">
+                                        <input
+                                            type="text"
+                                            value="+222"
+                                            disabled
+                                            className="w-20 px-4 py-2 border border-gray-300 bg-gray-50 text-gray-500 rounded-lg"
+                                        />
+                                        <input
+                                            type="tel"
+                                            name="phone"
+                                            value={formData.phone}
+                                            onChange={handleChange}
+                                            placeholder="Enter your phone number"
+                                            className={`flex-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#00A55F] focus:border-[#00A55F] outline-none transition-colors ${errors.phone ? 'border-red-500' : 'border-gray-300'}`}
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={handleSendOtp}
+                                            disabled={isSendingOtp || !formData.phone || !/^\d{8}$/.test(formData.phone)}
+                                            className="px-4 py-2 bg-[#00A55F] text-white rounded-lg hover:bg-[#008c4f] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#00A55F] disabled:opacity-50 disabled:cursor-not-allowed"
+                                        >
+                                            {isSendingOtp ? (
+                                                <div className="flex items-center">
+                                                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                    </svg>
+                                                    Sending...
+                                                </div>
+                                            ) : (
+                                                'Verify'
+                                            )}
+                                        </button>
+                                    </div>
                                     {errors.phone && (
                                         <p className="mt-1 text-sm text-red-500">{errors.phone}</p>
                                     )}
                                 </div>
+
+                                {showOtpField && !phoneVerified && (
+                                    <div className="mt-4 space-y-3">
+                                        <p className="text-sm text-gray-600">
+                                            OTP sent to your mobile. Valid for 10 minutes.
+                                        </p>
+                                        <div className="flex gap-2">
+                                            <input
+                                                type="text"
+                                                value={otp}
+                                                onChange={handleOtpChange}
+                                                placeholder="Enter 6-digit OTP"
+                                                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00A55F] focus:border-[#00A55F] outline-none transition-colors"
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={handleVerifyOtp}
+                                                disabled={isVerifyingOtp || !otp || otp.length !== 6}
+                                                className="px-4 py-2 bg-[#00A55F] text-white rounded-lg hover:bg-[#008c4f] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#00A55F] disabled:opacity-50 disabled:cursor-not-allowed"
+                                            >
+                                                {isVerifyingOtp ? (
+                                                    <div className="flex items-center">
+                                                        <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                        </svg>
+                                                        Verifying...
+                                                    </div>
+                                                ) : (
+                                                    'Submit OTP'
+                                                )}
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {phoneVerified && (
+                                    <div className="flex items-center text-sm text-[#00A55F]">
+                                        <svg className="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                                        </svg>
+                                        Phone number verified
+                                    </div>
+                                )}
                             </motion.div>
                         )}
                         {currentStep === 2 && (
