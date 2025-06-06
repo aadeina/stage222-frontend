@@ -1,73 +1,87 @@
 import { createContext, useContext, useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { login, register } from '../features/auth/api/authApi';
 import toast from 'react-hot-toast';
 
-export const AuthContext = createContext(null);
-
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
-};
+const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+    const navigate = useNavigate();
+    const [user, setUser] = useState(null);
+    const [loading, setLoading] = useState(true);
 
-  // Sync user from localStorage on mount
-  useEffect(() => {
-    const storedUser = localStorage.getItem('user');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
+    useEffect(() => {
+        // Check for stored user data on mount
+        const storedUser = localStorage.getItem('user');
+        if (storedUser) {
+            try {
+                setUser(JSON.parse(storedUser));
+            } catch (error) {
+                console.error('Error parsing stored user data:', error);
+                localStorage.removeItem('user');
+            }
+        }
+        setLoading(false);
+    }, []);
+
+    const updateUser = (userData) => {
+        setUser(userData);
+        localStorage.setItem('user', JSON.stringify(userData));
+    };
+
+    const handleLogin = async (credentials) => {
+        try {
+            const response = await login(credentials);
+            const { user, tokens } = response.data;
+            updateUser({ ...user, tokens });
+            toast.success('Login successful!');
+            return user;
+        } catch (error) {
+            toast.error(error.response?.data?.message || 'Login failed');
+            throw error;
+        }
+    };
+
+    const handleRegister = async (userData) => {
+        try {
+            const response = await register(userData);
+            toast.success('Registration successful! Please verify your email.');
+            return response.data;
+        } catch (error) {
+            toast.error(error.response?.data?.message || 'Registration failed');
+            throw error;
+        }
+    };
+
+    const handleLogout = () => {
+        setUser(null);
+        localStorage.removeItem('user');
+        navigate('/login');
+        toast.success('Logged out successfully');
+    };
+
+    const value = {
+        user,
+        loading,
+        updateUser,
+        login: handleLogin,
+        register: handleRegister,
+        logout: handleLogout,
+        isAuthenticated: !!user,
+        isVerified: user?.is_verified || false
+    };
+
+    return (
+        <AuthContext.Provider value={value}>
+            {!loading && children}
+        </AuthContext.Provider>
+    );
+};
+
+export const useAuth = () => {
+    const context = useContext(AuthContext);
+    if (!context) {
+        throw new Error('useAuth must be used within an AuthProvider');
     }
-    setLoading(false);
-  }, []);
-
-  // Login handler
-  const login = (userData) => {
-    setUser(userData);
-    localStorage.setItem('user', JSON.stringify(userData));
-    toast.success(`Welcome back, ${userData.first_name || 'user'}!`);
-  };
-
-  // Logout handler
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem('user');
-    toast.success("Logged out successfully.");
-  };
-
-  // Optional: Refresh user from API (if you have `/auth/profile/`)
-  const refreshUser = async () => {
-    try {
-      const res = await fetch('/api/auth/profile/', {
-        credentials: 'include',
-      });
-      if (res.ok) {
-        const data = await res.json();
-        setUser(data);
-        localStorage.setItem('user', JSON.stringify(data));
-      }
-    } catch (err) {
-      console.error("Failed to refresh user", err);
-    }
-  };
-
-  const value = {
-    user,
-    loading,
-    login,
-    logout,
-    refreshUser,
-    isAuthenticated: !!user,
-    isRecruiter: user?.role === 'recruiter',
-    isCandidate: user?.role === 'candidate',
-  };
-
-  return (
-    <AuthContext.Provider value={value}>
-      {!loading && children}
-    </AuthContext.Provider>
-  );
+    return context;
 };

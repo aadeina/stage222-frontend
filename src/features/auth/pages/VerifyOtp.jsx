@@ -3,13 +3,15 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { verifyOtp, resendOtp } from '@/services/authApi';
 import { toast } from 'react-hot-toast';
+import { useAuth } from '@/context/AuthContext';
 
 const OTP_LENGTH = 6;
 
 const VerifyOtp = () => {
     const location = useLocation();
     const navigate = useNavigate();
-    const email = location.state?.email || '';
+    const { updateUser } = useAuth();
+    const email = location.state?.email;
     const [otp, setOtp] = useState(Array(OTP_LENGTH).fill(''));
     const [isVerifying, setIsVerifying] = useState(false);
     const [isResending, setIsResending] = useState(false);
@@ -61,9 +63,26 @@ const VerifyOtp = () => {
         }
         setIsVerifying(true);
         try {
-            await verifyOtp(email, code);
+            const response = await verifyOtp(email, code);
+            const { user, tokens } = response.data;
+
+            // Update auth context with verified user info
+            updateUser({
+                ...user,
+                is_verified: true,
+                tokens
+            });
+
             toast.success('Email verified successfully!');
-            navigate('/login');
+
+            // Redirect based on role
+            if (user.role === 'recruiter') {
+                navigate('/recruiter/onboarding');
+            } else if (user.role === 'candidate') {
+                navigate('/candidate/dashboard');
+            } else {
+                navigate('/login');
+            }
         } catch (error) {
             toast.error(
                 error?.response?.data?.detail ||
@@ -96,6 +115,7 @@ const VerifyOtp = () => {
         }
     };
 
+    // Only show unauthorized message if directly accessing the page without email
     if (!email) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -156,8 +176,8 @@ const VerifyOtp = () => {
                         type="submit"
                         disabled={isVerifying || otp.join('').length !== OTP_LENGTH}
                         className={`w-full bg-[#00A55F] text-white px-4 py-3 rounded-lg font-semibold transition-colors ${isVerifying || otp.join('').length !== OTP_LENGTH
-                                ? 'opacity-70 cursor-not-allowed'
-                                : 'hover:bg-[#008c4f]'
+                            ? 'opacity-70 cursor-not-allowed'
+                            : 'hover:bg-[#008c4f]'
                             }`}
                     >
                         {isVerifying ? 'Verifying...' : 'Verify'}

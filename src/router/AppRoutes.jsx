@@ -13,6 +13,8 @@ import ResetPassword from '@/features/auth/pages/ResetPassword';
 // Protected Pages
 import Dashboard from '@/pages/Dashboard';
 import ProtectedRoute from './ProtectedRoute';
+import RecruiterOnboarding from '@/features/recruiter/pages/RecruiterOnboarding';
+import ProtectedOnboardingRoute from '@/features/recruiter/components/ProtectedOnboardingRoute';
 
 const AppRoutes = () => {
     const location = useLocation();
@@ -79,6 +81,18 @@ const AppRoutes = () => {
                                 <Dashboard />
                             </PageWrapper>
                         </ProtectedRoute>
+                    }
+                />
+
+                {/* Recruiter Onboarding Route */}
+                <Route
+                    path="/recruiter/onboarding"
+                    element={
+                        <ProtectedOnboardingRoute>
+                            <PageWrapper>
+                                <RecruiterOnboarding />
+                            </PageWrapper>
+                        </ProtectedOnboardingRoute>
                     }
                 />
             </Routes>

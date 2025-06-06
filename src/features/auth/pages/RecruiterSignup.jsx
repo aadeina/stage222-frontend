@@ -1,8 +1,12 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { register } from '../api/authApi';
+import toast from 'react-hot-toast';
 
 const RecruiterSignup = () => {
+    const navigate = useNavigate();
+    const [isLoading, setIsLoading] = useState(false);
     const [formData, setFormData] = useState({
         email: '',
         password: '',
@@ -41,10 +45,34 @@ const RecruiterSignup = () => {
         return Object.keys(newErrors).length === 0;
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        if (validateForm()) {
-            console.log('Form submitted:', formData);
+        if (!validateForm()) return;
+
+        setIsLoading(true);
+        try {
+            const payload = {
+                email: formData.email,
+                password: formData.password,
+                first_name: formData.firstName,
+                last_name: formData.lastName,
+                phone_number: formData.mobileNumber,
+                role: 'recruiter'
+            };
+
+            await register(payload);
+            toast.success('OTP sent to your email!');
+            navigate('/verify-otp', { state: { email: formData.email } });
+        } catch (error) {
+            console.error('Registration error:', error);
+            toast.error(error.response?.data?.message || 'Registration failed. Please try again.');
+
+            // Set form errors if available
+            if (error.response?.data?.errors) {
+                setErrors(error.response.data.errors);
+            }
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -180,9 +208,20 @@ const RecruiterSignup = () => {
 
                                 <button
                                     type="submit"
-                                    className="w-full bg-[#00A55F] text-white px-4 py-3 rounded-lg hover:bg-[#008c4f] transition-colors font-medium"
+                                    disabled={isLoading}
+                                    className="w-full bg-[#00A55F] text-white px-4 py-3 rounded-lg hover:bg-[#008c4f] transition-colors font-medium disabled:opacity-70 disabled:cursor-not-allowed"
                                 >
-                                    Post for Free
+                                    {isLoading ? (
+                                        <div className="flex items-center justify-center">
+                                            <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                            </svg>
+                                            Registering...
+                                        </div>
+                                    ) : (
+                                        'Post for Free'
+                                    )}
                                 </button>
 
                                 <p className="text-center text-sm text-gray-600">
