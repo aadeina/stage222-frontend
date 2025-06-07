@@ -14,6 +14,10 @@ const RecruiterOnboarding = () => {
     const [otp, setOtp] = useState('');
     const [phoneVerified, setPhoneVerified] = useState(false);
     const [showOtpField, setShowOtpField] = useState(false);
+    const [showIndustryDropdown, setShowIndustryDropdown] = useState(false);
+    const [showCityDropdown, setShowCityDropdown] = useState(false);
+    const [showEmployeeDropdown, setShowEmployeeDropdown] = useState(false);
+    const [industrySearch, setIndustrySearch] = useState('');
     const [formData, setFormData] = useState({
         // Step 1: Personal Details
         firstName: '',
@@ -62,6 +66,62 @@ const RecruiterOnboarding = () => {
             ),
             description: 'Final setup'
         }
+    ];
+
+    const mauritanianCities = [
+        "Nouakchott",
+        "Nouadhibou",
+        "Aïoun",
+        "Akjoujt",
+        "Aleg",
+        "Atar",
+        "Kaédi",
+        "Kiffa",
+        "Néma",
+        "Rosso",
+        "Sélibabi",
+        "Tidjikdja",
+        "Zouerate"
+    ];
+
+    const employeeRanges = [
+        "0–1",
+        "2–10",
+        "11–50",
+        "51–200",
+        "201–500",
+        "501–1000",
+        "1001–5000",
+        "5000+"
+    ];
+
+    const industries = [
+        "Advertising/Marketing",
+        "Agriculture/Dairy",
+        "Animation",
+        "Architecture/Interior Design",
+        "Automobile",
+        "BPO",
+        "Biotechnology",
+        "Consulting",
+        "Data Science/AI",
+        "Design/UX",
+        "E-commerce",
+        "Education",
+        "Finance",
+        "Government/Public Sector",
+        "Healthcare",
+        "HR/Recruitment",
+        "IT/Software",
+        "Legal",
+        "Logistics/Supply Chain",
+        "Manufacturing",
+        "Media/Journalism",
+        "NGO / Non-Profit",
+        "Retail",
+        "Telecommunications",
+        "Travel & Tourism",
+        "Other"
     ];
 
     const validateStep = (step) => {
@@ -196,6 +256,72 @@ const RecruiterOnboarding = () => {
         const value = e.target.value.replace(/[^0-9]/g, '').slice(0, 6);
         setOtp(value);
     };
+
+    const handleIndustryToggle = (industry) => {
+        const currentIndustries = formData.industry ? formData.industry.split(',') : [];
+        const newIndustries = currentIndustries.includes(industry)
+            ? currentIndustries.filter(i => i !== industry)
+            : currentIndustries.length < 5
+                ? [...currentIndustries, industry]
+                : currentIndustries;
+
+        setFormData(prev => ({
+            ...prev,
+            industry: newIndustries.join(',')
+        }));
+    };
+
+    const handleCitySelect = (city) => {
+        setFormData(prev => ({
+            ...prev,
+            city
+        }));
+        setShowCityDropdown(false);
+    };
+
+    const handleEmployeeRangeSelect = (range) => {
+        setFormData(prev => ({
+            ...prev,
+            employeeCount: range
+        }));
+        setShowEmployeeDropdown(false);
+    };
+
+    const handleSocialMediaAdd = () => {
+        const currentLinks = formData.socialMediaUrls ? formData.socialMediaUrls.split(',') : [];
+        if (currentLinks.length < 3) {
+            setFormData(prev => ({
+                ...prev,
+                socialMediaUrls: [...currentLinks, ''].join(',')
+            }));
+        }
+    };
+
+    const handleSocialMediaRemove = (index) => {
+        const currentLinks = formData.socialMediaUrls ? formData.socialMediaUrls.split(',') : [];
+        const newLinks = currentLinks.filter((_, i) => i !== index);
+        setFormData(prev => ({
+            ...prev,
+            socialMediaUrls: newLinks.join(',')
+        }));
+    };
+
+    const handleSocialMediaChange = (index, value) => {
+        const currentLinks = formData.socialMediaUrls ? formData.socialMediaUrls.split(',') : [];
+        currentLinks[index] = value;
+        setFormData(prev => ({
+            ...prev,
+            socialMediaUrls: currentLinks.join(',')
+        }));
+    };
+
+    const filteredIndustries = industries.filter(industry =>
+        !(formData.industry || '').split(',').includes(industry) &&
+        industry.toLowerCase().includes(industrySearch.toLowerCase())
+    );
+
+    const selectedIndustries = (formData.industry || '').split(',').filter(Boolean);
+    const hasReachedLimit = selectedIndustries.length >= 5;
 
     return (
         <div className="min-h-screen bg-gray-50 py-6 sm:py-8 md:py-12 px-4 sm:px-6 lg:px-8">
@@ -426,70 +552,545 @@ const RecruiterOnboarding = () => {
                                 initial={{ opacity: 0, x: 20 }}
                                 animate={{ opacity: 1, x: 0 }}
                                 exit={{ opacity: 0, x: -20 }}
-                                className="space-y-4"
+                                className="space-y-6"
                             >
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Organization Name
-                                    </label>
-                                    <input
-                                        type="text"
-                                        name="orgName"
-                                        value={formData.orgName}
-                                        onChange={handleChange}
-                                        className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#00A55F] focus:border-[#00A55F] outline-none transition-colors ${errors.orgName ? 'border-red-500' : 'border-gray-300'}`}
-                                    />
-                                    {errors.orgName && (
-                                        <p className="mt-1 text-sm text-red-500">{errors.orgName}</p>
-                                    )}
-                                </div>
+                                {/* Organization Details Section */}
+                                <div className="space-y-6">
+                                    <div>
+                                        <h2 className="text-lg font-semibold text-gray-900 mb-4">Organization Details</h2>
 
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Industry
-                                    </label>
-                                    <input
-                                        type="text"
-                                        name="industry"
-                                        value={formData.industry}
-                                        onChange={handleChange}
-                                        className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#00A55F] focus:border-[#00A55F] outline-none transition-colors ${errors.industry ? 'border-red-500' : 'border-gray-300'}`}
-                                    />
-                                    {errors.industry && (
-                                        <p className="mt-1 text-sm text-red-500">{errors.industry}</p>
-                                    )}
-                                </div>
+                                        {/* Organization Name */}
+                                        <div className="mb-6">
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                Organization Name
+                                            </label>
+                                            <input
+                                                type="text"
+                                                name="orgName"
+                                                value={formData.orgName}
+                                                onChange={handleChange}
+                                                placeholder="e.g., Amar Med"
+                                                className={`w-full px-3 sm:px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#00A55F] focus:border-[#00A55F] outline-none transition-colors ${errors.orgName ? 'border-red-500' : 'border-gray-300'
+                                                    }`}
+                                            />
+                                            {errors.orgName && (
+                                                <p className="mt-1 text-sm text-red-500">{errors.orgName}</p>
+                                            )}
+                                        </div>
 
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Website
-                                    </label>
-                                    <input
-                                        type="url"
-                                        name="website"
-                                        value={formData.website}
-                                        onChange={handleChange}
-                                        className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#00A55F] focus:border-[#00A55F] outline-none transition-colors ${errors.website ? 'border-red-500' : 'border-gray-300'}`}
-                                    />
-                                    {errors.website && (
-                                        <p className="mt-1 text-sm text-red-500">{errors.website}</p>
-                                    )}
-                                </div>
+                                        {/* Freelancer Checkbox */}
+                                        <div className="mb-6">
+                                            <label className="flex items-start space-x-3">
+                                                <input
+                                                    type="checkbox"
+                                                    name="isFreelancer"
+                                                    checked={formData.isFreelancer}
+                                                    onChange={handleChange}
+                                                    className="mt-1 h-4 w-4 text-[#00A55F] border-gray-300 rounded focus:ring-[#00A55F]"
+                                                />
+                                                <span className="text-sm text-gray-700">
+                                                    I am an independent practitioner (freelancer, architect, lawyer etc.) hiring for myself and NOT on behalf of a company.
+                                                </span>
+                                            </label>
+                                        </div>
 
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Address
-                                    </label>
-                                    <textarea
-                                        name="address"
-                                        value={formData.address}
-                                        onChange={handleChange}
-                                        rows="3"
-                                        className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#00A55F] focus:border-[#00A55F] outline-none transition-colors ${errors.address ? 'border-red-500' : 'border-gray-300'}`}
-                                    />
-                                    {errors.address && (
-                                        <p className="mt-1 text-sm text-red-500">{errors.address}</p>
-                                    )}
+                                        {/* About Section */}
+                                        <div className="mb-6">
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                About Yourself
+                                            </label>
+                                            <div className="relative">
+                                                <textarea
+                                                    name="about"
+                                                    value={formData.about}
+                                                    onChange={handleChange}
+                                                    rows="4"
+                                                    maxLength="500"
+                                                    className={`w-full px-3 sm:px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#00A55F] focus:border-[#00A55F] outline-none transition-colors resize-none ${errors.about ? 'border-red-500' : 'border-gray-300'
+                                                        }`}
+                                                />
+                                                <div className="absolute bottom-2 right-2 text-xs text-gray-500">
+                                                    {500 - (formData.about?.length || 0)} characters left
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* City */}
+                                        <div className="mb-6">
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                City
+                                            </label>
+                                            <div className="relative">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setShowCityDropdown(!showCityDropdown)}
+                                                    className="w-full px-3 py-2 text-left border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#00A55F] focus:border-[#00A55F]"
+                                                >
+                                                    <span className="flex items-center justify-between">
+                                                        <span className="text-sm text-gray-700">
+                                                            {formData.city || 'Select a city'}
+                                                        </span>
+                                                        <svg
+                                                            className={`w-5 h-5 text-gray-400 transform transition-transform ${showCityDropdown ? 'rotate-180' : ''
+                                                                }`}
+                                                            fill="none"
+                                                            stroke="currentColor"
+                                                            viewBox="0 0 24 24"
+                                                        >
+                                                            <path
+                                                                strokeLinecap="round"
+                                                                strokeLinejoin="round"
+                                                                strokeWidth="2"
+                                                                d="M19 9l-7 7-7-7"
+                                                            />
+                                                        </svg>
+                                                    </span>
+                                                </button>
+
+                                                {showCityDropdown && (
+                                                    <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg">
+                                                        <div className="p-2">
+                                                            <div className="max-h-60 overflow-y-auto">
+                                                                {mauritanianCities.map((city) => (
+                                                                    <button
+                                                                        key={city}
+                                                                        type="button"
+                                                                        onClick={() => handleCitySelect(city)}
+                                                                        className={`w-full px-3 py-2 text-left text-sm rounded-md transition-colors ${formData.city === city
+                                                                            ? 'bg-[#00A55F] text-white'
+                                                                            : 'text-gray-700 hover:bg-gray-100'
+                                                                            }`}
+                                                                    >
+                                                                        {city}
+                                                                    </button>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                            {errors.city && (
+                                                <p className="mt-1 text-sm text-red-500">{errors.city}</p>
+                                            )}
+                                        </div>
+
+                                        {/* Industry Selection */}
+                                        <div className="mb-6">
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                Industry
+                                            </label>
+                                            <div className="space-y-2">
+                                                {/* Selected Industries Tags */}
+                                                {selectedIndustries.length > 0 && (
+                                                    <div className="flex flex-wrap gap-2">
+                                                        {selectedIndustries.map((industry) => (
+                                                            <span
+                                                                key={industry}
+                                                                className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-[#00A55F] text-white"
+                                                            >
+                                                                {industry}
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => handleIndustryToggle(industry)}
+                                                                    className="ml-2 hover:text-gray-200 focus:outline-none"
+                                                                >
+                                                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                                                                    </svg>
+                                                                </button>
+                                                            </span>
+                                                        ))}
+                                                    </div>
+                                                )}
+
+                                                {/* Dropdown */}
+                                                <div className="relative">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => !hasReachedLimit && setShowIndustryDropdown(!showIndustryDropdown)}
+                                                        className={`w-full px-3 py-2 text-left border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#00A55F] focus:border-[#00A55F] ${hasReachedLimit ? 'opacity-50 cursor-not-allowed' : ''
+                                                            }`}
+                                                    >
+                                                        <span className="flex items-center justify-between">
+                                                            <span className="text-sm text-gray-700">
+                                                                {selectedIndustries.length > 0
+                                                                    ? 'Select industry'
+                                                                    : 'Select industries'}
+                                                            </span>
+                                                            <svg
+                                                                className={`w-5 h-5 text-gray-400 transform transition-transform ${showIndustryDropdown ? 'rotate-180' : ''}`}
+                                                                fill="none"
+                                                                stroke="currentColor"
+                                                                viewBox="0 0 24 24"
+                                                            >
+                                                                <path
+                                                                    strokeLinecap="round"
+                                                                    strokeLinejoin="round"
+                                                                    strokeWidth="2"
+                                                                    d="M19 9l-7 7-7-7"
+                                                                />
+                                                            </svg>
+                                                        </span>
+                                                    </button>
+
+                                                    {showIndustryDropdown && !hasReachedLimit && (
+                                                        <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg">
+                                                            <div className="p-2">
+                                                                {/* Search Input */}
+                                                                <div className="relative mb-2">
+                                                                    <input
+                                                                        type="text"
+                                                                        value={industrySearch}
+                                                                        onChange={(e) => setIndustrySearch(e.target.value)}
+                                                                        placeholder="Search industries..."
+                                                                        className="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00A55F] focus:border-[#00A55F] outline-none transition-colors"
+                                                                    />
+                                                                    <svg
+                                                                        className="absolute left-2 top-2.5 h-5 w-5 text-gray-400"
+                                                                        fill="none"
+                                                                        stroke="currentColor"
+                                                                        viewBox="0 0 24 24"
+                                                                    >
+                                                                        <path
+                                                                            strokeLinecap="round"
+                                                                            strokeLinejoin="round"
+                                                                            strokeWidth="2"
+                                                                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                                                                        />
+                                                                    </svg>
+                                                                </div>
+
+                                                                <div className="max-h-60 overflow-y-auto">
+                                                                    {filteredIndustries.map((industry) => (
+                                                                        <button
+                                                                            key={industry}
+                                                                            type="button"
+                                                                            onClick={() => handleIndustryToggle(industry)}
+                                                                            className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
+                                                                        >
+                                                                            {industry}
+                                                                        </button>
+                                                                    ))}
+                                                                    {filteredIndustries.length === 0 && (
+                                                                        <div className="px-3 py-2 text-sm text-gray-500">
+                                                                            No matching industries found
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </div>
+
+                                                {hasReachedLimit && (
+                                                    <p className="text-sm text-red-500">
+                                                        You can select up to 5 industries
+                                                    </p>
+                                                )}
+
+                                                {errors.industry && (
+                                                    <p className="text-sm text-red-500">{errors.industry}</p>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        {/* Number of Employees */}
+                                        <div className="mb-6">
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                Number of Employees
+                                            </label>
+                                            <div className="relative">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setShowEmployeeDropdown(!showEmployeeDropdown)}
+                                                    className="w-full px-3 py-2 text-left border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#00A55F] focus:border-[#00A55F]"
+                                                >
+                                                    <span className="flex items-center justify-between">
+                                                        <span className="text-sm text-gray-700">
+                                                            {formData.employeeCount || 'Select range'}
+                                                        </span>
+                                                        <svg
+                                                            className={`w-5 h-5 text-gray-400 transform transition-transform ${showEmployeeDropdown ? 'rotate-180' : ''
+                                                                }`}
+                                                            fill="none"
+                                                            stroke="currentColor"
+                                                            viewBox="0 0 24 24"
+                                                        >
+                                                            <path
+                                                                strokeLinecap="round"
+                                                                strokeLinejoin="round"
+                                                                strokeWidth="2"
+                                                                d="M19 9l-7 7-7-7"
+                                                            />
+                                                        </svg>
+                                                    </span>
+                                                </button>
+
+                                                {showEmployeeDropdown && (
+                                                    <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg">
+                                                        <div className="p-2">
+                                                            <div className="grid grid-cols-2 gap-2">
+                                                                {employeeRanges.map((range) => (
+                                                                    <button
+                                                                        key={range}
+                                                                        type="button"
+                                                                        onClick={() => handleEmployeeRangeSelect(range)}
+                                                                        className={`px-3 py-2 text-left text-sm rounded-md transition-colors ${formData.employeeCount === range
+                                                                            ? 'bg-[#00A55F] text-white'
+                                                                            : 'text-gray-700 hover:bg-gray-100'
+                                                                            }`}
+                                                                    >
+                                                                        <div className="flex items-center">
+                                                                            {formData.employeeCount === range && (
+                                                                                <svg
+                                                                                    className="w-4 h-4 mr-2"
+                                                                                    fill="none"
+                                                                                    stroke="currentColor"
+                                                                                    viewBox="0 0 24 24"
+                                                                                >
+                                                                                    <path
+                                                                                        strokeLinecap="round"
+                                                                                        strokeLinejoin="round"
+                                                                                        strokeWidth="2"
+                                                                                        d="M5 13l4 4L19 7"
+                                                                                    />
+                                                                                </svg>
+                                                                            )}
+                                                                            {range}
+                                                                        </div>
+                                                                    </button>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                            {errors.employeeCount && (
+                                                <p className="mt-1 text-sm text-red-500">{errors.employeeCount}</p>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    {/* Account Verification Section */}
+                                    <div className="mt-8 pt-6 border-t border-gray-200">
+                                        <div className="flex items-center justify-between mb-6">
+                                            <div>
+                                                <h2 className="text-lg font-semibold text-gray-900">Account Verification</h2>
+                                                <p className="mt-1 text-sm text-gray-500">
+                                                    Get your organization verified to start posting internships/jobs
+                                                </p>
+                                            </div>
+                                            <div className="flex items-center text-sm text-blue-600">
+                                                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                </svg>
+                                                Why verify?
+                                            </div>
+                                        </div>
+
+                                        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                                            <div className="flex">
+                                                <div className="flex-shrink-0">
+                                                    <svg className="h-5 w-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                    </svg>
+                                                </div>
+                                                <div className="ml-3">
+                                                    <p className="text-sm text-blue-700">
+                                                        Choose one of the following verification methods to get started. This helps us ensure the authenticity of organizations on our platform.
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="space-y-4">
+                                            {/* Business License Option */}
+                                            <label className={`flex items-start space-x-3 p-4 border rounded-lg transition-all duration-200 cursor-pointer ${formData.verificationType === 'license'
+                                                ? 'border-[#00A55F] ring-2 ring-[#00A55F] bg-green-50'
+                                                : 'hover:border-[#00A55F]'
+                                                }`}>
+                                                <input
+                                                    type="radio"
+                                                    name="verificationType"
+                                                    value="license"
+                                                    checked={formData.verificationType === 'license'}
+                                                    onChange={handleChange}
+                                                    className="mt-1 h-4 w-4 text-[#00A55F] border-gray-300 focus:ring-[#00A55F]"
+                                                />
+                                                <div className="flex-1">
+                                                    <div className="flex items-center">
+                                                        <svg className="h-5 w-5 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                        </svg>
+                                                        <div className="text-sm font-medium text-gray-900">
+                                                            Business License
+                                                        </div>
+                                                    </div>
+                                                    <div className="mt-1 text-sm text-gray-500">
+                                                        Upload a government-issued document (PDF or Image)
+                                                    </div>
+                                                    {formData.verificationType === 'license' && (
+                                                        <div className="mt-3">
+                                                            <div className="flex items-center justify-center w-full">
+                                                                <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
+                                                                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                                                                        <svg className="w-8 h-8 mb-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                                                                        </svg>
+                                                                        <p className="mb-2 text-sm text-gray-500">
+                                                                            <span className="font-semibold">Click to upload</span> or drag and drop
+                                                                        </p>
+                                                                        <p className="text-xs text-gray-500">PDF, JPG, PNG (MAX. 10MB)</p>
+                                                                    </div>
+                                                                    <input
+                                                                        type="file"
+                                                                        name="licenseFile"
+                                                                        onChange={handleChange}
+                                                                        accept=".pdf,.jpg,.jpeg,.png"
+                                                                        className="hidden"
+                                                                    />
+                                                                </label>
+                                                            </div>
+                                                            {formData.licenseFile && (
+                                                                <div className="mt-2 flex items-center text-sm text-gray-500">
+                                                                    <svg className="flex-shrink-0 mr-1.5 h-5 w-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                                                                    </svg>
+                                                                    {formData.licenseFile.name}
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </label>
+
+                                            {/* Website Option */}
+                                            <label className={`flex items-start space-x-3 p-4 border rounded-lg transition-all duration-200 cursor-pointer ${formData.verificationType === 'website'
+                                                ? 'border-[#00A55F] ring-2 ring-[#00A55F] bg-green-50'
+                                                : 'hover:border-[#00A55F]'
+                                                }`}>
+                                                <input
+                                                    type="radio"
+                                                    name="verificationType"
+                                                    value="website"
+                                                    checked={formData.verificationType === 'website'}
+                                                    onChange={handleChange}
+                                                    className="mt-1 h-4 w-4 text-[#00A55F] border-gray-300 focus:ring-[#00A55F]"
+                                                />
+                                                <div className="flex-1">
+                                                    <div className="flex items-center">
+                                                        <svg className="h-5 w-5 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+                                                        </svg>
+                                                        <div className="text-sm font-medium text-gray-900">
+                                                            Active Website
+                                                        </div>
+                                                    </div>
+                                                    <div className="mt-1 text-sm text-gray-500">
+                                                        Enter your company website URL
+                                                    </div>
+                                                    {formData.verificationType === 'website' && (
+                                                        <div className="mt-3">
+                                                            <div className="relative rounded-md shadow-sm">
+                                                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                                    <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                                                                    </svg>
+                                                                </div>
+                                                                <input
+                                                                    type="url"
+                                                                    name="website"
+                                                                    value={formData.website}
+                                                                    onChange={handleChange}
+                                                                    placeholder="https://example.com"
+                                                                    className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00A55F] focus:border-[#00A55F] outline-none transition-colors"
+                                                                />
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </label>
+
+                                            {/* Social Media Option */}
+                                            <label className={`flex items-start space-x-3 p-4 border rounded-lg transition-all duration-200 cursor-pointer ${formData.verificationType === 'social'
+                                                ? 'border-[#00A55F] ring-2 ring-[#00A55F] bg-green-50'
+                                                : 'hover:border-[#00A55F]'
+                                                }`}>
+                                                <input
+                                                    type="radio"
+                                                    name="verificationType"
+                                                    value="social"
+                                                    checked={formData.verificationType === 'social'}
+                                                    onChange={handleChange}
+                                                    className="mt-1 h-4 w-4 text-[#00A55F] border-gray-300 focus:ring-[#00A55F]"
+                                                />
+                                                <div className="flex-1">
+                                                    <div className="flex items-center">
+                                                        <svg className="h-5 w-5 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z" />
+                                                        </svg>
+                                                        <div className="text-sm font-medium text-gray-900">
+                                                            Social Media Pages
+                                                        </div>
+                                                    </div>
+                                                    <div className="mt-1 text-sm text-gray-500">
+                                                        Add up to 3 public pages (LinkedIn, Facebook, Instagram, etc.) with at least 1000 followers
+                                                    </div>
+                                                    {formData.verificationType === 'social' && (
+                                                        <div className="mt-3 space-y-3">
+                                                            {(formData.socialMediaUrls || '').split(',').map((url, index) => (
+                                                                <div key={index} className="flex gap-2">
+                                                                    <div className="relative flex-1">
+                                                                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                                            <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                                                                            </svg>
+                                                                        </div>
+                                                                        <input
+                                                                            type="url"
+                                                                            value={url}
+                                                                            onChange={(e) => handleSocialMediaChange(index, e.target.value)}
+                                                                            placeholder="https://linkedin.com/company/..."
+                                                                            className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00A55F] focus:border-[#00A55F] outline-none transition-colors"
+                                                                        />
+                                                                    </div>
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => handleSocialMediaRemove(index)}
+                                                                        className="inline-flex items-center px-3 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#00A55F] transition-colors"
+                                                                    >
+                                                                        <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                                                                        </svg>
+                                                                    </button>
+                                                                </div>
+                                                            ))}
+                                                            {(formData.socialMediaUrls || '').split(',').length < 3 && (
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={handleSocialMediaAdd}
+                                                                    className="inline-flex items-center text-sm text-[#00A55F] hover:text-[#008c4f]"
+                                                                >
+                                                                    <svg className="h-5 w-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                                                                    </svg>
+                                                                    Add another link
+                                                                </button>
+                                                            )}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </label>
+                                        </div>
+
+                                        {/* Help Text */}
+                                        <div className="mt-6 flex items-center justify-center text-sm text-gray-500">
+                                            <svg className="h-5 w-5 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            </svg>
+                                            Need help? Contact Stage222 support via WhatsApp at +222 35 00 00 00 (Mon–Fri, 9AM–5PM)
+                                        </div>
+                                    </div>
                                 </div>
                             </motion.div>
                         )}
