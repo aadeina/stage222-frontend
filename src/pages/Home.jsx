@@ -108,7 +108,7 @@ const Home = () => {
                                     className={`px-4 py-2 font-medium text-sm text-gray-400 cursor-not-allowed`}
                                     disabled
                                 >
-                                    Employer / T&P
+                                    Employer
                                 </button>
                             </div>
 
@@ -458,7 +458,7 @@ const Home = () => {
                                     <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                                     </svg>
-                                    contact@stage222.com
+                                    support@stage222.com
                                 </li>
                                 <li className="flex items-center">
                                     <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">

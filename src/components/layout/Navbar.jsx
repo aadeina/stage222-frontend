@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import logo from '../../assets/images/MainStage222Logo.png';
 
 const Navbar = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -10,8 +11,13 @@ const Navbar = () => {
             <nav className="container mx-auto px-4 py-3">
                 <div className="flex items-center justify-between">
                     {/* Logo */}
-                    <Link to="/" className="text-2xl font-bold text-[#00A55F] hover:text-[#008c4f] transition-colors">
-                        Stage222
+                    <Link to="/" className="flex items-center">
+                        <img
+                            src={logo}
+                            alt="Stage222 Logo"
+                            className="h-12 w-auto"
+                            draggable="false"
+                        />
                     </Link>
 
                     {/* Desktop Navigation */}
