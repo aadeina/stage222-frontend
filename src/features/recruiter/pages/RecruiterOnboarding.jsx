@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { submitRecruiterOnboarding } from '../api/onboardingApi';
@@ -18,6 +18,12 @@ const RecruiterOnboarding = () => {
     const [showCityDropdown, setShowCityDropdown] = useState(false);
     const [showEmployeeDropdown, setShowEmployeeDropdown] = useState(false);
     const [industrySearch, setIndustrySearch] = useState('');
+    const [showDesignationDropdown, setShowDesignationDropdown] = useState(false);
+    const [designationSearch, setDesignationSearch] = useState('');
+    const [showCustomDesignation, setShowCustomDesignation] = useState(false);
+    const [customDesignation, setCustomDesignation] = useState('');
+    const [selectedDesignation, setSelectedDesignation] = useState(null);
+    const [isTyping, setIsTyping] = useState(false);
     const [formData, setFormData] = useState({
         // Step 1: Personal Details
         firstName: '',
@@ -34,6 +40,8 @@ const RecruiterOnboarding = () => {
         logo: null
     });
     const [errors, setErrors] = useState({});
+    const [otpTimer, setOtpTimer] = useState(0);
+    const [canResendOtp, setCanResendOtp] = useState(false);
 
     const steps = [
         {
@@ -122,6 +130,27 @@ const RecruiterOnboarding = () => {
         "Telecommunications",
         "Travel & Tourism",
         "Other"
+    ];
+
+    const designations = [
+        "Hiring Manager",
+        "Recruiter",
+        "Talent Acquisition Specialist",
+        "HR Manager",
+        "Founder",
+        "Co-Founder",
+        "CEO",
+        "CTO",
+        "COO",
+        "Managing Director",
+        "Technical Recruiter",
+        "HR Executive",
+        "Operations Manager",
+        "Administrative Officer",
+        "Marketing Manager",
+        "Team Lead",
+        "Engineering Manager",
+        "Product Manager"
     ];
 
     const validateStep = (step) => {
@@ -214,6 +243,23 @@ const RecruiterOnboarding = () => {
         }
     };
 
+    // Add timer effect for OTP resend
+    useEffect(() => {
+        let interval;
+        if (otpTimer > 0) {
+            interval = setInterval(() => {
+                setOtpTimer((prev) => {
+                    if (prev <= 1) {
+                        setCanResendOtp(true);
+                        return 0;
+                    }
+                    return prev - 1;
+                });
+            }, 1000);
+        }
+        return () => clearInterval(interval);
+    }, [otpTimer]);
+
     const handleSendOtp = async () => {
         if (!formData.phone || !/^\d{8}$/.test(formData.phone)) {
             setErrors(prev => ({ ...prev, phone: 'Please enter a valid 8-digit phone number' }));
@@ -224,6 +270,8 @@ const RecruiterOnboarding = () => {
         try {
             await sendOtp(formData.phone);
             setShowOtpField(true);
+            setOtpTimer(60); // 60 seconds timer
+            setCanResendOtp(false);
             toast.success('OTP sent successfully!');
         } catch (error) {
             toast.error(error?.response?.data?.message || 'Failed to send OTP');
@@ -322,6 +370,68 @@ const RecruiterOnboarding = () => {
 
     const selectedIndustries = (formData.industry || '').split(',').filter(Boolean);
     const hasReachedLimit = selectedIndustries.length >= 5;
+
+    const handleDesignationChange = (e) => {
+        const value = e.target.value;
+        setDesignationSearch(value);
+        setShowDesignationDropdown(true);
+        setIsTyping(true);
+
+        // Check if the value matches any designation
+        const matches = designations.some(d =>
+            d.toLowerCase().includes(value.toLowerCase())
+        );
+
+        if (!matches && value) {
+            setShowCustomDesignation(true);
+            setSelectedDesignation(null);
+        } else {
+            setShowCustomDesignation(false);
+        }
+    };
+
+    const handleDesignationSelect = (designation) => {
+        setSelectedDesignation(designation);
+        setFormData(prev => ({
+            ...prev,
+            designation
+        }));
+        setDesignationSearch(designation);
+        setShowDesignationDropdown(false);
+        setShowCustomDesignation(false);
+        setIsTyping(false);
+    };
+
+    const handleCustomDesignationChange = (e) => {
+        const value = e.target.value;
+        setCustomDesignation(value);
+        setFormData(prev => ({
+            ...prev,
+            designation: value
+        }));
+    };
+
+    const handleDesignationBlur = () => {
+        // Small delay to allow for click events on dropdown items
+        setTimeout(() => {
+            setShowDesignationDropdown(false);
+            setIsTyping(false);
+        }, 200);
+    };
+
+    // Add click outside handler
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (showDesignationDropdown && !event.target.closest('.designation-dropdown')) {
+                setShowDesignationDropdown(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [showDesignationDropdown]);
 
     return (
         <div className="min-h-screen bg-gray-50 py-6 sm:py-8 md:py-12 px-4 sm:px-6 lg:px-8">
@@ -434,16 +544,120 @@ const RecruiterOnboarding = () => {
                                     <label className="block text-sm font-medium text-gray-700 mb-1">
                                         Designation
                                     </label>
-                                    <input
-                                        type="text"
-                                        name="designation"
-                                        value={formData.designation}
-                                        onChange={handleChange}
-                                        className={`w-full px-3 sm:px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#00A55F] focus:border-[#00A55F] outline-none transition-colors ${errors.designation ? 'border-red-500' : 'border-gray-300'
-                                            }`}
-                                    />
+                                    <div className="relative designation-dropdown">
+                                        <div className="relative">
+                                            <input
+                                                type="text"
+                                                value={designationSearch}
+                                                onChange={handleDesignationChange}
+                                                onFocus={() => setShowDesignationDropdown(true)}
+                                                onBlur={handleDesignationBlur}
+                                                placeholder="Select or type your designation"
+                                                className={`w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-[#00A55F] focus:border-[#00A55F] outline-none transition-colors ${errors.designation ? 'border-red-500' : 'border-gray-300'
+                                                    } ${selectedDesignation ? 'bg-gray-50' : ''}`}
+                                            />
+                                            <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
+                                                <svg
+                                                    className={`h-5 w-5 text-gray-400 transform transition-transform duration-200 ${showDesignationDropdown ? 'rotate-180' : ''
+                                                        }`}
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    viewBox="0 0 24 24"
+                                                >
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                                                </svg>
+                                            </div>
+                                        </div>
+
+                                        {showDesignationDropdown && (
+                                            <motion.div
+                                                initial={{ opacity: 0, y: -10 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                exit={{ opacity: 0, y: -10 }}
+                                                transition={{ duration: 0.2 }}
+                                                className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg"
+                                            >
+                                                <div className="p-2">
+                                                    <div className="max-h-60 overflow-y-auto">
+                                                        {designations
+                                                            .filter(d => d.toLowerCase().includes(designationSearch.toLowerCase()))
+                                                            .map((designation) => (
+                                                                <button
+                                                                    key={designation}
+                                                                    type="button"
+                                                                    onClick={() => handleDesignationSelect(designation)}
+                                                                    className={`w-full px-4 py-2.5 text-left text-sm rounded-md transition-colors ${selectedDesignation === designation
+                                                                        ? 'bg-[#00A55F] text-white'
+                                                                        : 'text-gray-700 hover:bg-gray-50'
+                                                                        }`}
+                                                                >
+                                                                    {designation}
+                                                                </button>
+                                                            ))}
+                                                        {designations.filter(d =>
+                                                            d.toLowerCase().includes(designationSearch.toLowerCase())
+                                                        ).length === 0 && designationSearch && (
+                                                                <motion.div
+                                                                    initial={{ opacity: 0 }}
+                                                                    animate={{ opacity: 1 }}
+                                                                    className="px-4 py-2.5 text-sm text-gray-500"
+                                                                >
+                                                                    Designation not found. I'll specify
+                                                                </motion.div>
+                                                            )}
+                                                    </div>
+                                                </div>
+                                            </motion.div>
+                                        )}
+                                    </div>
+
+                                    {showCustomDesignation && (
+                                        <motion.div
+                                            initial={{ opacity: 0, height: 0 }}
+                                            animate={{ opacity: 1, height: 'auto' }}
+                                            exit={{ opacity: 0, height: 0 }}
+                                            transition={{ duration: 0.2 }}
+                                            className="mt-2"
+                                        >
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                Specify the designation (e.g. Senior Hiring Manager)
+                                            </label>
+                                            <div className="relative">
+                                                <input
+                                                    type="text"
+                                                    value={customDesignation}
+                                                    onChange={handleCustomDesignationChange}
+                                                    placeholder="Enter your designation"
+                                                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00A55F] focus:border-[#00A55F] outline-none transition-colors"
+                                                />
+                                                {customDesignation && (
+                                                    <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => {
+                                                                setCustomDesignation('');
+                                                                setFormData(prev => ({ ...prev, designation: '' }));
+                                                                setShowCustomDesignation(false);
+                                                            }}
+                                                            className="text-gray-400 hover:text-gray-500"
+                                                        >
+                                                            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                                                            </svg>
+                                                        </button>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </motion.div>
+                                    )}
                                     {errors.designation && (
-                                        <p className="mt-1 text-sm text-red-500">{errors.designation}</p>
+                                        <motion.p
+                                            initial={{ opacity: 0, y: -5 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            className="mt-1 text-sm text-red-500"
+                                        >
+                                            {errors.designation}
+                                        </motion.p>
                                     )}
                                 </div>
 
@@ -457,7 +671,7 @@ const RecruiterOnboarding = () => {
                                                 type="text"
                                                 value="+222"
                                                 disabled
-                                                className="w-16 sm:w-20 px-3 sm:px-4 py-2 border border-gray-300 bg-gray-50 text-gray-500 rounded-lg"
+                                                className="w-16 sm:w-20 px-4 py-2.5 border border-gray-300 bg-gray-50 text-gray-500 rounded-lg"
                                             />
                                             <input
                                                 type="tel"
@@ -465,15 +679,14 @@ const RecruiterOnboarding = () => {
                                                 value={formData.phone}
                                                 onChange={handleChange}
                                                 placeholder="Enter your phone number"
-                                                className={`flex-1 px-3 sm:px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#00A55F] focus:border-[#00A55F] outline-none transition-colors ${errors.phone ? 'border-red-500' : 'border-gray-300'
-                                                    }`}
+                                                className={`flex-1 px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-[#00A55F] focus:border-[#00A55F] outline-none transition-colors ${errors.phone ? 'border-red-500' : 'border-gray-300'}`}
                                             />
                                         </div>
                                         <button
                                             type="button"
                                             onClick={handleSendOtp}
                                             disabled={isSendingOtp || !formData.phone || !/^\d{8}$/.test(formData.phone)}
-                                            className="w-full sm:w-auto px-4 py-2 bg-[#00A55F] text-white rounded-lg hover:bg-[#008c4f] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#00A55F] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                            className="w-full sm:w-auto px-4 py-2.5 bg-[#00A55F] text-white rounded-lg hover:bg-[#008c4f] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#00A55F] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                                         >
                                             {isSendingOtp ? (
                                                 <div className="flex items-center justify-center">
@@ -500,22 +713,38 @@ const RecruiterOnboarding = () => {
                                         exit={{ opacity: 0, height: 0 }}
                                         className="mt-4 space-y-3"
                                     >
-                                        <p className="text-sm text-gray-600">
-                                            OTP sent to your mobile. Valid for 10 minutes.
-                                        </p>
+                                        <div className="flex items-center justify-between">
+                                            <p className="text-sm text-gray-600">
+                                                OTP sent to your mobile. Valid for 10 minutes.
+                                            </p>
+                                            {otpTimer > 0 ? (
+                                                <span className="text-sm text-gray-500">
+                                                    Resend in {otpTimer}s
+                                                </span>
+                                            ) : (
+                                                <button
+                                                    type="button"
+                                                    onClick={handleSendOtp}
+                                                    disabled={!canResendOtp}
+                                                    className="text-sm text-[#00A55F] hover:text-[#008c4f] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                                >
+                                                    Resend OTP
+                                                </button>
+                                            )}
+                                        </div>
                                         <div className="flex flex-col sm:flex-row gap-2">
                                             <input
                                                 type="text"
                                                 value={otp}
                                                 onChange={handleOtpChange}
                                                 placeholder="Enter 6-digit OTP"
-                                                className="flex-1 px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00A55F] focus:border-[#00A55F] outline-none transition-colors"
+                                                className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00A55F] focus:border-[#00A55F] outline-none transition-colors"
                                             />
                                             <button
                                                 type="button"
                                                 onClick={handleVerifyOtp}
                                                 disabled={isVerifyingOtp || !otp || otp.length !== 6}
-                                                className="w-full sm:w-auto px-4 py-2 bg-[#00A55F] text-white rounded-lg hover:bg-[#008c4f] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#00A55F] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                                className="w-full sm:w-auto px-4 py-2.5 bg-[#00A55F] text-white rounded-lg hover:bg-[#008c4f] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#00A55F] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                                             >
                                                 {isVerifyingOtp ? (
                                                     <div className="flex items-center justify-center">
@@ -892,7 +1121,7 @@ const RecruiterOnboarding = () => {
                                             <div className="flex">
                                                 <div className="flex-shrink-0">
                                                     <svg className="h-5 w-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
                                                     </svg>
                                                 </div>
                                                 <div className="ml-3">

@@ -15,6 +15,7 @@ import Dashboard from '@/pages/Dashboard';
 import ProtectedRoute from './ProtectedRoute';
 import RecruiterOnboarding from '@/features/recruiter/pages/RecruiterOnboarding';
 import ProtectedOnboardingRoute from '@/features/recruiter/components/ProtectedOnboardingRoute';
+import PostInternshipJob from '@/features/recruiter/pages/PostInternshipJob';
 
 const AppRoutes = () => {
     const location = useLocation();
@@ -95,6 +96,10 @@ const AppRoutes = () => {
                         </ProtectedOnboardingRoute>
                     }
                 />
+                
+
+<Route path="/recruiter/post-opportunity" element={<PostInternshipJob />} />
+
             </Routes>
         </AnimatePresence>
     );
