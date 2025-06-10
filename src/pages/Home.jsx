@@ -2,6 +2,8 @@ import { Link } from 'react-router-dom';
 import { useState } from 'react';
 import Navbar from '@/components/layout/Navbar';
 import { motion } from 'framer-motion';
+import AfterImg from '../assets/images/after_image.webp';
+import BeforImg from '../assets/images/before_image.webp';
 
 const Home = () => {
     const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
@@ -227,6 +229,33 @@ const Home = () => {
                         <p className="text-gray-700 mb-4 font-medium">Download our mobile app</p>
                         <div className="w-32 h-32 bg-gray-100 rounded-lg mx-auto flex items-center justify-center">
                             <span className="text-gray-400">QR Code</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* Marketing Comparison Section */}
+            <section className="bg-gray-50 py-16">
+                <div className="max-w-6xl mx-auto w-full px-4">
+                    <div className="flex flex-col lg:flex-row items-center justify-center gap-12">
+                        <div className="flex-1 flex flex-col items-center">
+                            <h3 className="text-xl sm:text-2xl font-bold text-gray-600 mb-6 text-center">The usual path</h3>
+                            <img
+                                src={BeforImg}
+                                alt="Illustration of the usual job search path with obstacles and detours"
+                                className="w-full max-w-md sm:max-w-lg md:max-w-xl lg:max-w-[90%] h-auto mx-auto"
+                            />
+                        </div>
+                        <div className="flex-1 flex flex-col items-center">
+                            <h3 className="text-xl sm:text-2xl font-bold mb-2 text-center bg-gradient-to-r from-[#00A55F] to-[#34d399] bg-clip-text text-transparent select-none">
+                                Stage222 🚀
+                            </h3>
+                            <div className="w-12 h-2 rounded-full bg-gradient-to-r from-[#00A55F] to-[#34d399] mb-4"></div>
+                            <img
+                                src={AfterImg}
+                                alt="Illustration of the Stage222 path, direct and efficient to the right job"
+                                className="w-full max-w-md sm:max-w-lg md:max-w-xl lg:max-w-[90%] h-auto mx-auto"
+                            />
                         </div>
                     </div>
                 </div>
