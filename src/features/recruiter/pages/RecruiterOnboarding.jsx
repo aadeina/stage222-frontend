@@ -4,6 +4,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { submitRecruiterOnboarding } from '../api/onboardingApi';
 import { sendOtp, verifyRecruiterOtp } from '../../../services/authApi';
 import toast from 'react-hot-toast';
+import api from '@/services/api';
+import { createOrganization, updateOrganization } from '@/services/organizationApi';
 
 const RecruiterOnboarding = () => {
     const navigate = useNavigate();
@@ -33,15 +35,29 @@ const RecruiterOnboarding = () => {
         phone: '',
         // Step 2: Organization Details
         orgName: '',
+        isFreelancer: false,
+        about: '',
+        city: '',
         industry: '',
+        employeeCount: '',
         website: '',
-        address: '',
-        // Step 3: Logo
-        logo: null
+        logo: null,
+        licenseFile: null,
+        socialMediaUrls: '',
+        organization_id: null,
+        verificationType: '',
     });
     const [errors, setErrors] = useState({});
     const [otpTimer, setOtpTimer] = useState(0);
     const [canResendOtp, setCanResendOtp] = useState(false);
+    const [isOrgVerified, setIsOrgVerified] = useState(false);
+
+    // Facebook-style blue badge logic
+    const isFullyVerified =
+        !!formData.licenseFile &&
+        !!formData.website &&
+        !!formData.socialMediaUrls &&
+        formData.socialMediaUrls.split(',').filter(Boolean).length > 0;
 
     const steps = [
         {
@@ -155,7 +171,6 @@ const RecruiterOnboarding = () => {
 
     const validateStep = (step) => {
         const newErrors = {};
-
         switch (step) {
             case 1:
                 if (!formData.firstName) newErrors.firstName = 'First name is required';
@@ -169,16 +184,26 @@ const RecruiterOnboarding = () => {
                 break;
             case 2:
                 if (!formData.orgName) newErrors.orgName = 'Organization name is required';
+                if (!formData.about) newErrors.about = 'About is required';
+                if (!formData.city) newErrors.city = 'City is required';
                 if (!formData.industry) newErrors.industry = 'Industry is required';
+                if (!formData.employeeCount) newErrors.employeeCount = 'Employee range is required';
                 if (!formData.website) newErrors.website = 'Website is required';
-                if (!formData.address) newErrors.address = 'Address is required';
+                if (!formData.logo) newErrors.logo = 'Company logo is required';
+                // Verification method: at least one
+                const hasLicenseFile = !!formData.licenseFile;
+                const hasWebsite = !!formData.website;
+                const hasSocialMediaLinks = !!(formData.socialMediaUrls && formData.socialMediaUrls.split(',').filter(Boolean).length > 0);
+                if (!hasLicenseFile && !hasWebsite && !hasSocialMediaLinks) {
+                    newErrors.verification = 'Please complete at least one verification method (license, website, or social media).';
+                }
                 break;
             case 3:
                 if (!formData.logo) newErrors.logo = 'Company logo is required';
                 break;
         }
-
         setErrors(newErrors);
+        console.log('Validation errors:', newErrors, formData);
         return Object.keys(newErrors).length === 0;
     };
 
@@ -212,9 +237,96 @@ const RecruiterOnboarding = () => {
         }
     };
 
-    const handleNext = () => {
-        if (validateStep(currentStep)) {
-            setCurrentStep(prev => prev + 1);
+    // Helper: handle org create/update with FormData
+    const handleOrganizationSubmit = async () => {
+        try {
+            const form = new FormData();
+
+            // Required fields
+            form.append('name', formData.orgName);
+            form.append('is_independent', formData.isFreelancer);
+            form.append('about', formData.about || '');
+            form.append('city', formData.city || '');
+            form.append('industry', formData.industry || '');
+            form.append('employee_range', formData.employeeCount || '');
+            form.append('website', formData.website || '');
+
+            // Optional fields
+            if (formData.logo) {
+                form.append('logo', formData.logo);
+            }
+            if (formData.licenseFile) {
+                form.append('license_document', formData.licenseFile);
+            }
+
+            // Handle social links
+            const socialLinksArray = formData.socialMediaUrls
+                ? formData.socialMediaUrls.split(',').filter(url => url.trim() !== '')
+                : [];
+            form.append('social_links', JSON.stringify(socialLinksArray));
+
+            console.log('Submitting organization data:', {
+                name: formData.orgName,
+                is_independent: formData.isFreelancer,
+                about: formData.about,
+                city: formData.city,
+                industry: formData.industry,
+                employee_range: formData.employeeCount,
+                website: formData.website,
+                hasLogo: !!formData.logo,
+                hasLicense: !!formData.licenseFile,
+                socialLinks: socialLinksArray
+            });
+
+            let response;
+            if (!formData.organization_id) {
+                response = await createOrganization(form);
+                if (response.data?.data?.id) {
+                    setFormData(prev => ({ ...prev, organization_id: response.data.data.id }));
+                }
+            } else {
+                response = await updateOrganization(formData.organization_id, form);
+            }
+
+            // If backend returns is_verified, set it
+            if (response.data?.data?.is_verified) {
+                setIsOrgVerified(true);
+            }
+
+            return response;
+        } catch (error) {
+            console.error('Organization submission error:', error.response?.data || error);
+            throw error;
+        }
+    };
+
+    const handleNext = async () => {
+        if (currentStep === 2) {
+            const isValid = validateStep(2);
+            if (!isValid) return;
+
+            setIsLoading(true);
+            try {
+                const response = await handleOrganizationSubmit();
+                console.log('Organization saved successfully:', response.data);
+                toast.success('✅ Organization saved!');
+                setCurrentStep(3);
+            } catch (err) {
+                console.error('Failed to save organization:', err);
+                const errorMessage = err.response?.data?.message || '❌ Failed to save organization.';
+                toast.error(errorMessage);
+
+                // Set field errors if backend returns them
+                if (err.response?.data?.errors) {
+                    setErrors(prev => ({ ...prev, ...err.response.data.errors }));
+                }
+            } finally {
+                setIsLoading(false);
+            }
+        } else {
+            if (validateStep(currentStep)) {
+                setCurrentStep(prev => prev + 1);
+            }
         }
     };
 
@@ -807,6 +919,59 @@ const RecruiterOnboarding = () => {
                                             )}
                                         </div>
 
+                                        {/* Logo Upload Field (moved here) */}
+                                        <div className="mb-6">
+                                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                                Company Logo
+                                            </label>
+                                            <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg">
+                                                <div className="space-y-1 text-center">
+                                                    <svg
+                                                        className="mx-auto h-12 w-12 text-gray-400"
+                                                        stroke="currentColor"
+                                                        fill="none"
+                                                        viewBox="0 0 48 48"
+                                                        aria-hidden="true"
+                                                    >
+                                                        <path
+                                                            d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
+                                                            strokeWidth={2}
+                                                            strokeLinecap="round"
+                                                            strokeLinejoin="round"
+                                                        />
+                                                    </svg>
+                                                    <div className="flex text-sm text-gray-600">
+                                                        <label
+                                                            htmlFor="logo-upload"
+                                                            className="relative cursor-pointer bg-white rounded-md font-medium text-[#00A55F] hover:text-[#008c4f] focus-within:outline-none"
+                                                        >
+                                                            <span>Upload a file</span>
+                                                            <input
+                                                                id="logo-upload"
+                                                                name="logo"
+                                                                type="file"
+                                                                accept="image/*"
+                                                                className="sr-only"
+                                                                onChange={handleLogoChange}
+                                                            />
+                                                        </label>
+                                                        <p className="pl-1">or drag and drop</p>
+                                                    </div>
+                                                    <p className="text-xs text-gray-500">
+                                                        PNG, JPG, GIF up to 10MB
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            {formData.logo && (
+                                                <p className="mt-2 text-sm text-gray-500">
+                                                    Selected file: {formData.logo.name}
+                                                </p>
+                                            )}
+                                            {errors.logo && (
+                                                <p className="mt-1 text-sm text-red-500">{errors.logo}</p>
+                                            )}
+                                        </div>
+
                                         {/* Freelancer Checkbox */}
                                         <div className="mb-6">
                                             <label className="flex items-start space-x-3">
@@ -1117,6 +1282,25 @@ const RecruiterOnboarding = () => {
                                             </div>
                                         </div>
 
+                                        {/* Verified Badge */}
+                                        {isOrgVerified && (
+                                            <div className="mb-4 flex items-center gap-2">
+                                                <span className="inline-flex items-center px-3 py-1 rounded-full bg-blue-500 text-white font-semibold text-sm">
+                                                    <svg className="w-4 h-4 mr-1 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                                        <circle cx="10" cy="10" r="10" fill="#2563eb" />
+                                                        <path fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" d="M6 10.5l3 3 5-5" />
+                                                    </svg>
+                                                    Verified Badge
+                                                </span>
+                                                <span className="text-xs text-gray-500">(Organization is verified)</span>
+                                            </div>
+                                        )}
+
+                                        {/* Error for verification */}
+                                        {errors.verification && (
+                                            <div className="mb-4 text-sm text-red-500 font-medium">{errors.verification}</div>
+                                        )}
+
                                         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
                                             <div className="flex">
                                                 <div className="flex-shrink-0">
@@ -1330,58 +1514,6 @@ const RecruiterOnboarding = () => {
                                 exit={{ opacity: 0, x: -20 }}
                                 className="space-y-4"
                             >
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Company Logo
-                                    </label>
-                                    <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg">
-                                        <div className="space-y-1 text-center">
-                                            <svg
-                                                className="mx-auto h-12 w-12 text-gray-400"
-                                                stroke="currentColor"
-                                                fill="none"
-                                                viewBox="0 0 48 48"
-                                                aria-hidden="true"
-                                            >
-                                                <path
-                                                    d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
-                                                    strokeWidth={2}
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                />
-                                            </svg>
-                                            <div className="flex text-sm text-gray-600">
-                                                <label
-                                                    htmlFor="logo-upload"
-                                                    className="relative cursor-pointer bg-white rounded-md font-medium text-[#00A55F] hover:text-[#008c4f] focus-within:outline-none"
-                                                >
-                                                    <span>Upload a file</span>
-                                                    <input
-                                                        id="logo-upload"
-                                                        name="logo"
-                                                        type="file"
-                                                        accept="image/*"
-                                                        className="sr-only"
-                                                        onChange={handleLogoChange}
-                                                    />
-                                                </label>
-                                                <p className="pl-1">or drag and drop</p>
-                                            </div>
-                                            <p className="text-xs text-gray-500">
-                                                PNG, JPG, GIF up to 10MB
-                                            </p>
-                                        </div>
-                                    </div>
-                                    {formData.logo && (
-                                        <p className="mt-2 text-sm text-gray-500">
-                                            Selected file: {formData.logo.name}
-                                        </p>
-                                    )}
-                                    {errors.logo && (
-                                        <p className="mt-1 text-sm text-red-500">{errors.logo}</p>
-                                    )}
-                                </div>
-
                                 <div className="mt-6 bg-gray-50 p-4 rounded-lg">
                                     <h3 className="text-lg font-medium text-gray-900 mb-4">Review Your Information</h3>
                                     <dl className="space-y-4">

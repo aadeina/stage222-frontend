@@ -244,6 +244,16 @@ const PostInternshipJob = () => {
 
     return (
         <div className="min-h-screen bg-gray-50 pb-24">
+            {/* Pro Header Section */}
+            <section className="pt-12 pb-8 bg-gray-50">
+                <div className="max-w-3xl mx-auto text-center">
+                    <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-2 bg-gradient-to-r from-[#00A55F] to-[#34d399] bg-clip-text text-transparent select-none inline-block">
+                        Post an Opportunity 🚀
+                    </h1>
+                    <div className="w-16 h-2 rounded-full bg-gradient-to-r from-[#00A55F] to-[#34d399] mx-auto mb-4"></div>
+                    <p className="text-gray-500 text-base md:text-lg font-medium mb-2">Share your job or internship and connect with top Mauritanian talent.</p>
+                </div>
+            </section>
             {/* Progress Header */}
             <div className="bg-white border-b border-gray-200">
                 <div className="max-w-5xl mx-auto px-4 py-4">

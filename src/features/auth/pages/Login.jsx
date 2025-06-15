@@ -58,24 +58,19 @@ const Login = () => {
 
         setIsLoading(true);
         try {
-            const response = await api.post('/auth/login/', {
-                ...formData,
+            const payload = {
+                email: formData.email,
+                password: formData.password,
                 role: activeTab === 'student' ? 'candidate' : 'recruiter'
-            });
+            };
+            const response = await api.post('/auth/login/', payload);
 
             const { access, refresh, user } = response.data;
-
-            // Store tokens in localStorage
-            localStorage.setItem('accessToken', access);
+            localStorage.setItem('token', access);
             localStorage.setItem('refreshToken', refresh);
             localStorage.setItem('user', JSON.stringify(user));
-
-            // Update auth context
             login(user);
-
-            // Show success message
             toast.success('Login successful!');
-
             // Redirect based on role
             if (user.role === 'candidate') {
                 navigate('/dashboard/student');
