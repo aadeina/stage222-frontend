@@ -51,6 +51,7 @@ const RecruiterOnboarding = () => {
     const [otpTimer, setOtpTimer] = useState(0);
     const [canResendOtp, setCanResendOtp] = useState(false);
     const [isOrgVerified, setIsOrgVerified] = useState(false);
+    const [organizationCreated, setOrganizationCreated] = useState(false);
 
     // Facebook-style blue badge logic
     const isFullyVerified =
@@ -237,92 +238,46 @@ const RecruiterOnboarding = () => {
         }
     };
 
-    // Helper: handle org create/update with FormData
-    const handleOrganizationSubmit = async () => {
-        try {
-            const form = new FormData();
-
-            // Required fields
-            form.append('name', formData.orgName);
-            form.append('is_independent', formData.isFreelancer);
-            form.append('about', formData.about || '');
-            form.append('city', formData.city || '');
-            form.append('industry', formData.industry || '');
-            form.append('employee_range', formData.employeeCount || '');
-            form.append('website', formData.website || '');
-
-            // Optional fields
-            if (formData.logo) {
-                form.append('logo', formData.logo);
-            }
-            if (formData.licenseFile) {
-                form.append('license_document', formData.licenseFile);
-            }
-
-            // Handle social links
-            const socialLinksArray = formData.socialMediaUrls
-                ? formData.socialMediaUrls.split(',').filter(url => url.trim() !== '')
-                : [];
-            form.append('social_links', JSON.stringify(socialLinksArray));
-
-            console.log('Submitting organization data:', {
-                name: formData.orgName,
-                is_independent: formData.isFreelancer,
-                about: formData.about,
-                city: formData.city,
-                industry: formData.industry,
-                employee_range: formData.employeeCount,
-                website: formData.website,
-                hasLogo: !!formData.logo,
-                hasLicense: !!formData.licenseFile,
-                socialLinks: socialLinksArray
-            });
-
-            let response;
-            if (!formData.organization_id) {
-                response = await createOrganization(form);
+    const handleNext = async () => {
+        if (currentStep === 2 && !organizationCreated) {
+            const isValid = validateStep(2);
+            if (!isValid) return;
+            setIsLoading(true);
+            try {
+                const form = new FormData();
+                form.append('name', formData.orgName);
+                form.append('is_independent', formData.isFreelancer);
+                form.append('about', formData.about || '');
+                form.append('city', formData.city || '');
+                form.append('industry', formData.industry || '');
+                form.append('employee_range', formData.employeeCount || '');
+                form.append('website', formData.website || '');
+                if (formData.logo) form.append('logo', formData.logo);
+                if (formData.licenseFile) form.append('license_document', formData.licenseFile);
+                const socialLinksArray = formData.socialMediaUrls
+                    ? formData.socialMediaUrls.split(',').filter(url => url.trim() !== '')
+                    : [];
+                form.append('social_links', JSON.stringify(socialLinksArray));
+                const response = await createOrganization(form);
                 if (response.data?.data?.id) {
                     setFormData(prev => ({ ...prev, organization_id: response.data.data.id }));
                 }
-            } else {
-                response = await updateOrganization(formData.organization_id, form);
-            }
-
-            // If backend returns is_verified, set it
-            if (response.data?.data?.is_verified) {
-                setIsOrgVerified(true);
-            }
-
-            return response;
-        } catch (error) {
-            console.error('Organization submission error:', error.response?.data || error);
-            throw error;
-        }
-    };
-
-    const handleNext = async () => {
-        if (currentStep === 2) {
-            const isValid = validateStep(2);
-            if (!isValid) return;
-
-            setIsLoading(true);
-            try {
-                const response = await handleOrganizationSubmit();
-                console.log('Organization saved successfully:', response.data);
-                toast.success('✅ Organization saved!');
+                setOrganizationCreated(true);
+                toast.success('✅ Organization created!');
                 setCurrentStep(3);
             } catch (err) {
-                console.error('Failed to save organization:', err);
-                const errorMessage = err.response?.data?.message || '❌ Failed to save organization.';
+                console.error('Failed to create organization:', err);
+                const errorMessage = err.response?.data?.message || "Couldn't create organization. Please try again.";
                 toast.error(errorMessage);
-
-                // Set field errors if backend returns them
                 if (err.response?.data?.errors) {
                     setErrors(prev => ({ ...prev, ...err.response.data.errors }));
                 }
             } finally {
                 setIsLoading(false);
             }
+        } else if (currentStep === 3) {
+            // After posting job/internship, redirect to setup complete
+            navigate('/recruiter/onboarding/setup-complete');
         } else {
             if (validateStep(currentStep)) {
                 setCurrentStep(prev => prev + 1);
@@ -1563,9 +1518,24 @@ const RecruiterOnboarding = () => {
                                 whileTap={{ scale: 0.98 }}
                                 type="button"
                                 onClick={handleNext}
+                                disabled={isLoading}
                                 className="w-full sm:w-auto px-4 py-2 bg-[#00A55F] text-white rounded-lg hover:bg-[#008c4f] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#00A55F] transition-colors"
                             >
-                                Next
+                                {isLoading ? (
+                                    <div className="flex items-center justify-center">
+                                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        </svg>
+                                        Processing...
+                                    </div>
+                                ) : currentStep === 2 && !organizationCreated ? (
+                                    'Create Organization'
+                                ) : currentStep === 3 ? (
+                                    'Post Internship/Job'
+                                ) : (
+                                    'Next'
+                                )}
                             </motion.button>
                         ) : (
                             <motion.button
