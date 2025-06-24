@@ -1,22 +1,34 @@
 // src/services/organizationApi.js
 import api from './api';
 
-// POST /organizations/create/
+/**
+ * Create a new organization
+ * POST /organizations/
+ */
 export const createOrganization = (formData) => {
-    return api.post('/organizations/create/', formData);
+  return api.post('/organizations/create/', formData);
 };
 
-// PUT /organizations/:id/update/
+/**
+ * Update an existing organization by ID
+ * PUT /organizations/:id/update/
+ */
 export const updateOrganization = (id, formData) => {
-    return api.put(`/organizations/${id}/update/`, formData);
+  return api.put(`/organizations/${id}/update/`, formData);
 };
 
-// GET /organizations/
+/**
+ * Fetch all organizations (admin or dashboard use)
+ * GET /organizations/
+ */
 export const fetchAllOrganizations = () => {
-    return api.get('/organizations/');
+  return api.get('/organizations/');
 };
 
-// GET /organizations/:id/
+/**
+ * Fetch a specific organization by ID
+ * GET /organizations/:id/
+ */
 export const fetchOrganizationById = (id) => {
-    return api.get(`/organizations/${id}/`);
+  return api.get(`/organizations/${id}/`);
 };

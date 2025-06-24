@@ -289,26 +289,44 @@ const RecruiterOnboarding = () => {
         setCurrentStep(prev => prev - 1);
     };
 
+    // const handleSubmit = async () => {
+    //     if (!validateStep(currentStep)) return;
+
+    //     setIsLoading(true);
+    //     try {
+    //         const formDataToSend = new FormData();
+    //         Object.keys(formData).forEach(key => {
+    //             formDataToSend.append(key, formData[key]);
+    //         });
+
+    //         await submitRecruiterOnboarding(formDataToSend);
+    //         toast.success('Onboarding completed successfully!');
+    //         navigate('/recruiter/post-opportunity');
+    //     } catch (error) {
+    //         console.error('Onboarding error:', error);
+    //         toast.error(error.response?.data?.message || 'Failed to complete onboarding');
+    //     } finally {
+    //         setIsLoading(false);
+    //     }
+    // };
     const handleSubmit = async () => {
-        if (!validateStep(currentStep)) return;
+  setIsLoading(true);
+  try {
+    const formDataToSend = new FormData();
+    Object.keys(formData).forEach((key) => {
+      formDataToSend.append(key, formData[key]);
+    });
 
-        setIsLoading(true);
-        try {
-            const formDataToSend = new FormData();
-            Object.keys(formData).forEach(key => {
-                formDataToSend.append(key, formData[key]);
-            });
+    await submitRecruiterOnboarding(formDataToSend); // ✅ sends to working endpoint
 
-            await submitRecruiterOnboarding(formDataToSend);
-            toast.success('Onboarding completed successfully!');
-            navigate('/dashboard/employer');
-        } catch (error) {
-            console.error('Onboarding error:', error);
-            toast.error(error.response?.data?.message || 'Failed to complete onboarding');
-        } finally {
-            setIsLoading(false);
-        }
-    };
+    toast.success('Onboarding completed!');
+    navigate('/recruiter/post-opportunity'); // ✅ go to next step
+  } catch (error) {
+    toast.error(error.response?.data?.message || 'Onboarding failed');
+  } finally {
+    setIsLoading(false);
+  }
+};
 
     // Add timer effect for OTP resend
     useEffect(() => {
@@ -1555,7 +1573,7 @@ const RecruiterOnboarding = () => {
                                         Submitting...
                                     </div>
                                 ) : (
-                                    'Complete Onboarding'
+                                    'Complete Onboarding Next'
                                 )}
                             </motion.button>
                         )}
