@@ -21,9 +21,9 @@ export const resendOtp = (email) => {
 };
 
 // POST /auth/reset-password/
-export const resetPassword = (data) => {
-    return api.post('/auth/reset-password-confirm/', data);
-};
+// export const resetPassword = (data) => {
+//     return api.post('/auth/reset-password-confirm/', data);
+// };
 
 // ✅ Recruiter phone OTP (add these)
 export const sendOtp = (phone, lang = 'fr') => {
@@ -32,4 +32,23 @@ export const sendOtp = (phone, lang = 'fr') => {
 
 export const verifyRecruiterOtp = (phone, otp) => {
     return api.post('/recruiters/verify-otp/', { phone, otp });
+};
+
+// 🔁 Request Password Reset (send OTP to email)
+export const requestResetPassword = (email) => {
+  return api.post('/auth/password-reset-request/', { email });
+};
+
+// // ✅ Confirm OTP & Set New Password
+// export const resetPassword = ({ email, code, password }) => {
+//   return api.post('/auth/password-reset-confirm/', { email, code, password });
+// };
+
+// ✅ Confirm OTP & Set New Password
+export const resetPassword = ({ email, code, password }) => {
+  return api.post('/auth/password-reset-confirm/', {
+    email,
+    code,
+    new_password: password, 
+  });
 };

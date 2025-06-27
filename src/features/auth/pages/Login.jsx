@@ -72,13 +72,26 @@ const Login = () => {
             login(user);
             toast.success('Login successful!');
             // Redirect based on role
-            if (user.role === 'candidate') {
-                navigate('/dashboard/student');
-            } else if (user.role === 'recruiter') {
-                navigate('/dashboard/employer');
-            } else {
-                toast.error('Invalid user role');
-            }
+            // if (user.role === 'candidate') {
+            //     navigate('/dashboard/student');
+            // } else if (user.role === 'recruiter') {
+            //     navigate('/dashboard/employer');
+            // } else {
+            //     toast.error('Invalid user role');
+            // }
+                // Redirect based on role and onboarding
+if (user.role === 'recruiter') {
+    if (user.is_onboarded) {
+        navigate('/dashboard/employer');
+    } else {
+        navigate('/recruiter/onboarding');
+    }
+} else if (user.role === 'candidate') {
+    navigate('/dashboard/student');
+} else {
+    toast.error('Invalid user role');
+}
+
         } catch (error) {
             console.error('Login error:', error);
             const errorMessage = error.response?.data?.message || 'Login failed. Please try again.';

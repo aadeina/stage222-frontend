@@ -40,13 +40,7 @@ const Navbar = () => {
                         <Link to="/register/employer" className="text-gray-700 hover:text-[#00A55F] font-medium transition-colors">
                             For Employers
                         </Link>
-                        {/* Test Links */}
-                        <Link to="/verify-otp" className="text-gray-700 hover:text-[#00A55F] font-medium transition-colors">
-                            Test OTP
-                        </Link>
-                        <Link to="/reset-password" className="text-gray-700 hover:text-[#00A55F] font-medium transition-colors">
-                            Test Reset
-                        </Link>
+
                     </div>
 
                     {/* Mobile Menu Button */}

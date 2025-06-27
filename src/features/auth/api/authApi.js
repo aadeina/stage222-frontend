@@ -20,6 +20,6 @@ export const requestResetPassword = async ({ email }) => {
 
 // Verify Reset OTP & Set New Password
 export const resetPassword = async (data) => {
-    const response = await api.post("/auth/password-reset/", data);
+    const response = await api.post("/auth/password-reset-confirm", data);
     return response.data;
 };
