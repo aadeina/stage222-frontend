@@ -9,10 +9,13 @@ export const AuthProvider = ({ children }) => {
     const navigate = useNavigate();
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [signupData, setSignupData] = useState(null);
 
     useEffect(() => {
         // Check for stored user data on mount
         const storedUser = localStorage.getItem('user');
+        const storedSignupData = localStorage.getItem('signupData');
+
         if (storedUser) {
             try {
                 setUser(JSON.parse(storedUser));
@@ -21,12 +24,32 @@ export const AuthProvider = ({ children }) => {
                 localStorage.removeItem('user');
             }
         }
+
+        if (storedSignupData) {
+            try {
+                setSignupData(JSON.parse(storedSignupData));
+            } catch (error) {
+                console.error('Error parsing stored signup data:', error);
+                localStorage.removeItem('signupData');
+            }
+        }
+
         setLoading(false);
     }, []);
 
     const updateUser = (userData) => {
         setUser(userData);
         localStorage.setItem('user', JSON.stringify(userData));
+    };
+
+    const storeSignupData = (data) => {
+        setSignupData(data);
+        localStorage.setItem('signupData', JSON.stringify(data));
+    };
+
+    const clearSignupData = () => {
+        setSignupData(null);
+        localStorage.removeItem('signupData');
     };
 
     const handleLogin = async (credentials) => {
@@ -55,7 +78,9 @@ export const AuthProvider = ({ children }) => {
 
     const handleLogout = () => {
         setUser(null);
+        setSignupData(null);
         localStorage.removeItem('user');
+        localStorage.removeItem('signupData');
         navigate('/login');
         toast.success('Logged out successfully');
     };
@@ -63,7 +88,10 @@ export const AuthProvider = ({ children }) => {
     const value = {
         user,
         loading,
+        signupData,
         updateUser,
+        storeSignupData,
+        clearSignupData,
         login: handleLogin,
         register: handleRegister,
         logout: handleLogout,

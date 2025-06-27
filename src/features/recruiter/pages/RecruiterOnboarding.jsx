@@ -6,9 +6,11 @@ import { sendOtp, verifyRecruiterOtp } from '../../../services/authApi';
 import toast from 'react-hot-toast';
 import api from '@/services/api';
 import { createOrganization, updateOrganization } from '@/services/organizationApi';
+import { useAuth } from '../../../context/AuthContext';
 
 const RecruiterOnboarding = () => {
     const navigate = useNavigate();
+    const { user, clearSignupData, signupData } = useAuth();
     const [currentStep, setCurrentStep] = useState(1);
     const [isLoading, setIsLoading] = useState(false);
     const [isSendingOtp, setIsSendingOtp] = useState(false);
@@ -52,6 +54,27 @@ const RecruiterOnboarding = () => {
     const [canResendOtp, setCanResendOtp] = useState(false);
     const [isOrgVerified, setIsOrgVerified] = useState(false);
     const [organizationCreated, setOrganizationCreated] = useState(false);
+
+    // Pre-fill form with authenticated user data when component mounts
+    useEffect(() => {
+        if (user) {
+            // Use authenticated user data as primary source
+            setFormData(prev => ({
+                ...prev,
+                firstName: user.first_name || '',
+                lastName: user.last_name || '',
+                email: user.email || ''
+            }));
+        } else if (signupData) {
+            // Fall back to signup data if user is not authenticated
+            setFormData(prev => ({
+                ...prev,
+                firstName: signupData.first_name || '',
+                lastName: signupData.last_name || '',
+                email: signupData.email || ''
+            }));
+        }
+    }, [user, signupData]);
 
     // Facebook-style blue badge logic
     const isFullyVerified =
@@ -289,44 +312,27 @@ const RecruiterOnboarding = () => {
         setCurrentStep(prev => prev - 1);
     };
 
-    // const handleSubmit = async () => {
-    //     if (!validateStep(currentStep)) return;
-
-    //     setIsLoading(true);
-    //     try {
-    //         const formDataToSend = new FormData();
-    //         Object.keys(formData).forEach(key => {
-    //             formDataToSend.append(key, formData[key]);
-    //         });
-
-    //         await submitRecruiterOnboarding(formDataToSend);
-    //         toast.success('Onboarding completed successfully!');
-    //         navigate('/recruiter/post-opportunity');
-    //     } catch (error) {
-    //         console.error('Onboarding error:', error);
-    //         toast.error(error.response?.data?.message || 'Failed to complete onboarding');
-    //     } finally {
-    //         setIsLoading(false);
-    //     }
-    // };
     const handleSubmit = async () => {
-  setIsLoading(true);
-  try {
-    const formDataToSend = new FormData();
-    Object.keys(formData).forEach((key) => {
-      formDataToSend.append(key, formData[key]);
-    });
+        setIsLoading(true);
+        try {
+            const formDataToSend = new FormData();
+            Object.keys(formData).forEach((key) => {
+                formDataToSend.append(key, formData[key]);
+            });
 
-    await submitRecruiterOnboarding(formDataToSend); // ✅ sends to working endpoint
+            await submitRecruiterOnboarding(formDataToSend); // ✅ sends to working endpoint
 
-    toast.success('Onboarding completed!');
-    navigate('/recruiter/post-opportunity'); // ✅ go to next step
-  } catch (error) {
-    toast.error(error.response?.data?.message || 'Onboarding failed');
-  } finally {
-    setIsLoading(false);
-  }
-};
+            // Clear signup data after successful onboarding
+            clearSignupData();
+
+            toast.success('Onboarding completed!');
+            navigate('/recruiter/post-opportunity'); // ✅ go to next step
+        } catch (error) {
+            toast.error(error.response?.data?.message || 'Onboarding failed');
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     // Add timer effect for OTP resend
     useEffect(() => {

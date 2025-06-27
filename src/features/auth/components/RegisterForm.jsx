@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { registerUser } from '@/services/authApi';
 import { toast } from 'react-hot-toast';
+import { useAuth } from '@/context/AuthContext';
 
 /**
  * RegisterForm Component
@@ -16,6 +17,7 @@ import { toast } from 'react-hot-toast';
  */
 const RegisterForm = ({ role, title, description, features }) => {
     const navigate = useNavigate();
+    const { storeSignupData } = useAuth();
     const [showEmailForm, setShowEmailForm] = useState(false);
     const [formData, setFormData] = useState({
         email: '',
@@ -76,6 +78,15 @@ const RegisterForm = ({ role, title, description, features }) => {
                 phone_number: formData.mobileNumber,
                 role // Automatically determined by the parent component
             });
+
+            // Store signup data for recruiters to pre-fill onboarding
+            if (role === 'recruiter') {
+                storeSignupData({
+                    first_name: formData.firstName,
+                    last_name: formData.lastName,
+                    email: formData.email
+                });
+            }
 
             toast.success('OTP sent to your email!');
             navigate('/verify-otp', { state: { email: formData.email } });

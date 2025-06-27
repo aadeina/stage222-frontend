@@ -3,9 +3,11 @@ import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { register } from '../api/authApi';
 import toast from 'react-hot-toast';
+import { useAuth } from '../../../context/AuthContext';
 
 const RecruiterSignup = () => {
     const navigate = useNavigate();
+    const { storeSignupData } = useAuth();
     const [isLoading, setIsLoading] = useState(false);
     const [formData, setFormData] = useState({
         email: '',
@@ -61,6 +63,14 @@ const RecruiterSignup = () => {
             };
 
             await register(payload);
+
+            // Store signup data for onboarding pre-fill
+            storeSignupData({
+                first_name: formData.firstName,
+                last_name: formData.lastName,
+                email: formData.email
+            });
+
             toast.success('OTP sent to your email!');
             navigate('/verify-otp', { state: { email: formData.email } });
         } catch (error) {
