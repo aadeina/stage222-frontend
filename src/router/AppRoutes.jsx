@@ -16,6 +16,8 @@ import ProtectedRoute from './ProtectedRoute';
 import RecruiterOnboarding from '@/features/recruiter/pages/RecruiterOnboarding';
 import ProtectedOnboardingRoute from '@/features/recruiter/components/ProtectedOnboardingRoute';
 import PostInternshipJob from '@/features/recruiter/pages/PostInternshipJob';
+import RecruiterDashboard from '@/features/recruiter/pages/RecruiterDashboard';
+import EditOrganization from '@/features/recruiter/pages/EditOrganization';
 
 const AppRoutes = () => {
     const location = useLocation();
@@ -96,9 +98,54 @@ const AppRoutes = () => {
                         </ProtectedOnboardingRoute>
                     }
                 />
-                
 
-<Route path="/recruiter/post-opportunity" element={<PostInternshipJob />} />
+                {/* Recruiter Dashboard Route */}
+                <Route
+                    path="/recruiter/dashboard"
+                    element={
+                        <ProtectedRoute>
+                            <PageWrapper>
+                                <RecruiterDashboard />
+                            </PageWrapper>
+                        </ProtectedRoute>
+                    }
+                />
+
+                {/* Recruiter Post Opportunity Route */}
+                <Route
+                    path="/recruiter/post-opportunity"
+                    element={
+                        <ProtectedRoute>
+                            <PageWrapper>
+                                <PostInternshipJob />
+                            </PageWrapper>
+                        </ProtectedRoute>
+                    }
+                />
+
+                {/* Edit Organization Route */}
+                <Route
+                    path="/recruiter/organization/:id/update"
+                    element={
+                        <ProtectedRoute>
+                            <PageWrapper>
+                                <EditOrganization />
+                            </PageWrapper>
+                        </ProtectedRoute>
+                    }
+                />
+
+                {/* Alternative Edit Organization Route (without ID parameter) */}
+                <Route
+                    path="/recruiter/organization/edit"
+                    element={
+                        <ProtectedRoute>
+                            <PageWrapper>
+                                <EditOrganization />
+                            </PageWrapper>
+                        </ProtectedRoute>
+                    }
+                />
 
             </Routes>
         </AnimatePresence>

@@ -14,9 +14,9 @@ const ProtectedOnboardingRoute = ({ children }) => {
         return <Navigate to="/dashboard/student" replace />;
     }
 
-    // If user's profile is complete, redirect to employer dashboard
+    // If user's profile is complete, redirect to recruiter dashboard
     if (user.profile_complete) {
-        return <Navigate to="/dashboard/employer" replace />;
+        return <Navigate to="/recruiter/dashboard" replace />;
     }
 
     // If all checks pass, render the onboarding component

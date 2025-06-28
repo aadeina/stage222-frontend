@@ -326,7 +326,7 @@ const RecruiterOnboarding = () => {
             clearSignupData();
 
             toast.success('Onboarding completed!');
-            navigate('/recruiter/post-opportunity'); // ✅ go to next step
+            navigate('/recruiter/dashboard'); // ✅ redirect to dashboard instead of post opportunity
         } catch (error) {
             toast.error(error.response?.data?.message || 'Onboarding failed');
         } finally {
@@ -1579,7 +1579,7 @@ const RecruiterOnboarding = () => {
                                         Submitting...
                                     </div>
                                 ) : (
-                                    'Complete Onboarding Next'
+                                    'Complete Onboarding'
                                 )}
                             </motion.button>
                         )}
