@@ -8,7 +8,8 @@ const InternshipCard = ({ internship, onClick }) => {
     const {
         id,
         title,
-        organization,
+        organization_name,
+        organization_logo,
         location,
         stipend_type,
         stipend,
@@ -20,6 +21,11 @@ const InternshipCard = ({ internship, onClick }) => {
         approval_status,
         description,
     } = internship;
+
+    // Construct full logo URL
+    const logoUrl = organization_logo
+        ? `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api'}${organization_logo}`
+        : fallbackLogo;
 
     // Badges
     const isActivelyHiring = approval_status === 'approved';
@@ -56,8 +62,8 @@ const InternshipCard = ({ internship, onClick }) => {
             {/* Logo */}
             <div className="flex-shrink-0 flex items-center justify-center w-24 h-24 bg-gray-50">
                 <img
-                    src={organization?.logo || fallbackLogo}
-                    alt={organization?.name || 'Organization'}
+                    src={logoUrl}
+                    alt={organization_name || 'Organization'}
                     className="w-16 h-16 object-contain rounded-lg"
                     onError={e => (e.target.src = fallbackLogo)}
                 />
@@ -73,7 +79,7 @@ const InternshipCard = ({ internship, onClick }) => {
                     </div>
                     <div className="flex items-center gap-2 text-sm text-gray-600 mb-1">
                         <FaBuilding className="inline-block mr-1 text-gray-400" />
-                        <span className="font-medium">{organization?.name}</span>
+                        <span className="font-medium">{organization_name}</span>
                     </div>
                     <div className="flex flex-wrap gap-3 items-center text-xs mb-2">
                         <span className="flex items-center gap-1 text-gray-500"><FaMapMarkerAlt /> {location || 'Remote'}</span>

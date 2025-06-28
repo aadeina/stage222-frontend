@@ -261,6 +261,35 @@ const RecruiterOnboarding = () => {
         }
     };
 
+    const handleLicenseFileChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            // Validate file type
+            const allowedTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'];
+            if (!allowedTypes.includes(file.type)) {
+                toast.error('Please select a valid file type (PDF, JPG, PNG)');
+                return;
+            }
+
+            // Validate file size (10MB max)
+            if (file.size > 10 * 1024 * 1024) {
+                toast.error('File size must be less than 10MB');
+                return;
+            }
+
+            setFormData(prev => ({
+                ...prev,
+                licenseFile: file
+            }));
+            if (errors.licenseFile) {
+                setErrors(prev => ({
+                    ...prev,
+                    licenseFile: ''
+                }));
+            }
+        }
+    };
+
     const handleNext = async () => {
         if (currentStep === 2 && !organizationCreated) {
             const isValid = validateStep(2);
@@ -268,6 +297,8 @@ const RecruiterOnboarding = () => {
             setIsLoading(true);
             try {
                 const form = new FormData();
+
+                // Required fields
                 form.append('name', formData.orgName);
                 form.append('is_independent', formData.isFreelancer);
                 form.append('about', formData.about || '');
@@ -275,23 +306,55 @@ const RecruiterOnboarding = () => {
                 form.append('industry', formData.industry || '');
                 form.append('employee_range', formData.employeeCount || '');
                 form.append('website', formData.website || '');
-                if (formData.logo) form.append('logo', formData.logo);
-                if (formData.licenseFile) form.append('license_document', formData.licenseFile);
+
+                // File uploads
+                if (formData.logo) {
+                    form.append('logo', formData.logo);
+                }
+                if (formData.licenseFile) {
+                    form.append('license_document', formData.licenseFile);
+                }
+
+                // Social links as JSON array
                 const socialLinksArray = formData.socialMediaUrls
                     ? formData.socialMediaUrls.split(',').filter(url => url.trim() !== '')
                     : [];
                 form.append('social_links', JSON.stringify(socialLinksArray));
+
+                console.log('Sending FormData:', {
+                    name: formData.orgName,
+                    is_independent: formData.isFreelancer,
+                    about: formData.about,
+                    city: formData.city,
+                    industry: formData.industry,
+                    employee_range: formData.employeeCount,
+                    website: formData.website,
+                    hasLogo: !!formData.logo,
+                    hasLicenseFile: !!formData.licenseFile,
+                    socialLinks: socialLinksArray
+                });
+
                 const response = await createOrganization(form);
                 if (response.data?.data?.id) {
                     setFormData(prev => ({ ...prev, organization_id: response.data.data.id }));
                 }
                 setOrganizationCreated(true);
-                toast.success('✅ Organization created!');
+                toast.success('✅ Organization created successfully!');
                 setCurrentStep(3);
             } catch (err) {
                 console.error('Failed to create organization:', err);
-                const errorMessage = err.response?.data?.message || "Couldn't create organization. Please try again.";
-                toast.error(errorMessage);
+                console.error('Error response:', err.response?.data);
+
+                // Handle specific error cases
+                if (err.response?.data?.license_document) {
+                    toast.error('License document error: ' + err.response.data.license_document[0]);
+                } else if (err.response?.data?.logo) {
+                    toast.error('Logo error: ' + err.response.data.logo[0]);
+                } else {
+                    const errorMessage = err.response?.data?.message || "Couldn't create organization. Please try again.";
+                    toast.error(errorMessage);
+                }
+
                 if (err.response?.data?.errors) {
                     setErrors(prev => ({ ...prev, ...err.response.data.errors }));
                 }
@@ -1324,7 +1387,7 @@ const RecruiterOnboarding = () => {
                                                     {formData.verificationType === 'license' && (
                                                         <div className="mt-3">
                                                             <div className="flex items-center justify-center w-full">
-                                                                <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
+                                                                <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors">
                                                                     <div className="flex flex-col items-center justify-center pt-5 pb-6">
                                                                         <svg className="w-8 h-8 mb-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
@@ -1337,7 +1400,7 @@ const RecruiterOnboarding = () => {
                                                                     <input
                                                                         type="file"
                                                                         name="licenseFile"
-                                                                        onChange={handleChange}
+                                                                        onChange={handleLicenseFileChange}
                                                                         accept=".pdf,.jpg,.jpeg,.png"
                                                                         className="hidden"
                                                                     />
@@ -1349,6 +1412,9 @@ const RecruiterOnboarding = () => {
                                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
                                                                     </svg>
                                                                     {formData.licenseFile.name}
+                                                                    <span className="ml-2 text-xs text-gray-400">
+                                                                        ({(formData.licenseFile.size / 1024 / 1024).toFixed(2)} MB)
+                                                                    </span>
                                                                 </div>
                                                             )}
                                                         </div>

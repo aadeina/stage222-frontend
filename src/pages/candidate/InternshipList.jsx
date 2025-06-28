@@ -15,7 +15,8 @@ const InternshipList = () => {
             setError(null);
             try {
                 const res = await fetchInternships();
-                setInternships(res.data.results || res.data || []);
+                const internshipsData = res.data.results || res.data || [];
+                setInternships(internshipsData);
             } catch (err) {
                 setError('Failed to load internships.');
                 toast.error('Failed to load internships.');
