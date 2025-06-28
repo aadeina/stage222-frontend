@@ -254,7 +254,7 @@ const PostInternshipJob = () => {
                     <p className="text-gray-500 text-base md:text-lg font-medium mb-2">Share your job or internship and connect with top Mauritanian talent.</p>
                 </div>
             </section>
-            {/* Progress Header */}
+            {/* Progress Header
             <div className="bg-white border-b border-gray-200">
                 <div className="max-w-5xl mx-auto px-4 py-4">
                     <div className="flex items-center justify-between">
@@ -274,7 +274,7 @@ const PostInternshipJob = () => {
                         </div>
                     </div>
                 </div>
-            </div>
+            </div> */}
 
             <div className="max-w-5xl mx-auto px-4 py-8">
                 {/* Header Section */}
@@ -914,102 +914,166 @@ const PostInternshipJob = () => {
                         animate={{ opacity: 1, y: 0 }}
                         className="bg-white rounded-xl shadow-sm p-6"
                     >
-                        <h2 className="text-xl font-semibold text-gray-800 mb-6">Screening Questions</h2>
-                        <div className="space-y-6">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Default Questions</label>
-                                <div className="bg-gray-50 p-4 rounded-lg">
-                                    <p className="text-sm text-gray-600">
-                                        Please confirm your availability for this job. If not available immediately, how early would you be able to join?
-                                    </p>
+                        <h2 className="text-xl font-semibold text-gray-800 mb-1">Screening Questions</h2>
+                        <p className="text-gray-500 text-sm mb-6">You can use these questions to filter relevant applications</p>
+                        <div className="space-y-8">
+                            {/* Default Question (always present) */}
+                            <div className="bg-gray-50 p-4 rounded-lg border border-gray-100 flex items-center justify-between">
+                                <div>
+                                    <div className="text-sm font-medium text-gray-700 mb-1">Availability <span className="text-xs text-gray-400">(Default)</span></div>
+                                    <div className="text-sm text-gray-700">Please confirm your availability for this job. If not available immediately, how early would you be able to join?</div>
                                 </div>
                             </div>
 
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Additional Questions</label>
-                                <p className="text-sm text-gray-600 mb-4">
-                                    Please note this may result in a decrease in the number of applications.
-                                </p>
-                                <div className="space-y-4">
-                                    {formData.additionalQuestions.map((question, index) => (
-                                        <div key={index} className="flex items-start space-x-4">
-                                            <input
-                                                type="text"
-                                                value={question}
-                                                onChange={(e) => {
-                                                    const newQuestions = [...formData.additionalQuestions];
-                                                    newQuestions[index] = e.target.value;
-                                                    setFormData(prev => ({
-                                                        ...prev,
-                                                        additionalQuestions: newQuestions
-                                                    }));
-                                                }}
-                                                className="flex-1 border border-gray-200 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#00A55F] focus:border-transparent transition-all bg-white"
-                                                placeholder="Enter your question"
-                                            />
-                                            <button
-                                                type="button"
-                                                onClick={() => {
-                                                    setFormData(prev => ({
-                                                        ...prev,
-                                                        additionalQuestions: prev.additionalQuestions.filter((_, i) => i !== index)
-                                                    }));
-                                                }}
-                                                className="text-red-500 hover:text-red-700"
-                                            >
-                                                Remove
-                                            </button>
+                            {/* Additional Questions (from bank or custom) */}
+                            <div className="space-y-4">
+                                {formData.additionalQuestions.map((q, idx) => (
+                                    <div key={idx} className="bg-gray-50 p-4 rounded-lg border border-gray-100 flex flex-col md:flex-row md:items-center gap-2 md:gap-4 relative group transition-all">
+                                        <div className="flex-1">
+                                            <div className="text-sm text-gray-800 mb-1">{q.text}</div>
+                                            {q.idealAnswer && <div className="text-xs text-gray-500">Ideal answer: <span className="font-medium text-gray-700">{q.idealAnswer}</span></div>}
+                                            {q.type && <div className="text-xs text-gray-400 mt-1">Response type: {q.type}</div>}
                                         </div>
-                                    ))}
-                                    {formData.additionalQuestions.length < 4 && (
-                                        <div className="space-y-2">
-                                            <button
-                                                type="button"
-                                                onClick={() => {
-                                                    setFormData(prev => ({
-                                                        ...prev,
-                                                        additionalQuestions: [...prev.additionalQuestions, ""]
-                                                    }));
-                                                }}
-                                                className="text-[#00A55F] hover:text-[#008f4c] font-medium"
-                                            >
-                                                + Add Question
-                                            </button>
-                                            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-4">
-                                                {[
-                                                    "Cover Letter",
-                                                    "Laptop & Internet",
-                                                    "Driving License",
-                                                    "2/4 Wheeler",
-                                                    "Weekend Availability",
-                                                    "Open for Fieldwork",
-                                                    "Night Shift",
-                                                    "Work Experience",
-                                                    "Skill Proficiency",
-                                                    "Portfolio Link",
-                                                    "Language Proficiency"
-                                                ].map((question) => (
-                                                    <button
-                                                        key={question}
-                                                        type="button"
-                                                        onClick={() => {
-                                                            if (formData.additionalQuestions.length < 4) {
-                                                                setFormData(prev => ({
-                                                                    ...prev,
-                                                                    additionalQuestions: [...prev.additionalQuestions, question]
-                                                                }));
-                                                            }
-                                                        }}
-                                                        className="text-left px-4 py-2 rounded-lg text-sm text-gray-600 hover:bg-gray-50 transition-all"
-                                                    >
-                                                        {question}
-                                                    </button>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
+                                        <button
+                                            type="button"
+                                            onClick={() => setFormData(prev => ({
+                                                ...prev,
+                                                additionalQuestions: prev.additionalQuestions.filter((_, i) => i !== idx)
+                                            }))}
+                                            className="absolute top-2 right-2 text-gray-400 hover:text-red-500 transition-colors"
+                                            aria-label="Remove question"
+                                        >
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                ))}
                             </div>
+
+                            {/* Question Bank Chips */}
+                            <div className="flex flex-wrap gap-2 mt-2">
+                                {[
+                                    { text: 'Why should you be hired for this role?', idealAnswer: '', type: 'Short Answer' },
+                                    { text: 'Do you have a working laptop and internet?', idealAnswer: 'Yes', type: 'Yes/No' },
+                                    { text: 'Cover Letter', idealAnswer: '', type: 'Short Answer' },
+                                    { text: 'Laptop & Internet', idealAnswer: '', type: 'Yes/No' },
+                                    { text: 'Driving License', idealAnswer: '', type: 'Yes/No' },
+                                    { text: '2/4 Wheeler', idealAnswer: '', type: 'Yes/No' },
+                                    { text: 'Weekend Availability', idealAnswer: '', type: 'Yes/No' },
+                                    { text: 'Open for Fieldwork', idealAnswer: '', type: 'Yes/No' },
+                                    { text: 'Night Shift', idealAnswer: '', type: 'Yes/No', probable: 'Are you comfortable working night shifts?' },
+                                    { text: 'Work Experience', idealAnswer: '', type: 'Short Answer' },
+                                    { text: 'Skill Proficiency', idealAnswer: '', type: 'Short Answer' },
+                                    { text: 'Portfolio Link', idealAnswer: '', type: 'Short Answer' },
+                                    { text: 'Language Proficiency', idealAnswer: '', type: 'Short Answer' },
+                                ].map((q, i) => {
+                                    // If 'probable', use that as the question text
+                                    const questionText = q.probable || q.text;
+                                    const alreadyAdded = formData.additionalQuestions.some(added => added.text === questionText);
+                                    return (
+                                        <button
+                                            key={i}
+                                            type="button"
+                                            disabled={formData.additionalQuestions.length >= 4 || alreadyAdded}
+                                            onClick={() => {
+                                                if (!alreadyAdded && formData.additionalQuestions.length < 4) {
+                                                    setFormData(prev => ({
+                                                        ...prev,
+                                                        additionalQuestions: [
+                                                            ...prev.additionalQuestions,
+                                                            { text: questionText, idealAnswer: q.idealAnswer, type: q.type }
+                                                        ]
+                                                    }));
+                                                }
+                                            }}
+                                            className={`px-3 py-1 rounded-lg text-sm border border-gray-200 bg-gray-50 hover:bg-[#00A55F] hover:text-white transition-all ${formData.additionalQuestions.length >= 4 || alreadyAdded ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                        >
+                                            {q.text}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+
+                            {/* Add Custom Question Button & Card */}
+                            {formData.additionalQuestions.length < 4 && !formData.showCustom && (
+                                <button
+                                    type="button"
+                                    onClick={() => setFormData(prev => ({ ...prev, showCustom: true }))}
+                                    className="mt-4 px-4 py-2 border border-[#00A55F] text-[#00A55F] rounded-lg font-medium hover:bg-[#00A55F] hover:text-white transition-all"
+                                >
+                                    + Add custom question
+                                </button>
+                            )}
+                            {formData.showCustom && formData.additionalQuestions.length < 4 && (
+                                <div className="bg-gray-50 p-4 rounded-lg border border-gray-100 mt-2">
+                                    <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
+                                        <div className="flex-1">
+                                            <div className="text-sm font-medium text-gray-700 mb-1">Custom question {formData.additionalQuestions.length + 1}</div>
+                                            <textarea
+                                                value={formData.customQuestionText || ''}
+                                                onChange={e => setFormData(prev => ({ ...prev, customQuestionText: e.target.value }))}
+                                                className="w-full border border-gray-200 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#00A55F] focus:border-transparent transition-all bg-white"
+                                                placeholder="Type in your question"
+                                                rows={2}
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs text-gray-500 mb-1">Response type</label>
+                                            <select
+                                                value={formData.customQuestionType || 'Short Answer'}
+                                                onChange={e => setFormData(prev => ({ ...prev, customQuestionType: e.target.value }))}
+                                                className="border border-gray-200 rounded-lg px-2 py-2 focus:ring-2 focus:ring-[#00A55F] focus:border-transparent transition-all bg-white text-sm"
+                                            >
+                                                <option>Short Answer</option>
+                                                <option>Yes/No</option>
+                                                <option>Multiple choice</option>
+                                                <option>Numbers</option>
+                                                <option>Linear Scale (on 1 to 5)</option>
+                                            </select>
+                                        </div>
+                                        <button
+                                            type="button"
+                                            disabled={!formData.customQuestionText || !formData.customQuestionText.trim()}
+                                            onClick={() => {
+                                                if (!formData.customQuestionText || !formData.customQuestionText.trim()) return;
+                                                setFormData(prev => ({
+                                                    ...prev,
+                                                    additionalQuestions: [
+                                                        ...prev.additionalQuestions,
+                                                        {
+                                                            text: prev.customQuestionText,
+                                                            idealAnswer: '',
+                                                            type: prev.customQuestionType || 'Short Answer',
+                                                        }
+                                                    ],
+                                                    customQuestionText: '',
+                                                    customQuestionType: 'Short Answer',
+                                                    showCustom: false,
+                                                }));
+                                            }}
+                                            className="px-4 py-2 bg-[#00A55F] text-white rounded-lg font-medium hover:bg-[#008c4f] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                        >
+                                            Save
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setFormData(prev => ({ ...prev, showCustom: false, customQuestionText: '' }))}
+                                            className="px-2 py-2 text-gray-400 hover:text-red-500 transition-colors"
+                                            aria-label="Cancel custom question"
+                                        >
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                    {!formData.customQuestionText && <div className="text-xs text-red-500 mt-2">This field is required</div>}
+                                </div>
+                            )}
+                            {/* Max questions warning */}
+                            {formData.additionalQuestions.length >= 4 && (
+                                <div className="text-xs text-red-500 mt-2">You've reached the maximum questions limit. Please remove one to add another.</div>
+                            )}
                         </div>
                     </motion.section>
 
@@ -1050,7 +1114,7 @@ const PostInternshipJob = () => {
                                 </div>
                             </div>
 
-                            <div>
+                            {/* <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
                                     No. of employees in your Organization
                                 </label>
@@ -1068,7 +1132,7 @@ const PostInternshipJob = () => {
                                     <option value="101-500">101-500</option>
                                     <option value="501+">501+</option>
                                 </select>
-                            </div>
+                            </div> */}
                         </div>
                     </motion.section>
                 </form>

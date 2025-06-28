@@ -1,6 +1,8 @@
 import { Routes, Route, useLocation } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
 import PageWrapper from '@/components/layout/PageWrapper';
+import InternshipList from '@/pages/candidate/InternshipList';
+// import InternshipDetail from '@/features/candidate/InternshipDetail';
 
 // Public Pages
 import Home from '@/pages/Home';
@@ -74,6 +76,23 @@ const AppRoutes = () => {
                         </PageWrapper>
                     }
                 />
+                <Route
+                    path="/internships"
+                    element={
+                        <PageWrapper>
+                            <InternshipList />
+                        </PageWrapper>
+                    }
+                />
+                {/* Uncomment when InternshipDetail is ready */}
+                {/* <Route
+                    path="/internships/:id"
+                    element={
+                        <PageWrapper>
+                            <InternshipDetail />
+                        </PageWrapper>
+                    }
+                /> */}
 
                 {/* Protected Routes */}
 
