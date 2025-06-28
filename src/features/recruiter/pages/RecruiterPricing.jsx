@@ -95,7 +95,7 @@ export default function RecruiterPricing() {
 
     return (
         <div className="min-h-screen bg-white font-sans">
-            <RecruiterHeader title="Choose your hiring plan" subtitle="Get guaranteed hiring results with our locally tailored plans" />
+            {/* <RecruiterHeader title="Choose your hiring plan" subtitle="Get guaranteed hiring results with our locally tailored plans" /> */}
             <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
                 {/* Title & Subtitle */}
                 <section className="text-center mb-12">

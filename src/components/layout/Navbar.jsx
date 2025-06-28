@@ -116,7 +116,7 @@ const Navbar = () => {
                             className="block text-gray-700 hover:text-[#00A55F] font-medium transition-colors"
                             onClick={() => setIsMenuOpen(false)}
                         >
-                            For Employers
+                            For Recruiters
                         </Link>
                         {/* Test Links */}
                         <Link

@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, useLocation } from 'react-router-dom';
-import logo from '@/assets/images/MainStage222Logo.png';
+import logo from '@/assets/images/Stage222RecuiterLogo.png';
 import { useAuth } from '../../../context/AuthContext';
 import { FaUser, FaSignOutAlt, FaBars, FaTimes, FaBriefcase, FaPlus, FaCreditCard, FaChartBar } from 'react-icons/fa';
 import api from '../../../services/api';
@@ -83,10 +83,17 @@ const RecruiterHeader = ({ title, subtitle }) => {
                     {/* Logo and Title */}
                     <div className="flex items-center space-x-6">
                         <div className="flex items-center space-x-3">
-                            <img src={logo} alt="Stage222" className="h-8 w-auto" />
+                            
+                            <img
+                                                        src={logo}
+                                                        alt="Stage222RecuiterLogo"
+                                                        className="h-12 w-auto"
+                                                        draggable="false"
+                                                    />
+
                             <div className="hidden sm:block">
-                                <h1 className="text-xl font-bold text-gray-900">Stage222</h1>
-                                <p className="text-xs text-gray-500">For Employers</p>
+                                {/* <h1 className="text-xl font-bold text-gray-900">Stage222</h1> */}
+                                {/* <p className="text-xs text-gray-500">For Employers</p> */}
                             </div>
                         </div>
 
