@@ -7,7 +7,7 @@ import toast from 'react-hot-toast';
 
 const Login = () => {
     const navigate = useNavigate();
-    const { login } = useAuth();
+    const { updateUser } = useAuth();
     const [activeTab, setActiveTab] = useState('student');
     const [formData, setFormData] = useState({
         email: '',
@@ -69,7 +69,7 @@ const Login = () => {
             localStorage.setItem('token', access);
             localStorage.setItem('refreshToken', refresh);
             localStorage.setItem('user', JSON.stringify(user));
-            login(user);
+            updateUser(user);
             toast.success('Login successful!');
 
             // Redirect based on role and onboarding

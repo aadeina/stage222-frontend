@@ -11,13 +11,13 @@ import VerifyOtp from '@/features/auth/pages/VerifyOtp';
 import ResetPassword from '@/features/auth/pages/ResetPassword';
 
 // Protected Pages
-import Dashboard from '@/pages/Dashboard';
 import ProtectedRoute from './ProtectedRoute';
 import RecruiterOnboarding from '@/features/recruiter/pages/RecruiterOnboarding';
 import ProtectedOnboardingRoute from '@/features/recruiter/components/ProtectedOnboardingRoute';
 import PostInternshipJob from '@/features/recruiter/pages/PostInternshipJob';
 import RecruiterDashboard from '@/features/recruiter/pages/RecruiterDashboard';
 import EditOrganization from '@/features/recruiter/pages/EditOrganization';
+import RecruiterPricing from '@/features/recruiter/pages/RecruiterPricing';
 
 const AppRoutes = () => {
     const location = useLocation();
@@ -76,16 +76,6 @@ const AppRoutes = () => {
                 />
 
                 {/* Protected Routes */}
-                <Route
-                    path="/dashboard"
-                    element={
-                        <ProtectedRoute>
-                            <PageWrapper>
-                                <Dashboard />
-                            </PageWrapper>
-                        </ProtectedRoute>
-                    }
-                />
 
                 {/* Recruiter Onboarding Route */}
                 <Route
@@ -142,6 +132,18 @@ const AppRoutes = () => {
                         <ProtectedRoute>
                             <PageWrapper>
                                 <EditOrganization />
+                            </PageWrapper>
+                        </ProtectedRoute>
+                    }
+                />
+
+                {/* Recruiter Pricing Route */}
+                <Route
+                    path="/recruiter/pricing"
+                    element={
+                        <ProtectedRoute>
+                            <PageWrapper>
+                                <RecruiterPricing />
                             </PageWrapper>
                         </ProtectedRoute>
                     }
