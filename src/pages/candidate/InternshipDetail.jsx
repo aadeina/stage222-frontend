@@ -22,7 +22,15 @@ import {
     FaCalendar,
     FaUserTie,
     FaBriefcase,
-    FaCheckDouble
+    FaCheckDouble,
+    FaFacebook,
+    FaWhatsapp,
+    FaTwitter,
+    FaLinkedin,
+    FaTelegram,
+    FaLink,
+    FaTimes,
+    FaSyncAlt
 } from 'react-icons/fa';
 import { MdWorkOutline, MdLocationOn, MdAccessTime, MdBusiness } from 'react-icons/md';
 import { BsShare, BsBookmark, BsBookmarkFill } from 'react-icons/bs';
@@ -36,6 +44,163 @@ import AuthModal from '@/components/ui/AuthModal';
 
 const fallbackLogo = 'https://ui-avatars.com/api/?name=Stage222&background=00A55F&color=fff&rounded=true';
 
+// Share Menu Component
+const ShareMenu = ({ isOpen, onClose, url, title }) => {
+    const [copied, setCopied] = useState(false);
+    const menuRef = useRef(null);
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (menuRef.current && !menuRef.current.contains(event.target)) {
+                onClose();
+            }
+        };
+
+        if (isOpen) {
+            document.addEventListener('mousedown', handleClickOutside);
+        }
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [isOpen, onClose]);
+
+    const shareData = {
+        url: url || window.location.href,
+        title: title || 'Check out this internship on Stage222'
+    };
+
+    const shareOptions = [
+        {
+            name: 'Facebook',
+            icon: FaFacebook,
+            color: 'bg-blue-600 hover:bg-blue-700',
+            action: () => {
+                const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareData.url)}`;
+                window.open(facebookUrl, '_blank', 'width=600,height=400');
+            }
+        },
+        {
+            name: 'WhatsApp',
+            icon: FaWhatsapp,
+            color: 'bg-green-600 hover:bg-green-700',
+            action: () => {
+                const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(`${shareData.title} - ${shareData.url}`)}`;
+                window.open(whatsappUrl, '_blank');
+            }
+        },
+        {
+            name: 'Twitter',
+            icon: FaTwitter,
+            color: 'bg-sky-500 hover:bg-sky-600',
+            action: () => {
+                const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareData.title)}&url=${encodeURIComponent(shareData.url)}`;
+                window.open(twitterUrl, '_blank', 'width=600,height=400');
+            }
+        },
+        {
+            name: 'LinkedIn',
+            icon: FaLinkedin,
+            color: 'bg-blue-700 hover:bg-blue-800',
+            action: () => {
+                const linkedinUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareData.url)}`;
+                window.open(linkedinUrl, '_blank', 'width=600,height=400');
+            }
+        },
+        {
+            name: 'Telegram',
+            icon: FaTelegram,
+            color: 'bg-blue-500 hover:bg-blue-600',
+            action: () => {
+                const telegramUrl = `https://t.me/share/url?url=${encodeURIComponent(shareData.url)}&text=${encodeURIComponent(shareData.title)}`;
+                window.open(telegramUrl, '_blank');
+            }
+        },
+        {
+            name: 'Copy Link',
+            icon: FaLink,
+            color: 'bg-gray-600 hover:bg-gray-700',
+            action: async () => {
+                try {
+                    await navigator.clipboard.writeText(shareData.url);
+                    setCopied(true);
+                    toast.success('Link copied to clipboard!');
+                    setTimeout(() => setCopied(false), 2000);
+                } catch (err) {
+                    toast.error('Failed to copy link');
+                }
+            }
+        }
+    ];
+
+    if (!isOpen) return null;
+
+    return (
+        <AnimatePresence>
+            <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
+                onClick={onClose}
+            >
+                <motion.div
+                    ref={menuRef}
+                    initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                    animate={{ scale: 1, opacity: 1, y: 0 }}
+                    exit={{ scale: 0.9, opacity: 0, y: 20 }}
+                    transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                    className="bg-white rounded-2xl shadow-xl max-w-sm w-full p-6"
+                    onClick={(e) => e.stopPropagation()}
+                >
+                    <div className="flex items-center justify-between mb-6">
+                        <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+                            <FaShare className="text-[#00A55F]" />
+                            Share Internship
+                        </h2>
+                        <button
+                            onClick={onClose}
+                            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                        >
+                            <FaTimes className="text-gray-500" />
+                        </button>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3 mb-6">
+                        {shareOptions.map((option, index) => (
+                            <motion.button
+                                key={option.name}
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: index * 0.1 }}
+                                onClick={option.action}
+                                className={`
+                                    flex flex-col items-center gap-2 p-4 rounded-xl text-white font-medium
+                                    transition-all duration-200 transform hover:scale-105
+                                    ${option.color}
+                                    ${copied && option.name === 'Copy Link' ? 'bg-green-600' : ''}
+                                `}
+                            >
+                                <option.icon className="text-xl" />
+                                <span className="text-sm">
+                                    {copied && option.name === 'Copy Link' ? 'Copied!' : option.name}
+                                </span>
+                            </motion.button>
+                        ))}
+                    </div>
+
+                    <div className="bg-gray-50 rounded-lg p-3">
+                        <p className="text-xs text-gray-600 mb-1">Share this link:</p>
+                        <p className="text-sm text-gray-800 break-all font-mono">
+                            {shareData.url}
+                        </p>
+                    </div>
+                </motion.div>
+            </motion.div>
+        </AnimatePresence>
+    );
+};
+
 const InternshipDetail = () => {
     const { id } = useParams();
     const navigate = useNavigate();
@@ -45,33 +210,73 @@ const InternshipDetail = () => {
     const [error, setError] = useState(null);
     const [isSaved, setIsSaved] = useState(false);
     const [showAuthModal, setShowAuthModal] = useState(false);
+    const [showShareMenu, setShowShareMenu] = useState(false);
     const [isApplying, setIsApplying] = useState(false);
+    const [isRefreshing, setIsRefreshing] = useState(false);
+    const [lastUpdated, setLastUpdated] = useState(null);
     const applyButtonRef = useRef(null);
 
-    useEffect(() => {
-        const fetchInternship = async () => {
-            setLoading(true);
-            setError(null);
-            try {
-                const response = await getInternshipDetail(id);
-                setInternship(response.data);
+    const fetchInternship = async () => {
+        setLoading(true);
+        setError(null);
+        try {
+            const response = await getInternshipDetail(id);
+            const isUpdate = internship && JSON.stringify(response.data) !== JSON.stringify(internship);
+            setInternship(response.data);
+            setLastUpdated(new Date());
 
-                // Check if internship is saved (from localStorage for now)
-                const savedInternships = JSON.parse(localStorage.getItem('savedInternships') || '[]');
-                setIsSaved(savedInternships.includes(id));
-            } catch (err) {
-                console.error('Error fetching internship:', err);
-                setError('Failed to load internship details.');
-                toast.error('Failed to load internship details.');
-            } finally {
-                setLoading(false);
+            // Check if internship is saved (from localStorage for now)
+            const savedInternships = JSON.parse(localStorage.getItem('savedInternships') || '[]');
+            setIsSaved(savedInternships.includes(id));
+
+            // Show notification for auto-refresh updates
+            if (isUpdate && !isRefreshing) {
+                toast.success('Internship status updated!', {
+                    duration: 3000,
+                    icon: '🔄'
+                });
             }
-        };
+        } catch (err) {
+            console.error('Error fetching internship:', err);
+            setError('Failed to load internship details.');
+            toast.error('Failed to load internship details.');
+        } finally {
+            setLoading(false);
+        }
+    };
 
+    const handleRefresh = async () => {
+        setIsRefreshing(true);
+        await fetchInternship();
+        setIsRefreshing(false);
+        toast.success('Internship data refreshed!');
+    };
+
+    useEffect(() => {
         if (id) {
             fetchInternship();
         }
     }, [id]);
+
+    // Auto-refresh every 30 seconds to check for status changes
+    useEffect(() => {
+        if (!id) return;
+
+        const interval = setInterval(async () => {
+            try {
+                const response = await getInternshipDetail(id);
+                // Only update if there are actual changes
+                if (JSON.stringify(response.data) !== JSON.stringify(internship)) {
+                    setInternship(response.data);
+                    console.log('Auto-refresh: Internship data updated');
+                }
+            } catch (err) {
+                console.error('Auto-refresh error:', err);
+            }
+        }, 30000); // 30 seconds
+
+        return () => clearInterval(interval);
+    }, [id, internship]);
 
     const formatStipend = () => {
         if (!internship) return '';
@@ -106,13 +311,8 @@ const InternshipDetail = () => {
 
     const isActivelyHiring = internship?.approval_status === 'approved';
 
-    const handleShare = async () => {
-        try {
-            await navigator.clipboard.writeText(window.location.href);
-            toast.success('Link copied to clipboard!');
-        } catch (err) {
-            toast.error('Failed to copy link');
-        }
+    const handleShare = () => {
+        setShowShareMenu(true);
     };
 
     const handleSave = () => {
@@ -236,9 +436,33 @@ const InternshipDetail = () => {
                                     {internship.title}
                                 </h1>
                                 <p className="text-sm text-gray-600">{organization.name}</p>
+                                {lastUpdated && (
+                                    <p className="text-xs text-gray-400 mt-1">
+                                        Last updated: {moment(lastUpdated).fromNow()}
+                                    </p>
+                                )}
                             </div>
                         </div>
                         <div className="flex items-center gap-2">
+                            <motion.button
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                onClick={handleRefresh}
+                                disabled={isRefreshing}
+                                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                                title="Refresh data"
+                            >
+                                <motion.div
+                                    animate={{ rotate: isRefreshing ? 360 : 0 }}
+                                    transition={{
+                                        duration: 1,
+                                        repeat: isRefreshing ? Infinity : 0,
+                                        ease: "linear"
+                                    }}
+                                >
+                                    <FaSyncAlt className={`text-gray-600 ${isRefreshing ? 'text-[#00A55F]' : ''}`} />
+                                </motion.div>
+                            </motion.button>
                             <button
                                 onClick={handleShare}
                                 className="p-2 hover:bg-gray-100 rounded-full transition-colors"
@@ -263,6 +487,88 @@ const InternshipDetail = () => {
             </motion.div>
 
             <div className="max-w-4xl mx-auto px-4 py-6">
+                {/* Status Banner */}
+                <motion.div
+                    initial={{ y: -50, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    transition={{ duration: 0.6, type: "spring", damping: 20 }}
+                    className={`mb-6 rounded-2xl p-4 shadow-lg border-2 ${internship.status === 'closed'
+                        ? 'bg-gradient-to-r from-red-500 via-red-600 to-red-700 border-red-400'
+                        : 'bg-gradient-to-r from-emerald-500 via-green-600 to-emerald-700 border-green-400'
+                        }`}
+                >
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                            <motion.div
+                                animate={{
+                                    rotate: [0, 10, -10, 0],
+                                    scale: [1, 1.1, 1]
+                                }}
+                                transition={{
+                                    duration: 2,
+                                    repeat: Infinity,
+                                    ease: "easeInOut"
+                                }}
+                                className={`w-12 h-12 rounded-full flex items-center justify-center shadow-lg ${internship.status === 'closed'
+                                    ? 'bg-red-400'
+                                    : 'bg-green-400'
+                                    }`}
+                            >
+                                {internship.status === 'closed' ? (
+                                    <FaTimes className="text-white text-xl" />
+                                ) : (
+                                    <FaCheckCircle className="text-white text-xl" />
+                                )}
+                            </motion.div>
+                            <div>
+                                <h2 className="text-xl font-bold text-white">
+                                    {internship.status === 'closed' ? 'Applications Closed' : 'Applications Open'}
+                                </h2>
+                                <p className="text-white/90 text-sm">
+                                    {internship.status === 'closed'
+                                        ? 'This position is no longer accepting applications'
+                                        : 'Apply now before the deadline'
+                                    }
+                                </p>
+                            </div>
+                        </div>
+                        <motion.div
+                            animate={{
+                                scale: [1, 1.05, 1],
+                                rotate: [0, 5, -5, 0]
+                            }}
+                            transition={{
+                                duration: 3,
+                                repeat: Infinity,
+                                ease: "easeInOut"
+                            }}
+                            className={`px-6 py-3 rounded-full font-bold text-lg tracking-wider shadow-lg ${internship.status === 'closed'
+                                ? 'bg-red-400 text-white'
+                                : 'bg-green-400 text-white'
+                                }`}
+                        >
+                            {internship.status === 'closed' ? 'CLOSED' : 'OPEN'}
+                        </motion.div>
+                    </div>
+
+                    {/* Progress Bar for Open Applications */}
+                    {internship.status !== 'closed' && (
+                        <motion.div
+                            initial={{ width: 0 }}
+                            animate={{ width: "100%" }}
+                            transition={{ duration: 1, delay: 0.5 }}
+                            className="mt-4 h-2 bg-white/20 rounded-full overflow-hidden"
+                        >
+                            <motion.div
+                                initial={{ width: 0 }}
+                                animate={{ width: "75%" }}
+                                transition={{ duration: 1.5, delay: 1 }}
+                                className="h-full bg-white rounded-full shadow-lg"
+                            />
+                        </motion.div>
+                    )}
+                </motion.div>
+
                 {/* Main Content */}
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
@@ -301,6 +607,38 @@ const InternshipDetail = () => {
                                             Actively hiring
                                         </span>
                                     )}
+                                    {/* Status Badge */}
+                                    <div className="flex flex-col gap-2">
+                                        <motion.div
+                                            initial={{ scale: 0.8, opacity: 0 }}
+                                            animate={{ scale: 1, opacity: 1 }}
+                                            transition={{ delay: 0.3, type: "spring", damping: 15, stiffness: 300 }}
+                                            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold tracking-wide shadow-md border ${internship.status === 'closed'
+                                                ? 'bg-gradient-to-r from-red-500 to-red-600 text-white border-red-400 shadow-red-200/50'
+                                                : 'bg-gradient-to-r from-emerald-500 to-green-600 text-white border-green-400 shadow-green-200/50'
+                                                }`}
+                                        >
+                                            {/* Animated Pulse Dot */}
+                                            <motion.div
+                                                animate={{
+                                                    scale: [1, 1.3, 1],
+                                                    opacity: [0.8, 1, 0.8]
+                                                }}
+                                                transition={{
+                                                    duration: 1.5,
+                                                    repeat: Infinity,
+                                                    ease: "easeInOut"
+                                                }}
+                                                className={`w-1.5 h-1.5 rounded-full ${internship.status === 'closed'
+                                                    ? 'bg-red-200'
+                                                    : 'bg-green-200'
+                                                    }`}
+                                            />
+                                            <span>
+                                                {internship.status === 'closed' ? 'CLOSED' : 'OPEN'}
+                                            </span>
+                                        </motion.div>
+                                    </div>
                                 </div>
 
                                 {/* Key Details Grid */}
@@ -323,12 +661,16 @@ const InternshipDetail = () => {
                                     </div>
                                 </div>
 
-                                {/* Meta Info */}
+                                {/* Meta Info with Number of Applicants */}
                                 <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500 mb-6">
                                     <span>Posted {formatPostedTime()}</span>
-                                    {internship.num_applicants && (
-                                        <span>• {internship.num_applicants} applicants</span>
-                                    )}
+                                    {/* Enhanced Number of Applicants Display */}
+                                    <div className="flex items-center gap-2 bg-blue-50 px-3 py-1.5 rounded-full border border-blue-200">
+                                        <FaUsers className="text-[#00A55F] text-sm" />
+                                        <span className="font-medium text-blue-700">
+                                            {internship.applicants_count || 0} applicants
+                                        </span>
+                                    </div>
                                     {internship.job_offer_max && (
                                         <span className="px-2 py-1 bg-yellow-50 text-yellow-700 rounded-full text-xs font-medium">
                                             Job offer up to MRU {internship.job_offer_max}
@@ -336,24 +678,202 @@ const InternshipDetail = () => {
                                     )}
                                 </div>
 
-                                {/* Apply Button */}
-                                <button
-                                    onClick={handleApply}
-                                    disabled={isApplying}
-                                    className="w-full sm:w-auto px-8 py-3 bg-[#00A55F] text-white font-semibold rounded-lg hover:bg-[#008c4f] transition-colors shadow-sm disabled:opacity-70 disabled:cursor-not-allowed"
-                                >
-                                    {isApplying ? (
-                                        <div className="flex items-center gap-2">
-                                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                                            Applying...
+                                {/* Organization Website - Prominent Display */}
+                                {organization.website && (
+                                    <div className="mb-6 p-4 bg-gray-50 rounded-xl border border-gray-200">
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-10 h-10 bg-[#00A55F] rounded-full flex items-center justify-center">
+                                                    <FaGlobe className="text-white" />
+                                                </div>
+                                                <div>
+                                                    <h4 className="font-semibold text-gray-900">Company Website</h4>
+                                                    <p className="text-sm text-gray-600">{organization.name}</p>
+                                                </div>
+                                            </div>
+                                            <a
+                                                href={organization.website}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="inline-flex items-center gap-2 px-4 py-2 bg-[#00A55F] text-white rounded-lg hover:bg-[#008c4f] transition-colors text-sm font-medium"
+                                            >
+                                                Visit Website
+                                                <FaExternalLinkAlt className="text-xs" />
+                                            </a>
                                         </div>
-                                    ) : (
-                                        'Apply Now'
+                                    </div>
+                                )}
+
+                                {/* Apply Button */}
+                                <motion.button
+                                    whileHover={{ scale: internship.status !== 'closed' ? 1.02 : 1 }}
+                                    whileTap={{ scale: internship.status !== 'closed' ? 0.98 : 1 }}
+                                    onClick={handleApply}
+                                    disabled={isApplying || internship.status === 'closed'}
+                                    className={`relative px-8 py-4 font-bold rounded-xl transition-all duration-300 shadow-lg border-2 ${internship.status === 'closed'
+                                        ? 'bg-gradient-to-r from-gray-400 to-gray-500 text-white cursor-not-allowed border-gray-300'
+                                        : 'bg-gradient-to-r from-[#00A55F] to-emerald-600 text-white hover:from-emerald-600 hover:to-[#00A55F] border-emerald-400 hover:shadow-xl hover:shadow-emerald-200/50 disabled:opacity-70 disabled:cursor-not-allowed'
+                                        }`}
+                                >
+                                    {/* Button Glow Effect */}
+                                    {internship.status !== 'closed' && (
+                                        <motion.div
+                                            animate={{
+                                                opacity: [0.3, 0.6, 0.3],
+                                                scale: [1, 1.05, 1]
+                                            }}
+                                            transition={{
+                                                duration: 2,
+                                                repeat: Infinity,
+                                                ease: "easeInOut"
+                                            }}
+                                            className="absolute inset-0 rounded-xl bg-gradient-to-r from-emerald-400 to-green-400 blur-sm"
+                                        />
                                     )}
-                                </button>
+
+                                    <div className="relative flex items-center justify-center gap-2">
+                                        {isApplying ? (
+                                            <>
+                                                <motion.div
+                                                    animate={{ rotate: 360 }}
+                                                    transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                                                    className="w-5 h-5 border-2 border-white border-t-transparent rounded-full"
+                                                />
+                                                <span>Applying...</span>
+                                            </>
+                                        ) : internship.status === 'closed' ? (
+                                            <>
+                                                <FaTimes className="text-lg" />
+                                                <span>Applications Closed</span>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <FaHandshake className="text-lg" />
+                                                <span>Apply Now</span>
+                                            </>
+                                        )}
+                                    </div>
+                                </motion.button>
                             </div>
                         </div>
                     </div>
+
+                    {/* Prominent Applicants Counter */}
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.2 }}
+                        className={`rounded-2xl shadow-sm border p-6 mb-6 ${internship.status === 'closed'
+                            ? 'bg-gradient-to-r from-red-50 to-pink-50 border-red-200'
+                            : 'bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200'
+                            }`}
+                    >
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-4">
+                                <motion.div
+                                    animate={{
+                                        scale: [1, 1.05, 1],
+                                        rotate: [0, 5, -5, 0]
+                                    }}
+                                    transition={{
+                                        duration: 3,
+                                        repeat: Infinity,
+                                        ease: "easeInOut"
+                                    }}
+                                    className={`w-12 h-12 rounded-full flex items-center justify-center shadow-lg ${internship.status === 'closed' ? 'bg-red-500' : 'bg-[#00A55F]'
+                                        }`}
+                                >
+                                    <FaUsers className="text-white text-xl" />
+                                </motion.div>
+                                <div>
+                                    <h3 className="text-lg font-bold text-gray-900">Total Applicants</h3>
+                                    <p className="text-sm text-gray-600">
+                                        {internship.status === 'closed'
+                                            ? 'Applications are now closed for this position'
+                                            : 'See how many people are interested in this position'
+                                        }
+                                    </p>
+                                </div>
+                            </div>
+                            <div className="text-right">
+                                <motion.div
+                                    initial={{ scale: 0.8, opacity: 0 }}
+                                    animate={{ scale: 1, opacity: 1 }}
+                                    transition={{ delay: 0.4, type: "spring", damping: 15 }}
+                                    className={`text-4xl font-bold ${internship.status === 'closed' ? 'text-red-600' : 'text-[#00A55F]'
+                                        }`}
+                                >
+                                    {internship.applicants_count || 0}
+                                </motion.div>
+                                <p className="text-sm text-gray-600 mb-2">applicants</p>
+
+                                {/* Application Rate Indicator */}
+                                <div className="flex items-center gap-1 text-xs text-gray-500">
+                                    <div className={`w-2 h-2 rounded-full ${internship.applicants_count > 10 ? 'bg-green-500' :
+                                        internship.applicants_count > 5 ? 'bg-yellow-500' : 'bg-blue-500'
+                                        }`} />
+                                    <span>
+                                        {internship.applicants_count > 10 ? 'High Interest' :
+                                            internship.applicants_count > 5 ? 'Moderate Interest' : 'New Listing'}
+                                    </span>
+                                </div>
+
+                                {/* Status Badge */}
+                                <motion.div
+                                    initial={{ scale: 0.8, opacity: 0 }}
+                                    animate={{ scale: 1, opacity: 1 }}
+                                    transition={{ delay: 0.3, type: "spring", damping: 15, stiffness: 300 }}
+                                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold tracking-wide shadow-md border mt-2 ${internship.status === 'closed'
+                                        ? 'bg-gradient-to-r from-red-500 to-red-600 text-white border-red-400 shadow-red-200/50'
+                                        : 'bg-gradient-to-r from-emerald-500 to-green-600 text-white border-green-400 shadow-green-200/50'
+                                        }`}
+                                >
+                                    {/* Animated Pulse Dot */}
+                                    <motion.div
+                                        animate={{
+                                            scale: [1, 1.3, 1],
+                                            opacity: [0.8, 1, 0.8]
+                                        }}
+                                        transition={{
+                                            duration: 1.5,
+                                            repeat: Infinity,
+                                            ease: "easeInOut"
+                                        }}
+                                        className={`w-1.5 h-1.5 rounded-full ${internship.status === 'closed'
+                                            ? 'bg-red-200'
+                                            : 'bg-green-200'
+                                            }`}
+                                    />
+                                    <span>
+                                        {internship.status === 'closed' ? 'CLOSED' : 'OPEN'}
+                                    </span>
+                                </motion.div>
+                            </div>
+                        </div>
+
+                        {/* Application Status */}
+                        <div className="mt-4 pt-4 border-t border-gray-200">
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                <div className="flex items-center justify-between text-sm">
+                                    <span className="text-gray-600">Application Deadline:</span>
+                                    <span className="font-medium text-gray-900">{formatDeadline()}</span>
+                                </div>
+                                <div className="flex items-center justify-between text-sm">
+                                    <span className="text-gray-600">Positions Available:</span>
+                                    <span className="font-medium text-gray-900">{internship.openings || 1} position(s)</span>
+                                </div>
+                                <div className="flex items-center justify-between text-sm">
+                                    <span className="text-gray-600">Competition Level:</span>
+                                    <span className={`font-medium ${internship.applicants_count > 10 ? 'text-red-600' :
+                                        internship.applicants_count > 5 ? 'text-yellow-600' : 'text-green-600'
+                                        }`}>
+                                        {internship.applicants_count > 10 ? 'High' :
+                                            internship.applicants_count > 5 ? 'Medium' : 'Low'}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </motion.div>
 
                     {/* Content Sections */}
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -393,6 +913,51 @@ const InternshipDetail = () => {
                                         {internship.skills.map((skill, index) => (
                                             <SkillBadge key={index} skill={skill} />
                                         ))}
+                                    </div>
+                                </motion.div>
+                            )}
+
+                            {/* Preferences - Soft Colored Section */}
+                            {internship.preferences && internship.preferences.length > 0 && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: 0.25 }}
+                                    className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-2xl shadow-sm border border-purple-200 p-6"
+                                >
+                                    <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                                        <FaStar className="text-purple-600" />
+                                        Ideal Skills & Preferences
+                                    </h2>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                        {internship.preferences.map((preference, index) => (
+                                            <div key={index} className="flex items-center gap-3 p-3 bg-white/60 rounded-lg border border-purple-100">
+                                                <div className="w-6 h-6 bg-purple-100 rounded-full flex items-center justify-center">
+                                                    <FaCheckCircle className="text-purple-600 text-xs" />
+                                                </div>
+                                                <span className="text-sm font-medium text-gray-700">{preference}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </motion.div>
+                            )}
+
+                            {/* Responsibilities */}
+                            {internship.responsibilities && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: 0.3 }}
+                                    className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6"
+                                >
+                                    <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                                        <FaBriefcase className="text-[#00A55F]" />
+                                        Responsibilities
+                                    </h2>
+                                    <div className="prose prose-gray max-w-none">
+                                        <p className="text-gray-700 leading-relaxed whitespace-pre-line">
+                                            {internship.responsibilities}
+                                        </p>
                                     </div>
                                 </motion.div>
                             )}
@@ -488,35 +1053,126 @@ const InternshipDetail = () => {
                                 <p className="text-sm text-gray-600">positions available</p>
                             </motion.div>
 
-                            {/* About the Organization */}
-                            {organization.about && (
-                                <motion.div
-                                    initial={{ opacity: 0, y: 20 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ delay: 0.4 }}
-                                    className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6"
-                                >
-                                    <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                                        <FaBuilding className="text-[#00A55F]" />
-                                        About {organization.name}
-                                    </h3>
-                                    <p className="text-gray-700 text-sm leading-relaxed mb-3">
-                                        {organization.about}
-                                    </p>
-                                    {organization.website && (
-                                        <a
-                                            href={organization.website}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="inline-flex items-center gap-2 text-[#00A55F] hover:text-[#008c4f] text-sm font-medium"
-                                        >
-                                            <FaGlobe />
-                                            Visit website
-                                            <FaExternalLinkAlt className="text-xs" />
-                                        </a>
-                                    )}
-                                </motion.div>
-                            )}
+                            {/* About the Organization - Enhanced Professional Section */}
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.4 }}
+                                className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6"
+                            >
+                                <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                                    <FaBuilding className="text-[#00A55F]" />
+                                    About {organization.name}
+                                </h3>
+
+                                {/* Company Description */}
+                                {organization.about && (
+                                    <div className="mb-4">
+                                        <p className="text-gray-700 text-sm leading-relaxed">
+                                            {organization.about}
+                                        </p>
+                                    </div>
+                                )}
+
+                                {/* Company Information Grid */}
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                                    {/* Company Size */}
+                                    <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                                        <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                                            <FaUsers className="text-blue-600 text-sm" />
+                                        </div>
+                                        <div>
+                                            <p className="text-xs text-gray-500">Company Size</p>
+                                            <p className="text-sm font-medium text-gray-900">
+                                                {organization.employee_count || '10-50 employees'}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    {/* Industry */}
+                                    <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                                        <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+                                            <FaBriefcase className="text-purple-600 text-sm" />
+                                        </div>
+                                        <div>
+                                            <p className="text-xs text-gray-500">Industry</p>
+                                            <p className="text-sm font-medium text-gray-900">
+                                                {organization.industry || 'Technology'}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    {/* Location */}
+                                    <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                                        <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                                            <FaMapMarkerAlt className="text-green-600 text-sm" />
+                                        </div>
+                                        <div>
+                                            <p className="text-xs text-gray-500">Location</p>
+                                            <p className="text-sm font-medium text-gray-900">
+                                                {organization.city || 'Remote'}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    {/* Founded */}
+                                    <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                                        <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center">
+                                            <FaCalendar className="text-orange-600 text-sm" />
+                                        </div>
+                                        <div>
+                                            <p className="text-xs text-gray-500">Founded</p>
+                                            <p className="text-sm font-medium text-gray-900">
+                                                {organization.founded_year || '2020'}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Company Website - Enhanced */}
+                                {organization.website && (
+                                    <div className="border-t pt-4">
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-2">
+                                                <FaGlobe className="text-[#00A55F]" />
+                                                <span className="text-sm font-medium text-gray-700">Official Website</span>
+                                            </div>
+                                            <a
+                                                href={organization.website}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="inline-flex items-center gap-2 px-3 py-1.5 bg-[#00A55F] text-white rounded-lg hover:bg-[#008c4f] transition-colors text-xs font-medium"
+                                            >
+                                                Visit Site
+                                                <FaExternalLinkAlt className="text-xs" />
+                                            </a>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Company Highlights */}
+                                <div className="mt-4 pt-4 border-t">
+                                    <h4 className="text-sm font-semibold text-gray-900 mb-3">Why Work With Us</h4>
+                                    <div className="space-y-2">
+                                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                                            <FaCheckCircle className="text-[#00A55F] text-xs" />
+                                            <span>Professional growth opportunities</span>
+                                        </div>
+                                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                                            <FaCheckCircle className="text-[#00A55F] text-xs" />
+                                            <span>Collaborative work environment</span>
+                                        </div>
+                                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                                            <FaCheckCircle className="text-[#00A55F] text-xs" />
+                                            <span>Innovative projects and technologies</span>
+                                        </div>
+                                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                                            <FaCheckCircle className="text-[#00A55F] text-xs" />
+                                            <span>Mentorship and learning programs</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </motion.div>
 
                             {/* Job Details */}
                             <motion.div
@@ -546,6 +1202,51 @@ const InternshipDetail = () => {
                         </div>
                     </div>
 
+                    {/* Screening Questions Section */}
+                    {internship.screening_questions && internship.screening_questions.length > 0 && (
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.5 }}
+                            className="mt-8 bg-gradient-to-r from-orange-50 to-yellow-50 rounded-2xl shadow-sm border border-orange-200 p-6"
+                        >
+                            <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                                <FaGraduationCap className="text-orange-600" />
+                                Screening Questions
+                            </h3>
+                            <p className="text-sm text-gray-600 mb-4">
+                                Be prepared to answer these questions during your application process
+                            </p>
+                            <div className="space-y-4">
+                                {internship.screening_questions.map((question, index) => (
+                                    <div key={index} className="bg-white/70 rounded-lg p-4 border border-orange-100">
+                                        <div className="flex items-start gap-3">
+                                            <div className="w-6 h-6 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                                                <span className="text-orange-600 text-xs font-bold">{index + 1}</span>
+                                            </div>
+                                            <div className="flex-1">
+                                                <p className="text-gray-800 font-medium mb-2">{question}</p>
+                                                <div className="flex items-center gap-2 text-xs text-gray-500">
+                                                    <span className="px-2 py-1 bg-orange-100 text-orange-700 rounded-full">
+                                                        Required
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                            <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                                <div className="flex items-center gap-2">
+                                    <FaCheckCircle className="text-blue-600 text-sm" />
+                                    <p className="text-sm text-blue-800">
+                                        <strong>Tip:</strong> Prepare thoughtful answers to these questions to increase your chances of being selected.
+                                    </p>
+                                </div>
+                            </div>
+                        </motion.div>
+                    )}
+
                     {/* Bottom Apply Section */}
                     <motion.div
                         ref={applyButtonRef}
@@ -557,20 +1258,55 @@ const InternshipDetail = () => {
                         <div className="text-center">
                             <h3 className="text-xl font-bold text-gray-900 mb-2">Ready to Apply?</h3>
                             <p className="text-gray-600 mb-6">Take the first step towards your dream internship</p>
-                            <button
+                            <motion.button
+                                whileHover={{ scale: internship.status !== 'closed' ? 1.02 : 1 }}
+                                whileTap={{ scale: internship.status !== 'closed' ? 0.98 : 1 }}
                                 onClick={handleApply}
-                                disabled={isApplying}
-                                className="px-8 py-3 bg-[#00A55F] text-white font-semibold rounded-lg hover:bg-[#008c4f] transition-colors shadow-sm disabled:opacity-70 disabled:cursor-not-allowed"
+                                disabled={isApplying || internship.status === 'closed'}
+                                className={`relative px-8 py-4 font-bold rounded-xl transition-all duration-300 shadow-lg border-2 ${internship.status === 'closed'
+                                    ? 'bg-gradient-to-r from-gray-400 to-gray-500 text-white cursor-not-allowed border-gray-300'
+                                    : 'bg-gradient-to-r from-[#00A55F] to-emerald-600 text-white hover:from-emerald-600 hover:to-[#00A55F] border-emerald-400 hover:shadow-xl hover:shadow-emerald-200/50 disabled:opacity-70 disabled:cursor-not-allowed'
+                                    }`}
                             >
-                                {isApplying ? (
-                                    <div className="flex items-center gap-2">
-                                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                                        Applying...
-                                    </div>
-                                ) : (
-                                    'Apply Now'
+                                {/* Button Glow Effect */}
+                                {internship.status !== 'closed' && (
+                                    <motion.div
+                                        animate={{
+                                            opacity: [0.3, 0.6, 0.3],
+                                            scale: [1, 1.05, 1]
+                                        }}
+                                        transition={{
+                                            duration: 2,
+                                            repeat: Infinity,
+                                            ease: "easeInOut"
+                                        }}
+                                        className="absolute inset-0 rounded-xl bg-gradient-to-r from-emerald-400 to-green-400 blur-sm"
+                                    />
                                 )}
-                            </button>
+
+                                <div className="relative flex items-center justify-center gap-2">
+                                    {isApplying ? (
+                                        <>
+                                            <motion.div
+                                                animate={{ rotate: 360 }}
+                                                transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                                                className="w-5 h-5 border-2 border-white border-t-transparent rounded-full"
+                                            />
+                                            <span>Applying...</span>
+                                        </>
+                                    ) : internship.status === 'closed' ? (
+                                        <>
+                                            <FaTimes className="text-lg" />
+                                            <span>Applications Closed</span>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <FaHandshake className="text-lg" />
+                                            <span>Apply Now</span>
+                                        </>
+                                    )}
+                                </div>
+                            </motion.button>
                         </div>
                     </motion.div>
 
@@ -611,6 +1347,14 @@ const InternshipDetail = () => {
                     </motion.div>
                 </motion.div>
             </div>
+
+            {/* Share Menu */}
+            <ShareMenu
+                isOpen={showShareMenu}
+                onClose={() => setShowShareMenu(false)}
+                url={window.location.href}
+                title={`${internship?.title} at ${organization?.name} - Stage222`}
+            />
 
             {/* Auth Modal */}
             <AuthModal

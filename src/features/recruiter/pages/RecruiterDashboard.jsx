@@ -28,7 +28,7 @@ const RecruiterDashboard = () => {
             id: 1,
             title: "Frontend Developer Intern",
             type: "Internship",
-            applicantsCount: 45,
+            applicants_count: 45,
             postedDate: "2024-01-15",
             status: "Active"
         },
@@ -36,7 +36,7 @@ const RecruiterDashboard = () => {
             id: 2,
             title: "Full Stack Developer",
             type: "Job",
-            applicantsCount: 32,
+            applicants_count: 32,
             postedDate: "2024-01-10",
             status: "Active"
         },
@@ -44,7 +44,7 @@ const RecruiterDashboard = () => {
             id: 3,
             title: "UI/UX Designer",
             type: "Internship",
-            applicantsCount: 28,
+            applicants_count: 28,
             postedDate: "2024-01-08",
             status: "Draft"
         },
@@ -52,7 +52,7 @@ const RecruiterDashboard = () => {
             id: 4,
             title: "Data Analyst",
             type: "Job",
-            applicantsCount: 19,
+            applicants_count: 19,
             postedDate: "2024-01-05",
             status: "Closed"
         }
@@ -233,7 +233,10 @@ const RecruiterDashboard = () => {
                                                 Type
                                             </th>
                                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                Applicants
+                                                <div className="flex items-center gap-1">
+                                                    <span>Applicants</span>
+                                                    <div className="w-2 h-2 bg-gray-300 rounded-full" title="Competition level indicator"></div>
+                                                </div>
                                             </th>
                                             <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                                 Posted
@@ -259,8 +262,25 @@ const RecruiterDashboard = () => {
                                                         {opportunity.type}
                                                     </span>
                                                 </td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                                    {opportunity.applicantsCount}
+                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="flex items-center gap-1">
+                                                            <FaUsers className="h-3 w-3 text-gray-400" />
+                                                            <span className="text-sm font-medium text-gray-900">
+                                                                {opportunity.applicants_count || 0}
+                                                            </span>
+                                                        </div>
+                                                        {/* Competition Level Indicator */}
+                                                        <div className={`w-2 h-2 rounded-full ${opportunity.applicants_count > 20 ? 'bg-red-500' :
+                                                            opportunity.applicants_count > 10 ? 'bg-yellow-500' : 'bg-green-500'
+                                                            }`} />
+                                                        <span className={`text-xs font-medium ${opportunity.applicants_count > 20 ? 'text-red-600' :
+                                                            opportunity.applicants_count > 10 ? 'text-yellow-600' : 'text-green-600'
+                                                            }`}>
+                                                            {opportunity.applicants_count > 20 ? 'High' :
+                                                                opportunity.applicants_count > 10 ? 'Med' : 'Low'}
+                                                        </span>
+                                                    </div>
                                                 </td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                                     {new Date(opportunity.postedDate).toLocaleDateString()}
@@ -300,7 +320,41 @@ const RecruiterDashboard = () => {
                             transition={{ delay: 0.6 }}
                             className="bg-white rounded-lg shadow-sm border border-gray-200 p-6"
                         >
-                            <h3 className="text-lg font-semibold text-gray-900 mb-4">Applications</h3>
+                            <h3 className="text-lg font-semibold text-gray-900 mb-4">Applications Overview</h3>
+
+                            {/* Applicants Statistics */}
+                            <div className="space-y-4 mb-6">
+                                <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
+                                    <div className="flex items-center gap-2">
+                                        <FaUsers className="h-4 w-4 text-blue-600" />
+                                        <span className="text-sm font-medium text-gray-700">Total Applicants</span>
+                                    </div>
+                                    <span className="text-lg font-bold text-blue-600">
+                                        {recentOpportunities.reduce((sum, opp) => sum + (opp.applicants_count || 0), 0)}
+                                    </span>
+                                </div>
+
+                                <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+                                    <div className="flex items-center gap-2">
+                                        <FaCheckCircle className="h-4 w-4 text-green-600" />
+                                        <span className="text-sm font-medium text-gray-700">Active Posts</span>
+                                    </div>
+                                    <span className="text-lg font-bold text-green-600">
+                                        {recentOpportunities.filter(opp => opp.status === 'Active').length}
+                                    </span>
+                                </div>
+
+                                <div className="flex items-center justify-between p-3 bg-yellow-50 rounded-lg">
+                                    <div className="flex items-center gap-2">
+                                        <FaChartBar className="h-4 w-4 text-yellow-600" />
+                                        <span className="text-sm font-medium text-gray-700">Avg. per Post</span>
+                                    </div>
+                                    <span className="text-lg font-bold text-yellow-600">
+                                        {Math.round(recentOpportunities.reduce((sum, opp) => sum + (opp.applicants_count || 0), 0) / Math.max(recentOpportunities.length, 1))}
+                                    </span>
+                                </div>
+                            </div>
+
                             <button
                                 onClick={() => navigate('/recruiter/applicants')}
                                 className="w-full bg-[#00A55F] text-white px-4 py-2 rounded-lg hover:bg-[#008c4f] transition-colors font-medium"
