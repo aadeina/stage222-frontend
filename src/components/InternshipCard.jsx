@@ -31,12 +31,13 @@ const InternshipCard = ({ internship, onClick }) => {
         organization_logo
     });
 
-    // Construct full logo URL
     const logoUrl = organization_logo
-        ? (organization_logo.startsWith('http')
-            ? organization_logo
-            : `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}${organization_logo}`)
-        : fallbackLogo;
+  ? (organization_logo.startsWith('http')
+      ? organization_logo
+      : `${import.meta.env.VITE_MEDIA_BASE_URL}${organization_logo}`)
+  : fallbackLogo;
+
+
 
     // Badges
     const isActivelyHiring = approval_status === 'approved';
