@@ -394,27 +394,16 @@ const EditOrganization = () => {
                         <div className="flex items-center space-x-4">
                             {originalData?.logo && (
                                 <>
-                                    {console.log('Rendering logo with:', originalData.logo)}
-                                    {/* <img
-                                        src={originalData.logo.startsWith('http') ? originalData.logo : `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api'}${originalData.logo}`}
-                                        alt="Organization Logo"
-                                        className="w-10 h-10 rounded-full object-cover"
-                                        onError={(e) => {
-                                            console.error('Logo failed to load:', e.target.src);
-                                            e.target.style.display = 'none';
-                                        }}
-                                        onLoad={() => {
-                                            console.log('Logo loaded successfully');
-                                        }}
-                                    /> */}
-                                    <img
-  src={
-    originalData.logo.startsWith('http')
-      ? originalData.logo
-      : `${import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:8000'}${originalData.logo}`
-  }
-/>
-
+                                                                                <img
+                                            src={
+                                                originalData.logo.startsWith('http')
+                                                ? originalData.logo
+                                                : `${import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:8000'}${originalData.logo}`
+                                            }
+                                            alt="Organization Logo"
+                                            className="w-10 h-10 rounded-full object-cover border border-gray-200 shadow-sm"
+                                            />
+                                    
                                 </>
                             )}
                             {!originalData?.logo && (
