@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useAuth } from '../../../context/AuthContext';
-import { FaComments, FaBriefcase, FaUsers, FaCheckCircle, FaEye, FaEdit, FaTrash, FaChartBar, FaUser, FaBuilding, FaLock, FaCreditCard, FaSignOutAlt } from 'react-icons/fa';
+import { FaComments, FaBriefcase, FaUsers, FaCheckCircle, FaEye, FaEdit, FaTrash, FaChartBar, FaUser, FaBuilding, FaLock, FaCreditCard, FaSignOutAlt, FaSyncAlt } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 import { getDashboardStats, getRecentOpportunities } from '../api/dashboardApi';
 import RecruiterHeader from '../components/RecruiterHeader';
@@ -14,49 +14,7 @@ const RecruiterDashboard = () => {
     const [dashboardStats, setDashboardStats] = useState(null);
     const [recentOpportunities, setRecentOpportunities] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
-
-    // Mock data for development
-    const mockDashboardStats = {
-        totalOpportunities: 12,
-        totalApplications: 156,
-        shortlistedCandidates: 23,
-        totalHires: 8
-    };
-
-    const mockRecentOpportunities = [
-        {
-            id: 1,
-            title: "Frontend Developer Intern",
-            type: "Internship",
-            applicants_count: 45,
-            postedDate: "2024-01-15",
-            status: "Active"
-        },
-        {
-            id: 2,
-            title: "Full Stack Developer",
-            type: "Job",
-            applicants_count: 32,
-            postedDate: "2024-01-10",
-            status: "Active"
-        },
-        {
-            id: 3,
-            title: "UI/UX Designer",
-            type: "Internship",
-            applicants_count: 28,
-            postedDate: "2024-01-08",
-            status: "Draft"
-        },
-        {
-            id: 4,
-            title: "Data Analyst",
-            type: "Job",
-            applicants_count: 19,
-            postedDate: "2024-01-05",
-            status: "Closed"
-        }
-    ];
+    const [isRefreshing, setIsRefreshing] = useState(false);
 
     useEffect(() => {
         // Check if user is authenticated and is a recruiter
@@ -71,26 +29,28 @@ const RecruiterDashboard = () => {
     const fetchDashboardData = async () => {
         setIsLoading(true);
         try {
-            // Try to fetch real data from API
+            // Fetch real data from API
             const [statsResponse, opportunitiesResponse] = await Promise.all([
                 getDashboardStats(),
                 getRecentOpportunities()
             ]);
 
+            console.log('Dashboard Stats:', statsResponse.data);
+            console.log('Recent Opportunities:', opportunitiesResponse.data);
+
+            // Handle the data structure properly
+            const opportunities = Array.isArray(opportunitiesResponse.data)
+                ? opportunitiesResponse.data
+                : opportunitiesResponse.data.results || opportunitiesResponse.data.opportunities || [];
+
+            console.log('Processed Opportunities:', opportunities);
+            console.log('Opportunities Count:', opportunities.length);
+
             setDashboardStats(statsResponse.data);
-            setRecentOpportunities(opportunitiesResponse.data);
+            setRecentOpportunities(opportunities);
         } catch (error) {
             console.error('Error fetching dashboard data:', error);
-
-            // Fall back to mock data for development
-            console.log('Using mock data for development');
-            setDashboardStats(mockDashboardStats);
-            setRecentOpportunities(mockRecentOpportunities);
-
-            // Only show error toast if it's not a development fallback
-            if (process.env.NODE_ENV === 'production') {
-                toast.error('Failed to load dashboard data');
-            }
+            toast.error('Failed to load dashboard data');
         } finally {
             setIsLoading(false);
         }
@@ -101,13 +61,28 @@ const RecruiterDashboard = () => {
         navigate('/login');
     };
 
+    const handleRefresh = async () => {
+        setIsRefreshing(true);
+        try {
+            await fetchDashboardData();
+            toast.success('Dashboard refreshed successfully!');
+        } catch (error) {
+            toast.error('Failed to refresh dashboard');
+        } finally {
+            setIsRefreshing(false);
+        }
+    };
+
     const getStatusColor = (status) => {
-        switch (status) {
-            case 'Active':
+        switch (status?.toLowerCase()) {
+            case 'open':
+            case 'active':
                 return 'bg-green-100 text-green-800';
-            case 'Draft':
+            case 'draft':
+            case 'pending':
                 return 'bg-yellow-100 text-yellow-800';
-            case 'Closed':
+            case 'closed':
+            case 'inactive':
                 return 'bg-red-100 text-red-800';
             default:
                 return 'bg-gray-100 text-gray-800';
@@ -115,7 +90,33 @@ const RecruiterDashboard = () => {
     };
 
     const getTypeColor = (type) => {
-        return type === 'Internship' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800';
+        const opportunityType = type?.toLowerCase();
+        return opportunityType === 'internship' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800';
+    };
+
+    const formatStatus = (status) => {
+        switch (status?.toLowerCase()) {
+            case 'open':
+                return 'Active';
+            case 'closed':
+                return 'Closed';
+            case 'draft':
+                return 'Draft';
+            case 'pending':
+                return 'Pending';
+            default:
+                return status || 'Unknown';
+        }
+    };
+
+    const formatType = (type) => {
+        const opportunityType = type?.toLowerCase();
+        return opportunityType === 'internship' ? 'Internship' : 'Job';
+    };
+
+    const getOpportunityType = (opportunity) => {
+        // Handle both opportunity_type and type fields
+        return opportunity.opportunity_type || opportunity.type || 'job';
     };
 
     if (isLoading) {
@@ -139,6 +140,29 @@ const RecruiterDashboard = () => {
 
             {/* Main Content */}
             <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                {/* Dashboard Header */}
+                <div className="flex items-center justify-between mb-8">
+                    <div>
+                        <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
+                        <p className="text-gray-600">Welcome back, {user?.first_name || 'Recruiter'} 👋</p>
+                    </div>
+                    <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={handleRefresh}
+                        disabled={isRefreshing}
+                        className="flex items-center gap-2 px-4 py-2 bg-[#00A55F] text-white rounded-lg hover:bg-[#008c4f] transition-colors disabled:opacity-50"
+                    >
+                        <motion.div
+                            animate={{ rotate: isRefreshing ? 360 : 0 }}
+                            transition={{ duration: 1, repeat: isRefreshing ? Infinity : 0, ease: "linear" }}
+                        >
+                            <FaSyncAlt className="h-4 w-4" />
+                        </motion.div>
+                        <span>{isRefreshing ? 'Refreshing...' : 'Refresh'}</span>
+                    </motion.button>
+                </div>
+
                 {/* Dashboard Overview Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                     <motion.div
@@ -210,6 +234,23 @@ const RecruiterDashboard = () => {
                     </motion.div>
                 </div>
 
+                {/* Debug Section - Remove in production */}
+                {process.env.NODE_ENV === 'development' && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.9 }}
+                        className="mb-8 bg-yellow-50 border border-yellow-200 rounded-lg p-4"
+                    >
+                        <h3 className="text-sm font-semibold text-yellow-800 mb-2">Debug Info (Development Only)</h3>
+                        <div className="text-xs text-yellow-700 space-y-1">
+                            <p>Opportunities Count: {recentOpportunities.length}</p>
+                            <p>Dashboard Stats: {JSON.stringify(dashboardStats)}</p>
+                            <p>First Opportunity: {recentOpportunities[0] ? JSON.stringify(recentOpportunities[0], null, 2) : 'None'}</p>
+                        </div>
+                    </motion.div>
+                )}
+
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     {/* Recently Posted Jobs/Internships */}
                     <div className="lg:col-span-2">
@@ -250,61 +291,91 @@ const RecruiterDashboard = () => {
                                         </tr>
                                     </thead>
                                     <tbody className="bg-white divide-y divide-gray-200">
-                                        {recentOpportunities.map((opportunity) => (
-                                            <tr key={opportunity.id} className="hover:bg-gray-50">
-                                                <td className="px-6 py-4 whitespace-nowrap">
-                                                    <div className="text-sm font-medium text-gray-900">
-                                                        {opportunity.title}
-                                                    </div>
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap">
-                                                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getTypeColor(opportunity.type)}`}>
-                                                        {opportunity.type}
-                                                    </span>
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap">
-                                                    <div className="flex items-center gap-2">
-                                                        <div className="flex items-center gap-1">
-                                                            <FaUsers className="h-3 w-3 text-gray-400" />
-                                                            <span className="text-sm font-medium text-gray-900">
-                                                                {opportunity.applicants_count || 0}
+                                        {recentOpportunities.length > 0 ? (
+                                            recentOpportunities.map((opportunity) => (
+                                                <tr key={opportunity.id} className="hover:bg-gray-50">
+                                                    <td className="px-6 py-4 whitespace-nowrap">
+                                                        <div className="text-sm font-medium text-gray-900">
+                                                            {opportunity.title}
+                                                        </div>
+                                                    </td>
+                                                    <td className="px-6 py-4 whitespace-nowrap">
+                                                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getTypeColor(getOpportunityType(opportunity))}`}>
+                                                            {formatType(getOpportunityType(opportunity))}
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-6 py-4 whitespace-nowrap">
+                                                        <div className="flex items-center gap-2">
+                                                            <div className="flex items-center gap-1">
+                                                                <FaUsers className="h-3 w-3 text-gray-400" />
+                                                                <span className="text-sm font-medium text-gray-900">
+                                                                    {opportunity.applicants_count || 0}
+                                                                </span>
+                                                            </div>
+                                                            {/* Competition Level Indicator */}
+                                                            <div className={`w-2 h-2 rounded-full ${opportunity.applicants_count > 20 ? 'bg-red-500' :
+                                                                opportunity.applicants_count > 10 ? 'bg-yellow-500' : 'bg-green-500'
+                                                                }`} />
+                                                            <span className={`text-xs font-medium ${opportunity.applicants_count > 20 ? 'text-red-600' :
+                                                                opportunity.applicants_count > 10 ? 'text-yellow-600' : 'text-green-600'
+                                                                }`}>
+                                                                {opportunity.applicants_count > 20 ? 'High' :
+                                                                    opportunity.applicants_count > 10 ? 'Med' : 'Low'}
                                                             </span>
                                                         </div>
-                                                        {/* Competition Level Indicator */}
-                                                        <div className={`w-2 h-2 rounded-full ${opportunity.applicants_count > 20 ? 'bg-red-500' :
-                                                            opportunity.applicants_count > 10 ? 'bg-yellow-500' : 'bg-green-500'
-                                                            }`} />
-                                                        <span className={`text-xs font-medium ${opportunity.applicants_count > 20 ? 'text-red-600' :
-                                                            opportunity.applicants_count > 10 ? 'text-yellow-600' : 'text-green-600'
-                                                            }`}>
-                                                            {opportunity.applicants_count > 20 ? 'High' :
-                                                                opportunity.applicants_count > 10 ? 'Med' : 'Low'}
+                                                    </td>
+                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                        {new Date(opportunity.created_at || opportunity.postedDate).toLocaleDateString()}
+                                                    </td>
+                                                    <td className="px-6 py-4 whitespace-nowrap">
+                                                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(opportunity.status)}`}>
+                                                            {formatStatus(opportunity.status)}
                                                         </span>
-                                                    </div>
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                    {new Date(opportunity.postedDate).toLocaleDateString()}
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap">
-                                                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(opportunity.status)}`}>
-                                                        {opportunity.status}
-                                                    </span>
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                                    <div className="flex space-x-2">
-                                                        <button className="text-[#00A55F] hover:text-[#008c4f]">
-                                                            <FaEye className="h-4 w-4" />
-                                                        </button>
-                                                        <button className="text-blue-600 hover:text-blue-800">
-                                                            <FaEdit className="h-4 w-4" />
-                                                        </button>
-                                                        <button className="text-red-600 hover:text-red-800">
-                                                            <FaTrash className="h-4 w-4" />
+                                                    </td>
+                                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                                        <div className="flex space-x-2">
+                                                            <button
+                                                                onClick={() => navigate(`/internships/${opportunity.id}`)}
+                                                                className="text-[#00A55F] hover:text-[#008c4f] transition-colors"
+                                                                title="View Details"
+                                                            >
+                                                                <FaEye className="h-4 w-4" />
+                                                            </button>
+                                                            <button
+                                                                onClick={() => navigate(`/recruiter/edit-opportunity/${opportunity.id}`)}
+                                                                className="text-blue-600 hover:text-blue-800 transition-colors"
+                                                                title="Edit Opportunity"
+                                                            >
+                                                                <FaEdit className="h-4 w-4" />
+                                                            </button>
+                                                            <button
+                                                                onClick={() => navigate(`/recruiter/applicants/${opportunity.id}`)}
+                                                                className="text-purple-600 hover:text-purple-800 transition-colors"
+                                                                title="View Applicants"
+                                                            >
+                                                                <FaUsers className="h-4 w-4" />
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            ))
+                                        ) : (
+                                            <tr>
+                                                <td colSpan="6" className="px-6 py-8 text-center">
+                                                    <div className="text-gray-500">
+                                                        <FaBriefcase className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                                                        <p className="text-lg font-medium">No opportunities found</p>
+                                                        <p className="text-sm">Start posting opportunities to see them here</p>
+                                                        <button
+                                                            onClick={() => navigate('/recruiter/post-opportunity')}
+                                                            className="mt-4 px-4 py-2 bg-[#00A55F] text-white rounded-lg hover:bg-[#008c4f] transition-colors"
+                                                        >
+                                                            Post Your First Opportunity
                                                         </button>
                                                     </div>
                                                 </td>
                                             </tr>
-                                        ))}
+                                        )}
                                     </tbody>
                                 </table>
                             </div>
@@ -340,7 +411,7 @@ const RecruiterDashboard = () => {
                                         <span className="text-sm font-medium text-gray-700">Active Posts</span>
                                     </div>
                                     <span className="text-lg font-bold text-green-600">
-                                        {recentOpportunities.filter(opp => opp.status === 'Active').length}
+                                        {recentOpportunities.filter(opp => opp.status?.toLowerCase() === 'open').length}
                                     </span>
                                 </div>
 

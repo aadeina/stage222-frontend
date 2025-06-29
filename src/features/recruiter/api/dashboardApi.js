@@ -7,7 +7,7 @@ export const getDashboardStats = () => {
 
 // Get recent opportunities
 export const getRecentOpportunities = () => {
-    return api.get('/recruiters/opportunities/');
+    return api.get('/recruiters/dashboard/opportunities/');
 };
 
 // Get applications summary
