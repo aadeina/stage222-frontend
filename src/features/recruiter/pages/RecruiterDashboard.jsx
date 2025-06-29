@@ -174,7 +174,7 @@ const RecruiterDashboard = () => {
                         <div className="flex items-center justify-between">
                             <div>
                                 <p className="text-sm font-medium text-gray-600">Total Opportunities</p>
-                                <p className="text-3xl font-bold text-gray-900">{dashboardStats?.totalOpportunities || 0}</p>
+                                <p className="text-3xl font-bold text-gray-900">{dashboardStats?.total_opportunities || 0}</p>
                             </div>
                             <div className="p-3 bg-[#00A55F]/10 rounded-lg">
                                 <FaBriefcase className="h-6 w-6 text-[#00A55F]" />
@@ -191,7 +191,7 @@ const RecruiterDashboard = () => {
                         <div className="flex items-center justify-between">
                             <div>
                                 <p className="text-sm font-medium text-gray-600">Total Applications</p>
-                                <p className="text-3xl font-bold text-gray-900">{dashboardStats?.totalApplications || 0}</p>
+                                <p className="text-3xl font-bold text-gray-900">{dashboardStats?.total_applications || 0}</p>
                             </div>
                             <div className="p-3 bg-blue-100 rounded-lg">
                                 <FaUsers className="h-6 w-6 text-blue-600" />
@@ -208,7 +208,7 @@ const RecruiterDashboard = () => {
                         <div className="flex items-center justify-between">
                             <div>
                                 <p className="text-sm font-medium text-gray-600">Shortlisted</p>
-                                <p className="text-3xl font-bold text-gray-900">{dashboardStats?.shortlistedCandidates || 0}</p>
+                                <p className="text-3xl font-bold text-gray-900">{dashboardStats?.shortlisted || 0}</p>
                             </div>
                             <div className="p-3 bg-yellow-100 rounded-lg">
                                 <FaChartBar className="h-6 w-6 text-yellow-600" />
@@ -225,7 +225,7 @@ const RecruiterDashboard = () => {
                         <div className="flex items-center justify-between">
                             <div>
                                 <p className="text-sm font-medium text-gray-600">Total Hires</p>
-                                <p className="text-3xl font-bold text-gray-900">{dashboardStats?.totalHires || 0}</p>
+                                <p className="text-3xl font-bold text-gray-900">{dashboardStats?.total_hires || 0}</p>
                             </div>
                             <div className="p-3 bg-green-100 rounded-lg">
                                 <FaCheckCircle className="h-6 w-6 text-green-600" />
@@ -233,23 +233,6 @@ const RecruiterDashboard = () => {
                         </div>
                     </motion.div>
                 </div>
-
-                {/* Debug Section - Remove in production */}
-                {process.env.NODE_ENV === 'development' && (
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.9 }}
-                        className="mb-8 bg-yellow-50 border border-yellow-200 rounded-lg p-4"
-                    >
-                        <h3 className="text-sm font-semibold text-yellow-800 mb-2">Debug Info (Development Only)</h3>
-                        <div className="text-xs text-yellow-700 space-y-1">
-                            <p>Opportunities Count: {recentOpportunities.length}</p>
-                            <p>Dashboard Stats: {JSON.stringify(dashboardStats)}</p>
-                            <p>First Opportunity: {recentOpportunities[0] ? JSON.stringify(recentOpportunities[0], null, 2) : 'None'}</p>
-                        </div>
-                    </motion.div>
-                )}
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     {/* Recently Posted Jobs/Internships */}
