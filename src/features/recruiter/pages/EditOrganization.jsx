@@ -144,6 +144,10 @@ const EditOrganization = () => {
             const response = await api.get(`/organizations/${organizationId}/`);
             const orgData = response.data.data || response.data;
 
+            console.log('Organization data received:', orgData);
+            console.log('Logo field:', orgData.logo);
+            console.log('Logo URL constructed:', originalData?.logo?.startsWith('http') ? originalData.logo : `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api'}${orgData.logo}`);
+
             // Check if user owns this organization
             // if (orgData.owner !== user.id) {
             //     toast.error('You are not authorized to edit this organization');
@@ -389,11 +393,34 @@ const EditOrganization = () => {
 
                         <div className="flex items-center space-x-4">
                             {originalData?.logo && (
-                                <img
-                                    src={originalData.logo}
-                                    alt="Organization Logo"
-                                    className="w-10 h-10 rounded-full object-cover"
-                                />
+                                <>
+                                    {console.log('Rendering logo with:', originalData.logo)}
+                                    {/* <img
+                                        src={originalData.logo.startsWith('http') ? originalData.logo : `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api'}${originalData.logo}`}
+                                        alt="Organization Logo"
+                                        className="w-10 h-10 rounded-full object-cover"
+                                        onError={(e) => {
+                                            console.error('Logo failed to load:', e.target.src);
+                                            e.target.style.display = 'none';
+                                        }}
+                                        onLoad={() => {
+                                            console.log('Logo loaded successfully');
+                                        }}
+                                    /> */}
+                                    <img
+  src={
+    originalData.logo.startsWith('http')
+      ? originalData.logo
+      : `${import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:8000'}${originalData.logo}`
+  }
+/>
+
+                                </>
+                            )}
+                            {!originalData?.logo && (
+                                <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
+                                    <FaBuilding className="h-5 w-5 text-gray-400" />
+                                </div>
                             )}
                             <div className="text-right">
                                 <p className="text-sm font-medium text-gray-900">{originalData?.name}</p>

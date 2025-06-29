@@ -8,8 +8,7 @@ const InternshipCard = ({ internship, onClick }) => {
     const {
         id,
         title,
-        organization_name,
-        organization_logo,
+        organization,
         location,
         stipend_type,
         stipend,
@@ -22,9 +21,21 @@ const InternshipCard = ({ internship, onClick }) => {
         description,
     } = internship;
 
+    const organization_name = organization?.name;
+    const organization_logo = organization?.logo;
+
+    console.log('InternshipCard received data:', {
+        id,
+        title,
+        organization_name,
+        organization_logo
+    });
+
     // Construct full logo URL
     const logoUrl = organization_logo
-        ? `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api'}${organization_logo}`
+        ? (organization_logo.startsWith('http')
+            ? organization_logo
+            : `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}${organization_logo}`)
         : fallbackLogo;
 
     // Badges
@@ -68,13 +79,16 @@ const InternshipCard = ({ internship, onClick }) => {
                     onError={e => (e.target.src = fallbackLogo)}
                 />
             </div>
+
             {/* Info */}
             <div className="flex-1 p-5 flex flex-col justify-between">
                 <div>
                     <div className="flex items-center gap-2 mb-1">
                         <h3 className="text-lg font-bold text-gray-900 line-clamp-1">{title}</h3>
                         {isActivelyHiring && (
-                            <span className="ml-2 px-2 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-[#00A55F]">Actively hiring</span>
+                            <span className="ml-2 px-2 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-[#00A55F]">
+                                Actively hiring
+                            </span>
                         )}
                     </div>
                     <div className="flex items-center gap-2 text-sm text-gray-600 mb-1">
@@ -84,9 +98,17 @@ const InternshipCard = ({ internship, onClick }) => {
                     <div className="flex flex-wrap gap-3 items-center text-xs mb-2">
                         <span className="flex items-center gap-1 text-gray-500"><FaMapMarkerAlt /> {location || 'Remote'}</span>
                         <span className="flex items-center gap-1 text-gray-500"><FaMoneyBillWave /> {stipendDisplay}</span>
-                        {durationDisplay && <span className="flex items-center gap-1 text-gray-500"><FaClock /> {durationDisplay}</span>}
-                        {isPartTime && <span className="px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 font-semibold">Part-time</span>}
-                        {hasJobOffer && <span className="px-2 py-0.5 rounded-full bg-yellow-50 text-yellow-700 font-semibold">Job offer after internship</span>}
+                        {durationDisplay && (
+                            <span className="flex items-center gap-1 text-gray-500"><FaClock /> {durationDisplay}</span>
+                        )}
+                        {isPartTime && (
+                            <span className="px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 font-semibold">Part-time</span>
+                        )}
+                        {hasJobOffer && (
+                            <span className="px-2 py-0.5 rounded-full bg-yellow-50 text-yellow-700 font-semibold">
+                                Job offer after internship
+                            </span>
+                        )}
                     </div>
                 </div>
                 <div className="flex items-center justify-between mt-2">
@@ -103,4 +125,4 @@ const InternshipCard = ({ internship, onClick }) => {
     );
 };
 
-export default InternshipCard; 
+export default InternshipCard;
