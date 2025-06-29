@@ -74,10 +74,10 @@ const Login = () => {
 
             // Redirect based on role and onboarding
             if (user.role === 'recruiter') {
-                if (user.is_onboarded) {
+                if (user.is_onboarding) {
                     navigate('/recruiter/dashboard');
                 } else {
-                    navigate('/recruiter/onboarding');
+                    navigate('/recruiter/dashboard');
                 }
             } else if (user.role === 'candidate') {
                 navigate('/dashboard/student');

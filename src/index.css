@@ -3,5 +3,49 @@
 @tailwind utilities;
 
 .input {
-  @apply w-full px-4 py-2 border rounded focus:outline-none focus:ring focus:border-[#00A55F];
+    @apply w-full px-4 py-2 border rounded focus:outline-none focus:ring focus:border-[#00A55F];
+}
+
+/* Custom utilities for internship detail page */
+@layer utilities {
+    .prose {
+        @apply text-gray-700 leading-relaxed;
+    }
+
+    .prose-gray {
+        @apply text-gray-700;
+    }
+
+    .prose-gray p {
+        @apply mb-4 last:mb-0;
+    }
+
+    .prose-gray ul {
+        @apply list-disc list-inside mb-4;
+    }
+
+    .prose-gray li {
+        @apply mb-1;
+    }
+
+    .line-clamp-1 {
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 1;
+    }
+
+    .line-clamp-2 {
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+    }
+
+    .line-clamp-3 {
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 3;
+    }
 }

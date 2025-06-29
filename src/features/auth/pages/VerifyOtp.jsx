@@ -54,91 +54,53 @@ const VerifyOtp = () => {
         e.preventDefault();
     };
 
-    // const handleVerify = async (e) => {
-    //     e.preventDefault();
-    //     const code = otp.join('');
-    //     if (code.length !== OTP_LENGTH) {
-    //         toast.error('Please enter the 6-digit OTP');
-    //         return;
-    //     }
-    //     setIsVerifying(true);
-    //     try {
-    //         const response = await verifyOtp(email, code);
-    //         const { user, tokens } = response.data;
+    const handleVerify = async (e) => {
+        e.preventDefault();
+        const code = otp.join('');
+        if (code.length !== OTP_LENGTH) {
+            toast.error('Please enter the 6-digit OTP');
+            return;
+        }
+        setIsVerifying(true);
+        try {
+            const response = await verifyOtp(email, code);
+            const { user, access, refresh } = response.data;
 
-    //         // Update auth context with verified user info
-    //         updateUser({
-    //             ...user,
-    //             is_verified: true,
-    //             tokens
-    //         });
+            // ✅ Save tokens in localStorage
+            localStorage.setItem('token', access);
+            localStorage.setItem('refresh_token', refresh);
 
-    //         toast.success('Email verified successfully!');
+            // ✅ Update auth context
+            updateUser({
+                ...user,
+                is_verified: true
+            });
 
-    //         // Redirect based on role
-    //         if (user.role === 'recruiter') {
-    //             navigate('/recruiter/onboarding');
-    //         } else if (user.role === 'candidate') {
-    //             navigate('/candidate/dashboard');
-    //         } else {
-    //             navigate('/login');
-    //         }
-    //     } catch (error) {
-    //         toast.error(
-    //             error?.response?.data?.detail ||
-    //             error?.response?.data?.message ||
-    //             'Verification failed. Please try again.'
-    //         );
-    //     } finally {
-    //         setIsVerifying(false);
-    //     }
-    // };
+            toast.success('Email verified successfully!');
 
-const handleVerify = async (e) => {
-  e.preventDefault();
-  const code = otp.join('');
-  if (code.length !== OTP_LENGTH) {
-    toast.error('Please enter the 6-digit OTP');
-    return;
-  }
-  setIsVerifying(true);
-  try {
-    const response = await verifyOtp(email, code);
-    const { user, access, refresh } = response.data;
+            // ✅ Redirect based on role
+            if (user.role === 'recruiter') {
+                if (user.is_onboarding) {
+                    navigate('/recruiter/dashboard');
+                } else {
+                    navigate('/recruiter/onboarding');
+                }
+            } else if (user.role === 'candidate') {
+                navigate('/candidate/dashboard');
+            } else {
+                navigate('/login');
+            }
 
-    // ✅ Save tokens in localStorage
-    localStorage.setItem('token', access);
-    localStorage.setItem('refresh_token', refresh);
-
-    // ✅ Update auth context
-    updateUser({
-      ...user,
-      is_verified: true
-    });
-
-    toast.success('Email verified successfully!');
-
-    // ✅ Redirect based on role
-    if (user.role === 'recruiter') {
-      navigate('/recruiter/onboarding');
-    } else if (user.role === 'candidate') {
-      navigate('/candidate/dashboard');
-    } else {
-      navigate('/login');
-    }
-
-  } catch (error) {
-    toast.error(
-      error?.response?.data?.detail ||
-      error?.response?.data?.message ||
-      'Verification failed. Please try again.'
-    );
-  } finally {
-    setIsVerifying(false);
-  }
-};
-
-
+        } catch (error) {
+            toast.error(
+                error?.response?.data?.detail ||
+                error?.response?.data?.message ||
+                'Verification failed. Please try again.'
+            );
+        } finally {
+            setIsVerifying(false);
+        }
+    };
 
     const handleResend = async () => {
         if (!email) {

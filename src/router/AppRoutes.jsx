@@ -2,7 +2,7 @@ import { Routes, Route, useLocation } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
 import PageWrapper from '@/components/layout/PageWrapper';
 import InternshipList from '@/pages/candidate/InternshipList';
-// import InternshipDetail from '@/features/candidate/InternshipDetail';
+import InternshipDetail from '@/pages/candidate/InternshipDetail';
 
 // Public Pages
 import Home from '@/pages/Home';
@@ -20,6 +20,7 @@ import PostInternshipJob from '@/features/recruiter/pages/PostInternshipJob';
 import RecruiterDashboard from '@/features/recruiter/pages/RecruiterDashboard';
 import EditOrganization from '@/features/recruiter/pages/EditOrganization';
 import RecruiterPricing from '@/features/recruiter/pages/RecruiterPricing';
+import StudentDashboard from '@/features/candidate/pages/StudentDashboard';
 
 const AppRoutes = () => {
     const location = useLocation();
@@ -84,15 +85,14 @@ const AppRoutes = () => {
                         </PageWrapper>
                     }
                 />
-                {/* Uncomment when InternshipDetail is ready */}
-                {/* <Route
+                <Route
                     path="/internships/:id"
                     element={
                         <PageWrapper>
                             <InternshipDetail />
                         </PageWrapper>
                     }
-                /> */}
+                />
 
                 {/* Protected Routes */}
 
@@ -163,6 +163,18 @@ const AppRoutes = () => {
                         <ProtectedRoute>
                             <PageWrapper>
                                 <RecruiterPricing />
+                            </PageWrapper>
+                        </ProtectedRoute>
+                    }
+                />
+
+                {/* Student Dashboard Route */}
+                <Route
+                    path="/dashboard/student"
+                    element={
+                        <ProtectedRoute>
+                            <PageWrapper>
+                                <StudentDashboard />
                             </PageWrapper>
                         </ProtectedRoute>
                     }

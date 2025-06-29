@@ -83,13 +83,13 @@ const RecruiterHeader = ({ title, subtitle }) => {
                     {/* Logo and Title */}
                     <div className="flex items-center space-x-6">
                         <div className="flex items-center space-x-3">
-                            
+
                             <img
-                                                        src={logo}
-                                                        alt="Stage222RecuiterLogo"
-                                                        className="h-12 w-auto"
-                                                        draggable="false"
-                                                    />
+                                src={logo}
+                                alt="Stage222RecuiterLogo"
+                                className="h-12 w-auto"
+                                draggable="false"
+                            />
 
                             <div className="hidden sm:block">
                                 {/* <h1 className="text-xl font-bold text-gray-900">Stage222</h1> */}
@@ -106,8 +106,8 @@ const RecruiterHeader = ({ title, subtitle }) => {
                                         key={item.name}
                                         onClick={() => handleNavigation(item.path)}
                                         className={`flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${isActiveRoute(item.path)
-                                                ? 'bg-[#00A55F] text-white'
-                                                : 'text-gray-700 hover:bg-gray-100 hover:text-[#00A55F]'
+                                            ? 'bg-[#00A55F] text-white'
+                                            : 'text-gray-700 hover:bg-gray-100 hover:text-[#00A55F]'
                                             }`}
                                     >
                                         <Icon className="h-4 w-4" />
@@ -187,8 +187,8 @@ const RecruiterHeader = ({ title, subtitle }) => {
                                             key={item.name}
                                             onClick={() => handleNavigation(item.path)}
                                             className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${isActiveRoute(item.path)
-                                                    ? 'bg-[#00A55F] text-white'
-                                                    : 'text-gray-700 hover:bg-gray-100'
+                                                ? 'bg-[#00A55F] text-white'
+                                                : 'text-gray-700 hover:bg-gray-100'
                                                 }`}
                                         >
                                             <Icon className="h-4 w-4" />

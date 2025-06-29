@@ -32,10 +32,10 @@ const InternshipCard = ({ internship, onClick }) => {
     });
 
     const logoUrl = organization_logo
-  ? (organization_logo.startsWith('http')
-      ? organization_logo
-      : `${import.meta.env.VITE_MEDIA_BASE_URL}${organization_logo}`)
-  : fallbackLogo;
+        ? (organization_logo.startsWith('http')
+            ? organization_logo
+            : `${import.meta.env.VITE_MEDIA_BASE_URL}${organization_logo}`)
+        : fallbackLogo;
 
 
 

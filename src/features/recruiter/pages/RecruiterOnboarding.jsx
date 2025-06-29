@@ -362,8 +362,8 @@ const RecruiterOnboarding = () => {
                 setIsLoading(false);
             }
         } else if (currentStep === 3) {
-            // After posting job/internship, redirect to setup complete
-            navigate('/recruiter/onboarding/setup-complete');
+            // After posting job/internship, redirect to dashboard
+            navigate('/recruiter/dashboard');
         } else {
             if (validateStep(currentStep)) {
                 setCurrentStep(prev => prev + 1);
