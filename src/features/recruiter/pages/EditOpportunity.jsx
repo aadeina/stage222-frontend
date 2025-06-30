@@ -13,24 +13,40 @@ const EditOpportunity = () => {
     const { user } = useAuth();
     const [formData, setFormData] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [isSubmitting, setIsSubmitting] = useState(false);
 
     useEffect(() => {
         const fetchData = async () => {
             try {
                 const res = await getInternshipDetail(id);
                 const data = res.data;
-                // Ensure responsibilities and preferences are arrays
+
+                // Transform data to match PostInternshipJob expectations
+                // Responsibilities should be a string
                 data.responsibilities = Array.isArray(data.responsibilities)
-                    ? data.responsibilities
-                    : (typeof data.responsibilities === 'string' && data.responsibilities.length > 0
-                        ? data.responsibilities.split('\n')
-                        : []);
+                    ? data.responsibilities.join('\n')
+                    : (typeof data.responsibilities === 'string'
+                        ? data.responsibilities
+                        : '');
+
+                // Preferences should be an array
                 data.preferences = Array.isArray(data.preferences)
                     ? data.preferences
                     : (typeof data.preferences === 'string' && data.preferences.length > 0
-                        ? data.preferences.split('\n')
+                        ? data.preferences.split('\n').filter(p => p.trim())
                         : []);
+
+                // Perks should be an array
+                data.perks = Array.isArray(data.perks)
+                    ? data.perks
+                    : (typeof data.perks === 'string' && data.perks.length > 0
+                        ? data.perks.split('\n').filter(p => p.trim())
+                        : []);
+
+                // Screening questions should be an array
+                data.screening_questions = Array.isArray(data.screening_questions)
+                    ? data.screening_questions
+                    : [];
+
                 setFormData(data);
             } catch (err) {
                 toast.error('Failed to fetch opportunity');
@@ -42,17 +58,11 @@ const EditOpportunity = () => {
         fetchData();
     }, [id, navigate]);
 
-    const handleUpdate = async (updatedData) => {
-        setIsSubmitting(true);
-        try {
-            await updateInternship(id, updatedData);
-            toast.success('Opportunity updated!');
-            navigate('/recruiter/dashboard');
-        } catch (err) {
-            toast.error('Failed to update opportunity');
-        } finally {
-            setIsSubmitting(false);
-        }
+    const handleUpdate = () => {
+        // The PostInternshipJob component handles the API call internally
+        // This function is called on success
+        toast.success('Opportunity updated!');
+        navigate('/recruiter/dashboard');
     };
 
     const handleDelete = async () => {
@@ -87,8 +97,9 @@ const EditOpportunity = () => {
                     {/* Professional form reuse */}
                     <PostInternshipJob
                         initialFormData={formData}
-                        onSubmit={handleUpdate}
+                        onSuccess={handleUpdate}
                         isEdit={true}
+                        internshipId={id}
                     />
                     {/* Optional: Small Delete button at the bottom */}
                     <div className="flex justify-end mt-8">

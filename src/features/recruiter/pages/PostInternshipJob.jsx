@@ -1,1927 +1,509 @@
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-import { createInternship } from "@/services/internshipApi";
-import { useAuth } from "@/context/AuthContext";
+import { createInternship, updateInternship } from "@/services/internshipApi";
 
-// Accept props for edit mode
-const PostInternshipJob = ({ initialFormData = null, onSubmit = null, isEdit = false }) => {
+// Clean, internship-only form for create & update
+const defaultForm = {
+    title: "",
+    description: "",
+    location: "",
+    opportunity_type: "internship",
+    job_type: "full-time", // full-time, part-time
+    type: "in-office", // remote, hybrid, in-office
+    duration: "4 months",
+    duration_weeks: 16,
+    start_date: "",
+    deadline: "",
+    stipend_type: "paid",
+    stipend: "",
+    negotiable: false,
+    perks: [],
+    responsibilities: "",
+    preferences: [],
+    screening_questions: [],
+    openings: 1,
+};
+
+const SUGGESTED_QUESTIONS = [
+    "Have you ever organized a community event or workshop?",
+    "How would you grow engagement for a student-based platform like Stage222?",
+    "Please link to any writing samples, blogs, or public communications you've done",
+    "What experience do you have with social media management?",
+    "Describe a time you had to communicate with diverse stakeholders"
+];
+
+const SUGGESTED_PERKS = [
+    "Certificate of Completion",
+    "Letter of Recommendation",
+    "Networking opportunities with NGOs & startups",
+    "Flexible working hours",
+    "Free Stage222 merch",
+    "Mentorship from industry professionals",
+    "Access to exclusive events",
+    "Remote work options"
+];
+
+const MAURITANIAN_CITIES = [
+    "Nouakchott",
+    "Nouadhibou",
+    "Aïoun",
+    "Akjoujt",
+    "Aleg",
+    "Atar",
+    "Kaédi",
+    "Kiffa",
+    "Néma",
+    "Rosso",
+    "Sélibabi",
+    "Tidjikdja",
+    "Zouerate"
+];
+
+const PostInternshipJob = ({ initialFormData = null, isEdit = false, internshipId = null, onSuccess }) => {
     const navigate = useNavigate();
-    const { user } = useAuth();
+    const [form, setForm] = useState(initialFormData ? { ...defaultForm, ...initialFormData } : defaultForm);
+    const [errors, setErrors] = useState({});
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [isSavingDraft, setIsSavingDraft] = useState(false);
-    const [formErrors, setFormErrors] = useState({});
+    const [newQuestion, setNewQuestion] = useState("");
+    const [newPerk, setNewPerk] = useState("");
+    const [newPreference, setNewPreference] = useState("");
+    const [cityQuery, setCityQuery] = useState("");
+    const [showCityDropdown, setShowCityDropdown] = useState(false);
 
-    // Use initialFormData if provided, otherwise use default
-    const [formData, setFormData] = useState(() => initialFormData ? {
-        ...{
-            opportunityType: "Internship",
-            title: "",
-            experience: "0",
-            skills: [],
-            jobType: "Remote",
-            workType: "Full-time",
-            city: "",
-            inOfficeDays: "5",
-            timeZone: "",
-            workTimings: { start: "", end: "" },
-            openings: 1,
-            description: "",
-            responsibilities: [],
-            preferences: [],
-            salary: { fixed: { min: "", max: "" }, variable: { min: "", max: "" } },
-            perks: [],
-            screeningQuestions: [
-                "Please confirm your availability for this job. If not available immediately, how early would you be able to join?"
-            ],
-            additionalQuestions: [],
-            alternatePhone: "",
-            employeeCount: "",
-            startDate: "Immediately",
-            duration: "3",
-            duration_weeks: 12,
-            allowWomenRestart: false,
-            stipend: { type: "Paid", fixed: { min: "", max: "" }, incentives: { min: "", max: "" } },
-            deadline: "",
-            stipend_type: "paid",
-            fixed_pay_min: "",
-            fixed_pay_max: "",
-            incentives_min: "",
-            incentives_max: "",
-            screening_questions: [],
-            eligibility_rules: [],
-            other_requirements: ""
-        },
-        ...initialFormData
-    } : {
-        opportunityType: "Internship",
-        title: "",
-        experience: "0",
-        skills: [],
-        jobType: "Remote",
-        workType: "Full-time",
-        city: "",
-        inOfficeDays: "5",
-        timeZone: "",
-        workTimings: { start: "", end: "" },
-        openings: 1,
-        description: "",
-        responsibilities: [],
-        preferences: [],
-        salary: { fixed: { min: "", max: "" }, variable: { min: "", max: "" } },
-        perks: [],
-        screeningQuestions: [
-            "Please confirm your availability for this job. If not available immediately, how early would you be able to join?"
-        ],
-        additionalQuestions: [],
-        alternatePhone: "",
-        employeeCount: "",
-        startDate: "Immediately",
-        duration: "3",
-        duration_weeks: 12,
-        allowWomenRestart: false,
-        stipend: { type: "Paid", fixed: { min: "", max: "" }, incentives: { min: "", max: "" } },
-        deadline: "",
-        stipend_type: "paid",
-        fixed_pay_min: "",
-        fixed_pay_max: "",
-        incentives_min: "",
-        incentives_max: "",
-        screening_questions: [],
-        eligibility_rules: [],
-        other_requirements: ""
+    // Handle input changes
+    const handleChange = (e) => {
+        const { name, value, type, checked } = e.target;
+
+        // Clear stipend when switching to unpaid
+        if (name === "stipend_type" && value === "unpaid") {
+            setForm((prev) => ({
+                ...prev,
+                [name]: value,
+                stipend: "", // Clear stipend when switching to unpaid
+                negotiable: false // Reset negotiable when unpaid
+            }));
+        } else {
+            setForm((prev) => ({
+                ...prev,
+                [name]: type === 'checkbox' ? checked : value
+            }));
+        }
+
+        setErrors((prev) => ({ ...prev, [name]: undefined }));
+    };
+
+    // Add a screening question
+    const addQuestion = (q) => {
+        if (!q.trim() || form.screening_questions.length >= 4) return;
+        setForm((prev) => ({ ...prev, screening_questions: [...prev.screening_questions, q.trim()] }));
+        setNewQuestion("");
+    };
+
+    // Remove a screening question
+    const removeQuestion = (idx) => {
+        setForm((prev) => ({ ...prev, screening_questions: prev.screening_questions.filter((_, i) => i !== idx) }));
+    };
+
+    // Add a perk
+    const addPerk = (perk) => {
+        if (!perk.trim() || form.perks.includes(perk.trim())) return;
+        setForm(prev => ({ ...prev, perks: [...prev.perks, perk.trim()] }));
+        setNewPerk("");
+    };
+
+    // Remove a perk
+    const removePerk = (idx) => {
+        setForm(prev => ({ ...prev, perks: prev.perks.filter((_, i) => i !== idx) }));
+    };
+
+    // Add a preference
+    const addPreference = (pref) => {
+        if (!pref.trim() || form.preferences.includes(pref.trim())) return;
+        setForm(prev => ({ ...prev, preferences: [...prev.preferences, pref.trim()] }));
+        setNewPreference("");
+    };
+
+    // Remove a preference
+    const removePreference = (idx) => {
+        setForm(prev => ({ ...prev, preferences: prev.preferences.filter((_, i) => i !== idx) }));
+    };
+
+    // Validate required fields
+    const validate = () => {
+        const newErrors = {};
+        if (!form.title.trim()) newErrors.title = "Title is required";
+        if (!form.description.trim()) newErrors.description = "Description is required";
+        if (!form.location.trim()) newErrors.location = "Location is required";
+        if (!form.deadline) newErrors.deadline = "Deadline is required";
+        if (!form.stipend_type) newErrors.stipend_type = "Stipend type is required";
+        if (form.stipend_type === "paid" && (!form.stipend || form.stipend.trim() === "")) {
+            newErrors.stipend = "Stipend amount is required for paid internships";
+        }
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
+
+    // Prepare API payload
+    const getPayload = () => ({
+        title: form.title,
+        description: form.description,
+        location: form.location,
+        opportunity_type: form.opportunity_type,
+        job_type: form.job_type,
+        type: form.type,
+        duration: form.duration,
+        duration_weeks: Number(form.duration_weeks),
+        start_date: form.start_date,
+        deadline: form.deadline,
+        stipend_type: form.stipend_type,
+        stipend: form.stipend_type === "paid" && form.stipend && form.stipend.trim() !== "" ? Number(form.stipend) : null,
+        negotiable: form.negotiable,
+        perks: form.perks,
+        responsibilities: form.responsibilities,
+        preferences: form.preferences,
+        screening_questions: form.screening_questions,
+        openings: Number(form.openings),
+        status: "open",
+        approval_status: "pending",
     });
 
-    // Form validation
-    const validateForm = () => {
-        const errors = {};
+    // Filtered cities for autocomplete
+    const filteredCities = MAURITANIAN_CITIES.filter(city =>
+        city.toLowerCase().includes(cityQuery.toLowerCase())
+    );
 
-        if (!formData.title.trim()) {
-            errors.title = "Title is required";
-        }
-
-        if (!formData.description.trim()) {
-            errors.description = "Description is required";
-        }
-
-        if (formData.opportunityType === "Internship") {
-            if (!formData.deadline) {
-                errors.deadline = "Application deadline is required";
-            }
-
-            if (formData.stipend.type === "Paid") {
-                if (!formData.stipend.fixed.min || !formData.stipend.fixed.max) {
-                    errors.stipend = "Fixed stipend range is required for paid internships";
-                }
-            }
-        }
-
-        // Fix location validation
-        if (formData.jobType === "In office" && !formData.city.trim()) {
-            errors.city = "City is required for in-office positions";
-        }
-
-        if (formData.jobType === "Remote" && !formData.timeZone) {
-            errors.timeZone = "Time zone is required for remote positions";
-        }
-
-        // Fix skills validation - check if skills array has valid items
-        if (!formData.skills || formData.skills.length === 0 || formData.skills.every(skill => !skill.trim())) {
-            errors.skills = "At least one skill is required";
-        }
-
-        // Validate Django choice constraints
-        const validTypes = ["remote", "hybrid", "in-office"];
-        const validJobTypes = ["full-time", "part-time"];
-        const validOpportunityTypes = ["job", "internship"];
-        const validStipendTypes = ["paid", "unpaid"];
-        const validStatuses = ["open", "closed"];
-        const validApprovalStatuses = ["pending", "approved", "rejected"];
-
-        // Validate type field
-        const currentType = formData.jobType === "In office" ? "in-office" :
-            formData.jobType === "Hybrid" ? "hybrid" : "remote";
-        if (!validTypes.includes(currentType)) {
-            errors.type = `Type must be one of: ${validTypes.join(", ")}`;
-        }
-
-        // Validate job_type field
-        const currentJobType = formData.workType === "Full-time" ? "full-time" : "part-time";
-        if (!validJobTypes.includes(currentJobType)) {
-            errors.job_type = `Job type must be one of: ${validJobTypes.join(", ")}`;
-        }
-
-        // Validate opportunity_type field
-        const currentOpportunityType = formData.opportunityType.toLowerCase();
-        if (!validOpportunityTypes.includes(currentOpportunityType)) {
-            errors.opportunity_type = `Opportunity type must be one of: ${validOpportunityTypes.join(", ")}`;
-        }
-
-        // Validate stipend_type field for internships
-        if (formData.opportunityType === "Internship") {
-            const currentStipendType = formData.stipend.type.toLowerCase();
-            if (!validStipendTypes.includes(currentStipendType)) {
-                errors.stipend_type = `Stipend type must be one of: ${validStipendTypes.join(", ")}`;
-            }
-        }
-
-        setFormErrors(errors);
-        return Object.keys(errors).length === 0;
-    };
-
-    // Transform form data to API format
-    const transformFormDataForAPI = () => {
-        // Determine location based on job type
-        let location = "Remote"; // default
-        if (formData.jobType === "In office" && formData.city.trim()) {
-            location = formData.city.trim();
-        } else if (formData.jobType === "Hybrid" && formData.city.trim()) {
-            location = formData.city.trim();
-        }
-
-        const apiData = {
-            title: formData.title,
-            description: formData.description,
-            skills: formData.skills,
-            location: location,
-            opportunity_type: formData.opportunityType.toLowerCase(),
-            job_type: formData.workType === "Full-time" ? "full-time" : "part-time",
-            type: formData.jobType === "In office" ? "in-office" :
-                formData.jobType === "Hybrid" ? "hybrid" : "remote",
-            openings: formData.openings,
-            perks: formData.perks,
-            screening_questions: [
-                "Please confirm your availability for this job. If not available immediately, how early would you be able to join?",
-                ...formData.additionalQuestions.map(q => q.text)
-            ],
-            preferences: formData.preferences,
-            other_requirements: formData.other_requirements || "",
-            alternate_phone: formData.alternatePhone,
-            allow_women_restart: formData.allowWomenRestart,
-            status: "open",
-            approval_status: "pending"
-        };
-
-        // Add internship-specific fields
-        if (formData.opportunityType === "Internship") {
-            apiData.duration = `${formData.duration} months`;
-            apiData.duration_weeks = parseInt(formData.duration) * 4;
-
-            // Fix start_date logic
-            if (formData.startDate === "Immediately") {
-                apiData.start_date = new Date().toISOString().split('T')[0];
-            } else {
-                // If "Later", use deadline as start date or add 7 days to today
-                apiData.start_date = formData.deadline || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-            }
-
-            apiData.deadline = formData.deadline;
-            apiData.stipend_type = formData.stipend.type.toLowerCase();
-
-            if (formData.stipend.type === "Paid") {
-                apiData.stipend = formData.stipend.fixed.max || "0";
-                apiData.fixed_pay_min = formData.stipend.fixed.min || "0";
-                apiData.fixed_pay_max = formData.stipend.fixed.max || "0";
-                apiData.incentives_min = formData.stipend.incentives.min || "0";
-                apiData.incentives_max = formData.stipend.incentives.max || "0";
-            } else {
-                apiData.stipend = "0";
-                apiData.fixed_pay_min = "0";
-                apiData.fixed_pay_max = "0";
-                apiData.incentives_min = "0";
-                apiData.incentives_max = "0";
-            }
-
-            // Add responsibilities field for internships
-            apiData.responsibilities = formData.responsibilities.join("\n");
-        }
-
-        // Add job-specific fields
-        if (formData.opportunityType === "Job") {
-            apiData.experience_required = parseInt(formData.experience);
-            apiData.salary_fixed_min = formData.salary.fixed.min || "0";
-            apiData.salary_fixed_max = formData.salary.fixed.max || "0";
-            apiData.salary_variable_min = formData.salary.variable.min || "0";
-            apiData.salary_variable_max = formData.salary.variable.max || "0";
-        }
-
-        // Add additional fields based on job type
-        if (formData.jobType === "Hybrid") {
-            apiData.in_office_days = parseInt(formData.inOfficeDays);
-        } else if (formData.jobType === "Remote") {
-            apiData.timezone = formData.timeZone;
-            apiData.work_timings = formData.workTimings;
-        }
-
-        // Ensure arrays are properly formatted
-        apiData.perks = Array.isArray(apiData.perks) ? apiData.perks : [];
-        apiData.preferences = Array.isArray(apiData.preferences) ? apiData.preferences : [];
-        apiData.screening_questions = Array.isArray(apiData.screening_questions) ? apiData.screening_questions : [];
-        apiData.skills = Array.isArray(apiData.skills) ? apiData.skills : [];
-
-        return apiData;
-    };
-
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-        setFormData((prev) => ({
-            ...prev,
-            [name]: value,
-        }));
-
-        // Clear error when user starts typing
-        if (formErrors[name]) {
-            setFormErrors(prev => ({ ...prev, [name]: "" }));
-        }
-
-        // Real-time validation for specific fields
-        validateField(name, value);
-    };
-
-    // Real-time field validation
-    const validateField = (fieldName, value) => {
-        const newErrors = { ...formErrors };
-
-        switch (fieldName) {
-            case 'title':
-                if (!value.trim()) {
-                    newErrors.title = "Title is required";
-                } else {
-                    delete newErrors.title;
-                }
-                break;
-
-            case 'description':
-                if (!value.trim()) {
-                    newErrors.description = "Description is required";
-                } else {
-                    delete newErrors.description;
-                }
-                break;
-
-            case 'deadline':
-                if (formData.opportunityType === "Internship" && !value) {
-                    newErrors.deadline = "Application deadline is required";
-                } else {
-                    delete newErrors.deadline;
-                }
-                break;
-
-            case 'city':
-                if (formData.jobType === "In office" && !value.trim()) {
-                    newErrors.city = "City is required for in-office positions";
-                } else {
-                    delete newErrors.city;
-                }
-                break;
-
-            case 'timeZone':
-                if (formData.jobType === "Remote" && !value) {
-                    newErrors.timeZone = "Time zone is required for remote positions";
-                } else {
-                    delete newErrors.timeZone;
-                }
-                break;
-
-            case 'jobType':
-                // Clear city error if switching away from in-office
-                if (value !== "In office") {
-                    delete newErrors.city;
-                }
-                // Clear timezone error if switching away from remote
-                if (value !== "Remote") {
-                    delete newErrors.timeZone;
-                }
-                break;
-
-            case 'opportunityType':
-                // Clear deadline error if switching to job
-                if (value === "Job") {
-                    delete newErrors.deadline;
-                }
-                break;
-        }
-
-        setFormErrors(newErrors);
-    };
-
-    const handleArrayInput = (field, value) => {
-        setFormData((prev) => ({
-            ...prev,
-            [field]: value.split("\n").filter(item => item.trim()),
-        }));
-    };
-
-    const handleSalaryChange = (type, field, value) => {
-        setFormData(prev => ({
-            ...prev,
-            salary: {
-                ...prev.salary,
-                [type]: {
-                    ...prev.salary[type],
-                    [field]: value
-                }
-            }
-        }));
-    };
-
-    const handleStipendChange = (type, field, value) => {
-        setFormData(prev => ({
-            ...prev,
-            stipend: {
-                ...prev.stipend,
-                [type]: {
-                    ...prev.stipend[type],
-                    [field]: value
-                }
-            }
-        }));
-
-        // Real-time validation for stipend fields
-        if (formData.opportunityType === "Internship" && formData.stipend.type === "Paid") {
-            const newErrors = { ...formErrors };
-
-            if (type === "fixed") {
-                if (field === "min" && !value) {
-                    newErrors.stipend = "Fixed stipend minimum is required for paid internships";
-                } else if (field === "max" && !value) {
-                    newErrors.stipend = "Fixed stipend maximum is required for paid internships";
-                } else {
-                    // Check if both min and max are filled
-                    const updatedStipend = {
-                        ...formData.stipend,
-                        [type]: {
-                            ...formData.stipend[type],
-                            [field]: value
-                        }
-                    };
-
-                    if (updatedStipend.fixed.min && updatedStipend.fixed.max) {
-                        delete newErrors.stipend;
-                    }
-                }
-            }
-
-            setFormErrors(newErrors);
-        }
-    };
-
-    // Update handleSubmit to use onSubmit if provided
+    // Handle form submit
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!validateForm()) {
-            toast.error("Please fix the errors in the form");
-            return;
-        }
+        if (!validate()) return;
         setIsSubmitting(true);
         try {
-            const apiData = transformFormDataForAPI();
-            if (onSubmit) {
-                await onSubmit(apiData); // Use parent handler for edit
+            const payload = getPayload();
+            if (isEdit && internshipId) {
+                await updateInternship(internshipId, payload);
+                toast.success("Internship updated!");
             } else {
-                const response = await createInternship(apiData);
-                toast.success(`${formData.opportunityType} posted successfully!`);
-                navigate('/recruiter/dashboard');
+                await createInternship(payload);
+                toast.success("Internship posted!");
             }
+            if (onSuccess) onSuccess();
+            else navigate("/recruiter/dashboard");
         } catch (err) {
-            toast.error('Failed to submit opportunity');
+            toast.error("Failed to submit internship");
         } finally {
             setIsSubmitting(false);
         }
     };
 
-    const handleSaveDraft = async () => {
-        setIsSavingDraft(true);
-        try {
-            const apiData = transformFormDataForAPI();
-            apiData.status = "draft"; // Add draft status
-
-            console.log("Saving draft with data:", apiData);
-            console.log("Draft Payload for Django:", JSON.stringify(apiData, null, 2));
-
-            const response = await createInternship(apiData);
-            toast.success("Draft saved successfully!");
-
-            // Optionally redirect or stay on the form
-            navigate('/recruiter/dashboard');
-        } catch (error) {
-            console.error("Save draft error:", error);
-            toast.error("Failed to save draft. Please try again.");
-        } finally {
-            setIsSavingDraft(false);
-        }
-    };
-
-    const renderJobTypeFields = () => {
-        switch (formData.jobType) {
-            case "In office":
-                return (
-                    <div className="space-y-6 bg-gray-50 p-6 rounded-xl">
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">City/Cities</label>
-                            <input
-                                type="text"
-                                name="city"
-                                value={formData.city}
-                                onChange={handleChange}
-                                className={`w-full border rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#00A55F] focus:border-transparent transition-all bg-white ${formErrors.city ? 'border-red-500' : 'border-gray-200'}`}
-                                placeholder="e.g. Nouakchott"
-                            />
-                            {formErrors.city && (
-                                <p className="text-red-500 text-sm mt-1">{formErrors.city}</p>
-                            )}
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Part-time/Full-time</label>
-                            <div className="flex flex-wrap gap-x-4 gap-y-2">
-                                {["Part-time", "Full-time"].map((type) => (
-                                    <label
-                                        key={type}
-                                        className="flex items-center cursor-pointer"
-                                    >
-                                        <input
-                                            type="radio"
-                                            name="workType"
-                                            value={type}
-                                            checked={formData.workType === type}
-                                            onChange={handleChange}
-                                            className="form-radio h-4 w-4 text-[#00A55F] transition-all focus:ring-[#00A55F]"
-                                        />
-                                        <span className="ml-2 text-sm text-gray-700">{type}</span>
-                                    </label>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-                );
-            case "Hybrid":
-                return (
-                    <div className="space-y-6 bg-gray-50 p-6 rounded-xl">
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">City/Cities</label>
-                            <input
-                                type="text"
-                                name="city"
-                                value={formData.city}
-                                onChange={handleChange}
-                                className={`w-full border rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#00A55F] focus:border-transparent transition-all bg-white ${formErrors.city ? 'border-red-500' : 'border-gray-200'}`}
-                                placeholder="e.g. Nouakchott"
-                            />
-                            {formErrors.city && (
-                                <p className="text-red-500 text-sm mt-1">{formErrors.city}</p>
-                            )}
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">No. of in-office days in a week</label>
-                            <select
-                                name="inOfficeDays"
-                                value={formData.inOfficeDays}
-                                onChange={handleChange}
-                                className="w-full border border-gray-200 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#00A55F] focus:border-transparent transition-all bg-white"
-                            >
-                                {[1, 2, 3, 4, 5].map((days) => (
-                                    <option key={days} value={days}>
-                                        {days} {days === 1 ? "day" : "days"}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Part-time/Full-time</label>
-                            <div className="flex flex-wrap gap-x-4 gap-y-2">
-                                {["Part-time", "Full-time"].map((type) => (
-                                    <label
-                                        key={type}
-                                        className="flex items-center cursor-pointer"
-                                    >
-                                        <input
-                                            type="radio"
-                                            name="workType"
-                                            value={type}
-                                            checked={formData.workType === type}
-                                            onChange={handleChange}
-                                            className="form-radio h-4 w-4 text-[#00A55F] transition-all focus:ring-[#00A55F]"
-                                        />
-                                        <span className="ml-2 text-sm text-gray-700">{type}</span>
-                                    </label>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-                );
-            case "Remote":
-                return (
-                    <div className="space-y-6 bg-gray-50 p-6 rounded-xl">
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Part-time/Full-time</label>
-                            <div className="flex flex-wrap gap-x-4 gap-y-2">
-                                {["Part-time", "Full-time"].map((type) => (
-                                    <label
-                                        key={type}
-                                        className="flex items-center cursor-pointer"
-                                    >
-                                        <input
-                                            type="radio"
-                                            name="workType"
-                                            value={type}
-                                            checked={formData.workType === type}
-                                            onChange={handleChange}
-                                            className="form-radio h-4 w-4 text-[#00A55F] transition-all focus:ring-[#00A55F]"
-                                        />
-                                        <span className="ml-2 text-sm text-gray-700">{type}</span>
-                                    </label>
-                                ))}
-                            </div>
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Select Time Zone</label>
-                            <select
-                                name="timeZone"
-                                value={formData.timeZone}
-                                onChange={handleChange}
-                                className={`w-full border rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#00A55F] focus:border-transparent transition-all bg-white ${formErrors.timeZone ? 'border-red-500' : 'border-gray-200'}`}
-                            >
-                                <option value="">Select time zone</option>
-                                {Array.from({ length: 13 }, (_, i) => i).map((offset) => (
-                                    <option key={offset} value={`UTC+${offset}`}>
-                                        UTC+{offset}
-                                    </option>
-                                ))}
-                            </select>
-                            {formErrors.timeZone && (
-                                <p className="text-red-500 text-sm mt-1">{formErrors.timeZone}</p>
-                            )}
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Select Work Timings</label>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-sm text-gray-600 mb-1">From</label>
-                                    <input
-                                        type="time"
-                                        value={formData.workTimings.start}
-                                        onChange={(e) => setFormData(prev => ({
-                                            ...prev,
-                                            workTimings: { ...prev.workTimings, start: e.target.value }
-                                        }))}
-                                        className="w-full border border-gray-200 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#00A55F] focus:border-transparent transition-all bg-white"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm text-gray-600 mb-1">To</label>
-                                    <input
-                                        type="time"
-                                        value={formData.workTimings.end}
-                                        onChange={(e) => setFormData(prev => ({
-                                            ...prev,
-                                            workTimings: { ...prev.workTimings, end: e.target.value }
-                                        }))}
-                                        className="w-full border border-gray-200 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#00A55F] focus:border-transparent transition-all bg-white"
-                                    />
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                );
-            default:
-                return null;
-        }
-    };
-
     return (
-        <div className="min-h-screen bg-gray-50 pb-24">
-            {/* Pro Header Section */}
-            <section className="pt-12 pb-8 bg-gray-50">
-                <div className="max-w-3xl mx-auto text-center">
-                    <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-2 bg-gradient-to-r from-[#00A55F] to-[#34d399] bg-clip-text text-transparent select-none inline-block">
-                        Post an Opportunity 🚀
-                    </h1>
-                    <div className="w-16 h-2 rounded-full bg-gradient-to-r from-[#00A55F] to-[#34d399] mx-auto mb-4"></div>
-                    <p className="text-gray-500 text-base md:text-lg font-medium mb-2">Share your job or internship and connect with top Mauritanian talent.</p>
-                </div>
-            </section>
-            {/* Progress Header
-            <div className="bg-white border-b border-gray-200">
-                <div className="max-w-5xl mx-auto px-4 py-4">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-8">
-                            <div className="flex items-center">
-                                <div className="w-8 h-8 rounded-full bg-[#00A55F] text-white flex items-center justify-center font-medium">1</div>
-                                <span className="ml-2 text-sm font-medium text-gray-600">Personal Details</span>
-                            </div>
-                            <div className="flex items-center">
-                                <div className="w-8 h-8 rounded-full bg-[#00A55F] text-white flex items-center justify-center font-medium">2</div>
-                                <span className="ml-2 text-sm font-medium text-gray-600">Organization Details</span>
-                            </div>
-                            <div className="flex items-center">
-                                <div className="w-8 h-8 rounded-full bg-[#00A55F] text-white flex items-center justify-center font-medium">3</div>
-                                <span className="ml-2 text-sm font-medium text-gray-900">Post Job/Internship</span>
-                            </div>
+        <form onSubmit={handleSubmit} className="max-w-2xl mx-auto bg-gradient-to-br from-white via-[#f3fdf7] to-[#e6f9f0] p-8 rounded-2xl shadow-xl border border-[#e0f2ea] space-y-8">
+            <h2 className="text-3xl font-extrabold text-[#00A55F] mb-2">{isEdit ? "Edit Internship" : "Post Internship"}</h2>
+            <div className="border-b border-gray-200 pb-4 mb-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label className="block font-semibold mb-1 text-gray-800">Title</label>
+                        <input name="title" value={form.title} onChange={handleChange} className="w-full border border-gray-200 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#00A55F] focus:border-transparent transition-all bg-white" />
+                        {errors.title && <p className="text-red-500 text-sm mt-1">{errors.title}</p>}
+                    </div>
+                    <div className="relative">
+                        <label className="block font-semibold mb-1 text-gray-800">Location (Mauritanian city or Remote)</label>
+                        <div className="relative">
+                            <input
+                                name="location"
+                                value={form.location}
+                                onChange={e => {
+                                    handleChange(e);
+                                    setCityQuery(e.target.value);
+                                    setShowCityDropdown(true);
+                                }}
+                                onFocus={() => setShowCityDropdown(true)}
+                                onBlur={() => setTimeout(() => setShowCityDropdown(false), 150)}
+                                placeholder="Start typing a city..."
+                                className="w-full border border-gray-200 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#00A55F] focus:border-transparent transition-all bg-white pr-10"
+                                autoComplete="off"
+                            />
+                            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-4.35-4.35M17 11A6 6 0 105 11a6 6 0 0012 0z" /></svg>
+                            </span>
+                            {showCityDropdown && filteredCities.length > 0 && (
+                                <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                                    {filteredCities.map(city => (
+                                        <button
+                                            key={city}
+                                            type="button"
+                                            onClick={() => {
+                                                setForm(prev => ({ ...prev, location: city }));
+                                                setCityQuery(city);
+                                                setShowCityDropdown(false);
+                                            }}
+                                            className={`w-full px-4 py-2 text-left text-sm rounded-md transition-colors ${form.location === city ? 'bg-[#00A55F] text-white' : 'text-gray-700 hover:bg-gray-100'}`}
+                                        >
+                                            {city}
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
                         </div>
+                        {errors.location && <p className="text-red-500 text-sm mt-1">{errors.location}</p>}
                     </div>
                 </div>
-            </div> */}
-
-            <div className="max-w-5xl mx-auto px-4 py-8">
-                {/* Header Section */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="mb-8"
-                >
-                    <h1 className="text-3xl font-bold text-gray-800">Post Job/Internship</h1>
-                    <p className="text-gray-600 mt-2">Hire early talent with work experience up to 2 years</p>
-                </motion.div>
-
-                <form onSubmit={handleSubmit} className="space-y-8">
-                    {/* Real-time Validation Status */}
-                    {Object.keys(formErrors).length > 0 && (
-                        <motion.div
-                            initial={{ opacity: 0, y: -10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            className="bg-red-50 border border-red-200 rounded-lg p-4"
-                        >
-                            <div className="flex items-center gap-2 mb-2">
-                                <div className="w-5 h-5 bg-red-500 rounded-full flex items-center justify-center">
-                                    <span className="text-white text-xs">!</span>
-                                </div>
-                                <h3 className="text-sm font-medium text-red-800">Please fix the following errors:</h3>
-                            </div>
-                            <ul className="text-sm text-red-700 space-y-1">
-                                {Object.entries(formErrors).map(([field, error]) => (
-                                    <li key={field} className="flex items-center gap-2">
-                                        <span className="w-1 h-1 bg-red-500 rounded-full"></span>
-                                        <span className="capitalize">{field.replace(/([A-Z])/g, ' $1').toLowerCase()}:</span>
-                                        <span>{error}</span>
-                                    </li>
-                                ))}
-                            </ul>
-                        </motion.div>
-                    )}
-
-                    {/* Form Progress Indicator */}
-                    <motion.div
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="bg-blue-50 border border-blue-200 rounded-lg p-4"
-                    >
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                                <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center">
-                                    <span className="text-white text-xs">i</span>
-                                </div>
-                                <span className="text-sm font-medium text-blue-800">Form Status</span>
-                            </div>
-                            <div className="text-sm text-blue-600">
-                                {Object.keys(formErrors).length === 0 ? (
-                                    <span className="text-green-600">✓ Ready to submit</span>
-                                ) : (
-                                    <span>{Object.keys(formErrors).length} error{Object.keys(formErrors).length !== 1 ? 's' : ''} to fix</span>
-                                )}
-                            </div>
-                        </div>
-                    </motion.div>
-
-                    {/* Opportunity Type Section */}
-                    <motion.section
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="bg-white rounded-xl shadow-sm p-6"
-                    >
-                        <h2 className="text-xl font-semibold text-gray-800 mb-6">Opportunity Type</h2>
-                        <div className="flex flex-wrap gap-x-6 gap-y-2">
-                            {["Job", "Internship"].map((type) => (
-                                <label
-                                    key={type}
-                                    className="flex items-center cursor-pointer"
-                                >
-                                    <input
-                                        type="radio"
-                                        name="opportunityType"
-                                        value={type}
-                                        checked={formData.opportunityType === type}
-                                        onChange={handleChange}
-                                        className="form-radio h-4 w-4 text-[#00A55F] transition-all focus:ring-[#00A55F]"
-                                    />
-                                    <span className="ml-2 text-sm text-gray-700">{type}</span>
-                                </label>
-                            ))}
-                        </div>
-                    </motion.section>
-
-                    <AnimatePresence mode="wait">
-                        {formData.opportunityType === "Job" ? (
-                            <motion.div
-                                key="job"
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: -20 }}
-                                className="space-y-8"
-                            >
-                                {/* Job Details Section */}
-                                <motion.section className="bg-white rounded-xl shadow-sm p-6">
-                                    <h2 className="text-xl font-semibold text-gray-800 mb-6">Job Details</h2>
-                                    <div className="space-y-6">
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-2">Job Title</label>
-                                            <input
-                                                type="text"
-                                                name="title"
-                                                value={formData.title}
-                                                onChange={handleChange}
-                                                className={`w-full border rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#00A55F] focus:border-transparent transition-all bg-white ${formErrors.title ? 'border-red-500' : 'border-gray-200'
-                                                    }`}
-                                                placeholder="e.g. Software Engineer Trainee"
-                                            />
-                                            {formErrors.title && (
-                                                <p className="text-red-500 text-sm mt-1">{formErrors.title}</p>
-                                            )}
-                                        </div>
-
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-2">Minimum Experience Required</label>
-                                            <div className="flex flex-wrap gap-x-6 gap-y-2">
-                                                {["0", "1"].map((years) => (
-                                                    <label
-                                                        key={years}
-                                                        className="flex items-center cursor-pointer"
-                                                    >
-                                                        <input
-                                                            type="radio"
-                                                            name="experience"
-                                                            value={years}
-                                                            checked={formData.experience === years}
-                                                            onChange={handleChange}
-                                                            className="form-radio h-4 w-4 text-[#00A55F] transition-all focus:ring-[#00A55F]"
-                                                        />
-                                                        <span className="ml-2 text-sm text-gray-700">{years} {years === "1" ? "year" : "years"}</span>
-                                                    </label>
-                                                ))}
-                                            </div>
-                                        </div>
-
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-2">Skills Required</label>
-                                            <div className="flex flex-wrap gap-2 mb-2">
-                                                {formData.skills.map((skill, index) => (
-                                                    <span
-                                                        key={index}
-                                                        className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm flex items-center"
-                                                    >
-                                                        {skill}
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => {
-                                                                setFormData(prev => ({
-                                                                    ...prev,
-                                                                    skills: prev.skills.filter((_, i) => i !== index)
-                                                                }));
-                                                            }}
-                                                            className="ml-2 text-gray-500 hover:text-gray-700"
-                                                        >
-                                                            ×
-                                                        </button>
-                                                    </span>
-                                                ))}
-                                            </div>
-                                            <div className="flex items-center justify-between mb-2">
-                                                <span className="text-xs text-gray-500">
-                                                    {formData.skills.length} skill{formData.skills.length !== 1 ? 's' : ''} added
-                                                </span>
-                                                {formErrors.skills && (
-                                                    <span className="text-xs text-red-500">⚠️ {formErrors.skills}</span>
-                                                )}
-                                            </div>
-                                            <input
-                                                type="text"
-                                                placeholder="e.g. Java, React, Node.js"
-                                                className={`w-full border rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#00A55F] focus:border-transparent transition-all bg-white ${formErrors.skills ? 'border-red-500' : 'border-gray-200'
-                                                    }`}
-                                                onKeyDown={(e) => {
-                                                    if (e.key === 'Enter' && e.target.value.trim()) {
-                                                        e.preventDefault();
-                                                        const newSkill = e.target.value.trim();
-                                                        setFormData(prev => ({
-                                                            ...prev,
-                                                            skills: [...prev.skills, newSkill]
-                                                        }));
-                                                        e.target.value = '';
-                                                        // Clear skills error when user adds a skill
-                                                        if (formErrors.skills) {
-                                                            setFormErrors(prev => ({ ...prev, skills: "" }));
-                                                        }
-                                                    }
-                                                }}
-                                                onBlur={(e) => {
-                                                    // Also allow adding skills on blur if there's content
-                                                    if (e.target.value.trim()) {
-                                                        const newSkill = e.target.value.trim();
-                                                        if (!formData.skills.includes(newSkill)) {
-                                                            setFormData(prev => ({
-                                                                ...prev,
-                                                                skills: [...prev.skills, newSkill]
-                                                            }));
-                                                            if (formErrors.skills) {
-                                                                setFormErrors(prev => ({ ...prev, skills: "" }));
-                                                            }
-                                                        }
-                                                        e.target.value = '';
-                                                    }
-                                                }}
-                                            />
-                                            {formErrors.skills && (
-                                                <p className="text-red-500 text-sm mt-1">{formErrors.skills}</p>
-                                            )}
-                                        </div>
-
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700 mb-2">Job Type</label>
-                                                <div className="flex flex-wrap gap-x-6 gap-y-2">
-                                                    {["In office", "Hybrid", "Remote"].map((type) => (
-                                                        <label
-                                                            key={type}
-                                                            className="flex items-center cursor-pointer"
-                                                        >
-                                                            <input
-                                                                type="radio"
-                                                                name="jobType"
-                                                                value={type}
-                                                                checked={formData.jobType === type}
-                                                                onChange={handleChange}
-                                                                className="form-radio h-4 w-4 text-[#00A55F] transition-all focus:ring-[#00A55F]"
-                                                            />
-                                                            <span className="ml-2 text-sm text-gray-700">{type}</span>
-                                                        </label>
-                                                    ))}
-                                                </div>
-                                            </div>
-
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700 mb-2">Part-time/Full-time</label>
-                                                <div className="flex flex-wrap gap-x-6 gap-y-2">
-                                                    {["Part-time", "Full-time"].map((type) => (
-                                                        <label
-                                                            key={type}
-                                                            className="flex items-center cursor-pointer"
-                                                        >
-                                                            <input
-                                                                type="radio"
-                                                                name="workType"
-                                                                value={type}
-                                                                checked={formData.workType === type}
-                                                                onChange={handleChange}
-                                                                className="form-radio h-4 w-4 text-[#00A55F] transition-all focus:ring-[#00A55F]"
-                                                            />
-                                                            <span className="ml-2 text-sm text-gray-700">{type}</span>
-                                                        </label>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        {/* Conditional fields based on job type */}
-                                        <AnimatePresence mode="wait">
-                                            <motion.div
-                                                key={formData.jobType}
-                                                initial={{ opacity: 0, y: 10 }}
-                                                animate={{ opacity: 1, y: 0 }}
-                                                exit={{ opacity: 0, y: -10 }}
-                                                transition={{ duration: 0.2 }}
-                                            >
-                                                {formData.jobType === "In office" && (
-                                                    <div className="space-y-6 bg-gray-50 p-6 rounded-xl">
-                                                        <div>
-                                                            <label className="block text-sm font-medium text-gray-700 mb-2">City/Cities</label>
-                                                            <input
-                                                                type="text"
-                                                                name="city"
-                                                                value={formData.city}
-                                                                onChange={handleChange}
-                                                                className={`w-full border rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#00A55F] focus:border-transparent transition-all bg-white ${formErrors.city ? 'border-red-500' : 'border-gray-200'}`}
-                                                                placeholder="e.g. Nouakchott"
-                                                            />
-                                                            {formErrors.city && (
-                                                                <p className="text-red-500 text-sm mt-1">{formErrors.city}</p>
-                                                            )}
-                                                        </div>
-                                                    </div>
-                                                )}
-
-                                                {formData.jobType === "Hybrid" && (
-                                                    <div className="space-y-6 bg-gray-50 p-6 rounded-xl">
-                                                        <div>
-                                                            <label className="block text-sm font-medium text-gray-700 mb-2">City/Cities</label>
-                                                            <input
-                                                                type="text"
-                                                                name="city"
-                                                                value={formData.city}
-                                                                onChange={handleChange}
-                                                                className={`w-full border rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#00A55F] focus:border-transparent transition-all bg-white ${formErrors.city ? 'border-red-500' : 'border-gray-200'}`}
-                                                                placeholder="e.g. Nouakchott"
-                                                            />
-                                                            {formErrors.city && (
-                                                                <p className="text-red-500 text-sm mt-1">{formErrors.city}</p>
-                                                            )}
-                                                        </div>
-                                                        <div>
-                                                            <label className="block text-sm font-medium text-gray-700 mb-2">No. of in-office days in a week</label>
-                                                            <select
-                                                                name="inOfficeDays"
-                                                                value={formData.inOfficeDays}
-                                                                onChange={handleChange}
-                                                                className="w-full border border-gray-200 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#00A55F] focus:border-transparent transition-all bg-white"
-                                                            >
-                                                                {[1, 2, 3, 4, 5].map((days) => (
-                                                                    <option key={days} value={days}>
-                                                                        {days} {days === 1 ? "day" : "days"}
-                                                                    </option>
-                                                                ))}
-                                                            </select>
-                                                        </div>
-                                                    </div>
-                                                )}
-
-                                                {formData.jobType === "Remote" && (
-                                                    <div className="space-y-6 bg-gray-50 p-6 rounded-xl">
-                                                        <div>
-                                                            <label className="block text-sm font-medium text-gray-700 mb-2">Select Time Zone</label>
-                                                            <select
-                                                                name="timeZone"
-                                                                value={formData.timeZone}
-                                                                onChange={handleChange}
-                                                                className={`w-full border rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#00A55F] focus:border-transparent transition-all bg-white ${formErrors.timeZone ? 'border-red-500' : 'border-gray-200'}`}
-                                                            >
-                                                                <option value="">Select time zone</option>
-                                                                {Array.from({ length: 13 }, (_, i) => i).map((offset) => (
-                                                                    <option key={offset} value={`UTC+${offset}`}>
-                                                                        UTC+{offset}
-                                                                    </option>
-                                                                ))}
-                                                            </select>
-                                                            {formErrors.timeZone && (
-                                                                <p className="text-red-500 text-sm mt-1">{formErrors.timeZone}</p>
-                                                            )}
-                                                        </div>
-                                                        <div>
-                                                            <label className="block text-sm font-medium text-gray-700 mb-2">Select Work Timings</label>
-                                                            <div className="grid grid-cols-2 gap-4">
-                                                                <div>
-                                                                    <label className="block text-sm text-gray-600 mb-1">From</label>
-                                                                    <input
-                                                                        type="time"
-                                                                        value={formData.workTimings.start}
-                                                                        onChange={(e) => setFormData(prev => ({
-                                                                            ...prev,
-                                                                            workTimings: { ...prev.workTimings, start: e.target.value }
-                                                                        }))}
-                                                                        className="w-full border border-gray-200 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#00A55F] focus:border-transparent transition-all bg-white"
-                                                                    />
-                                                                </div>
-                                                                <div>
-                                                                    <label className="block text-sm text-gray-600 mb-1">To</label>
-                                                                    <input
-                                                                        type="time"
-                                                                        value={formData.workTimings.end}
-                                                                        onChange={(e) => setFormData(prev => ({
-                                                                            ...prev,
-                                                                            workTimings: { ...prev.workTimings, end: e.target.value }
-                                                                        }))}
-                                                                        className="w-full border border-gray-200 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#00A55F] focus:border-transparent transition-all bg-white"
-                                                                    />
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                )}
-                                            </motion.div>
-                                        </AnimatePresence>
-
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-2">Number of Openings</label>
-                                            <input
-                                                type="number"
-                                                name="openings"
-                                                value={formData.openings}
-                                                onChange={handleChange}
-                                                className="w-full border border-gray-200 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#00A55F] focus:border-transparent transition-all bg-white"
-                                                min={1}
-                                                placeholder="e.g. 4"
-                                            />
-                                        </div>
-
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-2">Job Description</label>
-                                            <textarea
-                                                name="description"
-                                                value={formData.description}
-                                                onChange={handleChange}
-                                                rows={6}
-                                                className={`w-full border rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#00A55F] focus:border-transparent transition-all bg-white ${formErrors.description ? 'border-red-500' : 'border-gray-200'
-                                                    }`}
-                                                placeholder="Key responsibilities:\n1.\n2.\n3."
-                                            />
-                                            {formErrors.description && (
-                                                <p className="text-red-500 text-sm mt-1">{formErrors.description}</p>
-                                            )}
-                                        </div>
-
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                Additional Candidate Preferences
-                                            </label>
-                                            <textarea
-                                                name="preferences"
-                                                value={Array.isArray(formData.preferences) ? formData.preferences.join("\n") : (formData.preferences || "")}
-                                                onChange={(e) => handleArrayInput("preferences", e.target.value)}
-                                                rows={4}
-                                                className="w-full border border-gray-200 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#00A55F] focus:border-transparent transition-all bg-white"
-                                                placeholder="1.\n2.\n3."
-                                            />
-                                        </div>
-                                    </div>
-                                </motion.section>
-
-                                {/* Salary & Perks Section */}
-                                <motion.section className="bg-white rounded-xl shadow-sm p-6">
-                                    <h2 className="text-xl font-semibold text-gray-800 mb-6">Salary & Perks</h2>
-                                    <div className="space-y-6">
-                                        <div>
-                                            <h3 className="text-lg font-medium text-gray-800 mb-4">CTC Breakup</h3>
-                                            <div className="space-y-4">
-                                                <div>
-                                                    <label className="block text-sm font-medium text-gray-700 mb-2">Fixed Pay</label>
-                                                    <p className="text-sm text-gray-600 mb-2">Fixed pay is the fixed component of the CTC</p>
-                                                    <div className="flex items-center gap-4">
-                                                        <input
-                                                            type="number"
-                                                            placeholder="Min"
-                                                            value={formData.salary.fixed.min}
-                                                            onChange={(e) => handleSalaryChange("fixed", "min", e.target.value)}
-                                                            className={`flex-1 border rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#00A55F] focus:border-transparent transition-all bg-white ${formErrors.salary ? 'border-red-500' : 'border-gray-200'
-                                                                }`}
-                                                        />
-                                                        <input
-                                                            type="number"
-                                                            placeholder="Max"
-                                                            value={formData.salary.fixed.max}
-                                                            onChange={(e) => handleSalaryChange("fixed", "max", e.target.value)}
-                                                            className={`flex-1 border rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#00A55F] focus:border-transparent transition-all bg-white ${formErrors.salary ? 'border-red-500' : 'border-gray-200'
-                                                                }`}
-                                                        />
-                                                        <span className="text-sm text-gray-600">per year</span>
-                                                    </div>
-                                                    {formErrors.salary && (
-                                                        <p className="text-red-500 text-sm mt-1">{formErrors.salary}</p>
-                                                    )}
-                                                </div>
-
-                                                <div>
-                                                    <label className="block text-sm font-medium text-gray-700 mb-2">Variables/Incentives</label>
-                                                    <p className="text-sm text-gray-600 mb-2">
-                                                        If the role includes incentives/variable pay, we recommend mentioning it to attract better talent.
-                                                    </p>
-                                                    <div className="flex items-center gap-4">
-                                                        <input
-                                                            type="number"
-                                                            placeholder="Min"
-                                                            value={formData.salary.variable.min}
-                                                            onChange={(e) => handleSalaryChange("variable", "min", e.target.value)}
-                                                            className="flex-1 border border-gray-200 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#00A55F] focus:border-transparent transition-all bg-white"
-                                                        />
-                                                        <input
-                                                            type="number"
-                                                            placeholder="Max"
-                                                            value={formData.salary.variable.max}
-                                                            onChange={(e) => handleSalaryChange("variable", "max", e.target.value)}
-                                                            className="flex-1 border border-gray-200 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#00A55F] focus:border-transparent transition-all bg-white"
-                                                        />
-                                                        <span className="text-sm text-gray-600">per year</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-2">Perks</label>
-                                            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                                                {[
-                                                    "5 days a week",
-                                                    "Health Insurance",
-                                                    "Life Insurance",
-                                                    "Flexible work hours",
-                                                    "Informal dress code",
-                                                    "Free snacks & beverages"
-                                                ].map((perk) => (
-                                                    <label key={perk} className="flex items-center space-x-2 cursor-pointer">
-                                                        <input
-                                                            type="checkbox"
-                                                            checked={formData.perks.includes(perk)}
-                                                            onChange={(e) => {
-                                                                setFormData(prev => ({
-                                                                    ...prev,
-                                                                    perks: e.target.checked
-                                                                        ? [...prev.perks, perk]
-                                                                        : prev.perks.filter(p => p !== perk)
-                                                                }));
-                                                            }}
-                                                            className="form-checkbox rounded border-gray-300 text-[#00A55F] focus:ring-[#00A55F]"
-                                                        />
-                                                        <span className="text-sm text-gray-700">{perk}</span>
-                                                    </label>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    </div>
-                                </motion.section>
-                            </motion.div>
-                        ) : (
-                            <motion.div
-                                key="internship"
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: -20 }}
-                                className="space-y-8"
-                            >
-                                {/* Internship Details Section */}
-                                <motion.section className="bg-white rounded-xl shadow-sm p-6">
-                                    <h2 className="text-xl font-semibold text-gray-800 mb-6">Internship Details</h2>
-                                    <div className="space-y-6">
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-2">Internship Profile</label>
-                                            <input
-                                                type="text"
-                                                name="title"
-                                                value={formData.title}
-                                                onChange={handleChange}
-                                                className={`w-full border rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#00A55F] focus:border-transparent transition-all bg-white ${formErrors.title ? 'border-red-500' : 'border-gray-200'
-                                                    }`}
-                                                placeholder="e.g. Android App Development"
-                                            />
-                                            {formErrors.title && (
-                                                <p className="text-red-500 text-sm mt-1">{formErrors.title}</p>
-                                            )}
-                                        </div>
-
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-2">Skills Required</label>
-                                            <div className="flex flex-wrap gap-2 mb-2">
-                                                {formData.skills.map((skill, index) => (
-                                                    <span
-                                                        key={index}
-                                                        className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm flex items-center"
-                                                    >
-                                                        {skill}
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => {
-                                                                setFormData(prev => ({
-                                                                    ...prev,
-                                                                    skills: prev.skills.filter((_, i) => i !== index)
-                                                                }));
-                                                            }}
-                                                            className="ml-2 text-gray-500 hover:text-gray-700"
-                                                        >
-                                                            ×
-                                                        </button>
-                                                    </span>
-                                                ))}
-                                            </div>
-                                            <div className="flex items-center justify-between mb-2">
-                                                <span className="text-xs text-gray-500">
-                                                    {formData.skills.length} skill{formData.skills.length !== 1 ? 's' : ''} added
-                                                </span>
-                                                {formErrors.skills && (
-                                                    <span className="text-xs text-red-500">⚠️ {formErrors.skills}</span>
-                                                )}
-                                            </div>
-                                            <input
-                                                type="text"
-                                                placeholder="e.g. Java, React, Node.js"
-                                                className={`w-full border rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#00A55F] focus:border-transparent transition-all bg-white ${formErrors.skills ? 'border-red-500' : 'border-gray-200'
-                                                    }`}
-                                                onKeyDown={(e) => {
-                                                    if (e.key === 'Enter' && e.target.value.trim()) {
-                                                        e.preventDefault();
-                                                        const newSkill = e.target.value.trim();
-                                                        setFormData(prev => ({
-                                                            ...prev,
-                                                            skills: [...prev.skills, newSkill]
-                                                        }));
-                                                        e.target.value = '';
-                                                        // Clear skills error when user adds a skill
-                                                        if (formErrors.skills) {
-                                                            setFormErrors(prev => ({ ...prev, skills: "" }));
-                                                        }
-                                                    }
-                                                }}
-                                                onBlur={(e) => {
-                                                    // Also allow adding skills on blur if there's content
-                                                    if (e.target.value.trim()) {
-                                                        const newSkill = e.target.value.trim();
-                                                        if (!formData.skills.includes(newSkill)) {
-                                                            setFormData(prev => ({
-                                                                ...prev,
-                                                                skills: [...prev.skills, newSkill]
-                                                            }));
-                                                            if (formErrors.skills) {
-                                                                setFormErrors(prev => ({ ...prev, skills: "" }));
-                                                            }
-                                                        }
-                                                        e.target.value = '';
-                                                    }
-                                                }}
-                                            />
-                                            {formErrors.skills && (
-                                                <p className="text-red-500 text-sm mt-1">{formErrors.skills}</p>
-                                            )}
-                                        </div>
-
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-2">Internship Description</label>
-                                            <textarea
-                                                name="description"
-                                                value={formData.description}
-                                                onChange={handleChange}
-                                                rows={6}
-                                                className={`w-full border rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#00A55F] focus:border-transparent transition-all bg-white ${formErrors.description ? 'border-red-500' : 'border-gray-200'
-                                                    }`}
-                                                placeholder="Describe the internship opportunity, learning objectives, and what the intern will gain from this experience."
-                                            />
-                                            {formErrors.description && (
-                                                <p className="text-red-500 text-sm mt-1">{formErrors.description}</p>
-                                            )}
-                                        </div>
-
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700 mb-2">Job Type</label>
-                                                <div className="flex flex-wrap gap-x-6 gap-y-2">
-                                                    {["In office", "Hybrid", "Remote"].map((type) => (
-                                                        <label
-                                                            key={type}
-                                                            className="flex items-center cursor-pointer"
-                                                        >
-                                                            <input
-                                                                type="radio"
-                                                                name="jobType"
-                                                                value={type}
-                                                                checked={formData.jobType === type}
-                                                                onChange={handleChange}
-                                                                className="form-radio h-4 w-4 text-[#00A55F] transition-all focus:ring-[#00A55F]"
-                                                            />
-                                                            <span className="ml-2 text-sm text-gray-700">{type}</span>
-                                                        </label>
-                                                    ))}
-                                                </div>
-                                            </div>
-
-                                            <div>
-                                                <label className="block text-sm font-medium text-gray-700 mb-2">Part-time/Full-time</label>
-                                                <div className="flex flex-wrap gap-x-6 gap-y-2">
-                                                    {["Part-time", "Full-time"].map((type) => (
-                                                        <label
-                                                            key={type}
-                                                            className="flex items-center cursor-pointer"
-                                                        >
-                                                            <input
-                                                                type="radio"
-                                                                name="workType"
-                                                                value={type}
-                                                                checked={formData.workType === type}
-                                                                onChange={handleChange}
-                                                                className="form-radio h-4 w-4 text-[#00A55F] transition-all focus:ring-[#00A55F]"
-                                                            />
-                                                            <span className="ml-2 text-sm text-gray-700">{type}</span>
-                                                        </label>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        {/* Conditional fields based on job type for internships */}
-                                        <AnimatePresence mode="wait">
-                                            <motion.div
-                                                key={formData.jobType}
-                                                initial={{ opacity: 0, y: 10 }}
-                                                animate={{ opacity: 1, y: 0 }}
-                                                exit={{ opacity: 0, y: -10 }}
-                                                transition={{ duration: 0.2 }}
-                                            >
-                                                {formData.jobType === "In office" && (
-                                                    <div className="space-y-6 bg-gray-50 p-6 rounded-xl">
-                                                        <div>
-                                                            <label className="block text-sm font-medium text-gray-700 mb-2">City/Cities</label>
-                                                            <input
-                                                                type="text"
-                                                                name="city"
-                                                                value={formData.city}
-                                                                onChange={handleChange}
-                                                                className={`w-full border rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#00A55F] focus:border-transparent transition-all bg-white ${formErrors.city ? 'border-red-500' : 'border-gray-200'}`}
-                                                                placeholder="e.g. Nouakchott"
-                                                            />
-                                                            {formErrors.city && (
-                                                                <p className="text-red-500 text-sm mt-1">{formErrors.city}</p>
-                                                            )}
-                                                        </div>
-                                                    </div>
-                                                )}
-
-                                                {formData.jobType === "Hybrid" && (
-                                                    <div className="space-y-6 bg-gray-50 p-6 rounded-xl">
-                                                        <div>
-                                                            <label className="block text-sm font-medium text-gray-700 mb-2">City/Cities</label>
-                                                            <input
-                                                                type="text"
-                                                                name="city"
-                                                                value={formData.city}
-                                                                onChange={handleChange}
-                                                                className={`w-full border rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#00A55F] focus:border-transparent transition-all bg-white ${formErrors.city ? 'border-red-500' : 'border-gray-200'}`}
-                                                                placeholder="e.g. Nouakchott"
-                                                            />
-                                                            {formErrors.city && (
-                                                                <p className="text-red-500 text-sm mt-1">{formErrors.city}</p>
-                                                            )}
-                                                        </div>
-                                                        <div>
-                                                            <label className="block text-sm font-medium text-gray-700 mb-2">No. of in-office days in a week</label>
-                                                            <select
-                                                                name="inOfficeDays"
-                                                                value={formData.inOfficeDays}
-                                                                onChange={handleChange}
-                                                                className="w-full border border-gray-200 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#00A55F] focus:border-transparent transition-all bg-white"
-                                                            >
-                                                                {[1, 2, 3, 4, 5].map((days) => (
-                                                                    <option key={days} value={days}>
-                                                                        {days} {days === 1 ? "day" : "days"}
-                                                                    </option>
-                                                                ))}
-                                                            </select>
-                                                        </div>
-                                                    </div>
-                                                )}
-
-                                                {formData.jobType === "Remote" && (
-                                                    <div className="space-y-6 bg-gray-50 p-6 rounded-xl">
-                                                        <div>
-                                                            <label className="block text-sm font-medium text-gray-700 mb-2">Select Time Zone</label>
-                                                            <select
-                                                                name="timeZone"
-                                                                value={formData.timeZone}
-                                                                onChange={handleChange}
-                                                                className={`w-full border rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#00A55F] focus:border-transparent transition-all bg-white ${formErrors.timeZone ? 'border-red-500' : 'border-gray-200'}`}
-                                                            >
-                                                                <option value="">Select time zone</option>
-                                                                {Array.from({ length: 13 }, (_, i) => i).map((offset) => (
-                                                                    <option key={offset} value={`UTC+${offset}`}>
-                                                                        UTC+{offset}
-                                                                    </option>
-                                                                ))}
-                                                            </select>
-                                                            {formErrors.timeZone && (
-                                                                <p className="text-red-500 text-sm mt-1">{formErrors.timeZone}</p>
-                                                            )}
-                                                        </div>
-                                                        <div>
-                                                            <label className="block text-sm font-medium text-gray-700 mb-2">Select Work Timings</label>
-                                                            <div className="grid grid-cols-2 gap-4">
-                                                                <div>
-                                                                    <label className="block text-sm text-gray-600 mb-1">From</label>
-                                                                    <input
-                                                                        type="time"
-                                                                        value={formData.workTimings.start}
-                                                                        onChange={(e) => setFormData(prev => ({
-                                                                            ...prev,
-                                                                            workTimings: { ...prev.workTimings, start: e.target.value }
-                                                                        }))}
-                                                                        className="w-full border border-gray-200 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#00A55F] focus:border-transparent transition-all bg-white"
-                                                                    />
-                                                                </div>
-                                                                <div>
-                                                                    <label className="block text-sm text-gray-600 mb-1">To</label>
-                                                                    <input
-                                                                        type="time"
-                                                                        value={formData.workTimings.end}
-                                                                        onChange={(e) => setFormData(prev => ({
-                                                                            ...prev,
-                                                                            workTimings: { ...prev.workTimings, end: e.target.value }
-                                                                        }))}
-                                                                        className="w-full border border-gray-200 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#00A55F] focus:border-transparent transition-all bg-white"
-                                                                    />
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                )}
-                                            </motion.div>
-                                        </AnimatePresence>
-
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-2">Number of Openings</label>
-                                            <input
-                                                type="number"
-                                                name="openings"
-                                                value={formData.openings}
-                                                onChange={handleChange}
-                                                className="w-full border border-gray-200 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#00A55F] focus:border-transparent transition-all bg-white"
-                                                min={1}
-                                                placeholder="e.g. 4"
-                                            />
-                                        </div>
-
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-2">Start Date</label>
-                                            <div className="flex flex-wrap gap-x-6 gap-y-2">
-                                                {["Immediately", "Later"].map((type) => (
-                                                    <label
-                                                        key={type}
-                                                        className="flex items-center cursor-pointer"
-                                                    >
-                                                        <input
-                                                            type="radio"
-                                                            name="startDate"
-                                                            value={type}
-                                                            checked={formData.startDate === type}
-                                                            onChange={handleChange}
-                                                            className="form-radio h-4 w-4 text-[#00A55F] transition-all focus:ring-[#00A55F]"
-                                                        />
-                                                        <span className="ml-2 text-sm text-gray-700">{type}</span>
-                                                    </label>
-                                                ))}
-                                            </div>
-                                        </div>
-
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-2">Duration</label>
-                                            <select
-                                                name="duration"
-                                                value={formData.duration}
-                                                onChange={handleChange}
-                                                className="w-full border border-gray-200 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#00A55F] focus:border-transparent transition-all bg-white"
-                                            >
-                                                {Array.from({ length: 12 }, (_, i) => i + 1).map((month) => (
-                                                    <option key={month} value={month}>
-                                                        {month} {month === 1 ? "Month" : "Months"}
-                                                    </option>
-                                                ))}
-                                            </select>
-                                        </div>
-
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-2">Application Deadline</label>
-                                            <input
-                                                type="date"
-                                                name="deadline"
-                                                value={formData.deadline}
-                                                onChange={handleChange}
-                                                className="w-full border border-gray-200 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#00A55F] focus:border-transparent transition-all bg-white"
-                                                min={new Date().toISOString().split('T')[0]}
-                                            />
-                                            {formErrors.deadline && (
-                                                <p className="text-red-500 text-sm mt-1">{formErrors.deadline}</p>
-                                            )}
-                                        </div>
-
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                Intern's Responsibilities
-                                            </label>
-                                            <textarea
-                                                name="responsibilities"
-                                                value={Array.isArray(formData.responsibilities) ? formData.responsibilities.join("\n") : (formData.responsibilities || "")}
-                                                onChange={(e) => handleArrayInput("responsibilities", e.target.value)}
-                                                rows={4}
-                                                className="w-full border border-gray-200 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#00A55F] focus:border-transparent transition-all bg-white"
-                                                placeholder="1.\n2.\n3."
-                                            />
-                                        </div>
-
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                Additional Candidate Preferences
-                                            </label>
-                                            <textarea
-                                                name="preferences"
-                                                value={Array.isArray(formData.preferences) ? formData.preferences.join("\n") : (formData.preferences || "")}
-                                                onChange={(e) => handleArrayInput("preferences", e.target.value)}
-                                                rows={4}
-                                                className="w-full border border-gray-200 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#00A55F] focus:border-transparent transition-all bg-white"
-                                                placeholder="1.\n2.\n3."
-                                            />
-                                        </div>
-
-                                        <div>
-                                            <label className="flex items-center space-x-2 cursor-pointer">
-                                                <input
-                                                    type="checkbox"
-                                                    checked={formData.allowWomenRestart}
-                                                    onChange={(e) => setFormData(prev => ({ ...prev, allowWomenRestart: e.target.checked }))}
-                                                    className="form-checkbox rounded border-gray-300 text-[#00A55F] focus:ring-[#00A55F]"
-                                                />
-                                                <span className="text-sm text-gray-700">
-                                                    Allow applications from women also who are willing to start/restart their career
-                                                </span>
-                                            </label>
-                                        </div>
-                                    </div>
-                                </motion.section>
-
-                                {/* Stipend & Perks Section */}
-                                <motion.section className="bg-white rounded-xl shadow-sm p-6">
-                                    <h2 className="text-xl font-semibold text-gray-800 mb-6">Stipend & Perks</h2>
-                                    <div className="space-y-6">
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-2">Stipend Type</label>
-                                            <div className="flex flex-wrap gap-x-6 gap-y-2">
-                                                {["Paid", "Unpaid"].map((type) => (
-                                                    <label
-                                                        key={type}
-                                                        className="flex items-center cursor-pointer"
-                                                    >
-                                                        <input
-                                                            type="radio"
-                                                            name="stipendType"
-                                                            value={type}
-                                                            checked={formData.stipend.type === type}
-                                                            onChange={(e) => {
-                                                                setFormData(prev => ({
-                                                                    ...prev,
-                                                                    stipend: { ...prev.stipend, type: e.target.value }
-                                                                }));
-
-                                                                // Clear stipend error when switching to unpaid
-                                                                if (e.target.value === "Unpaid") {
-                                                                    setFormErrors(prev => ({ ...prev, stipend: "" }));
-                                                                }
-                                                            }}
-                                                            className="form-radio h-4 w-4 text-[#00A55F] transition-all focus:ring-[#00A55F]"
-                                                        />
-                                                        <span className="ml-2 text-sm text-gray-700">{type}</span>
-                                                    </label>
-                                                ))}
-                                            </div>
-                                        </div>
-
-                                        {formData.stipend.type === "Paid" && (
-                                            <>
-                                                <div>
-                                                    <label className="block text-sm font-medium text-gray-700 mb-2">Fixed Stipend</label>
-                                                    <div className="flex items-center gap-4">
-                                                        <input
-                                                            type="number"
-                                                            placeholder="Min"
-                                                            value={formData.stipend.fixed.min}
-                                                            onChange={(e) => handleStipendChange("fixed", "min", e.target.value)}
-                                                            className={`flex-1 border rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#00A55F] focus:border-transparent transition-all bg-white ${formErrors.stipend ? 'border-red-500' : 'border-gray-200'
-                                                                }`}
-                                                        />
-                                                        <input
-                                                            type="number"
-                                                            placeholder="Max"
-                                                            value={formData.stipend.fixed.max}
-                                                            onChange={(e) => handleStipendChange("fixed", "max", e.target.value)}
-                                                            className={`flex-1 border rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#00A55F] focus:border-transparent transition-all bg-white ${formErrors.stipend ? 'border-red-500' : 'border-gray-200'
-                                                                }`}
-                                                        />
-                                                        <span className="text-sm text-gray-600">per month</span>
-                                                    </div>
-                                                    {formErrors.stipend && (
-                                                        <p className="text-red-500 text-sm mt-1">{formErrors.stipend}</p>
-                                                    )}
-                                                </div>
-
-                                                <div>
-                                                    <label className="block text-sm font-medium text-gray-700 mb-2">Incentives</label>
-                                                    <p className="text-sm text-gray-600 mb-2">
-                                                        If the role includes incentives/variable pay, we recommend mentioning it to attract better talent.
-                                                    </p>
-                                                    <div className="flex items-center gap-4">
-                                                        <input
-                                                            type="number"
-                                                            placeholder="Min"
-                                                            value={formData.stipend.incentives.min}
-                                                            onChange={(e) => handleStipendChange("incentives", "min", e.target.value)}
-                                                            className="flex-1 border border-gray-200 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#00A55F] focus:border-transparent transition-all bg-white"
-                                                        />
-                                                        <input
-                                                            type="number"
-                                                            placeholder="Max"
-                                                            value={formData.stipend.incentives.max}
-                                                            onChange={(e) => handleStipendChange("incentives", "max", e.target.value)}
-                                                            className="flex-1 border border-gray-200 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#00A55F] focus:border-transparent transition-all bg-white"
-                                                        />
-                                                        <span className="text-sm text-gray-600">per month</span>
-                                                    </div>
-                                                </div>
-                                            </>
-                                        )}
-
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-2">Perks</label>
-                                            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                                                {[
-                                                    "Certificate",
-                                                    "Letter of recommendation",
-                                                    "Flexible work hours",
-                                                    "5 days a week",
-                                                    "Informal dress code",
-                                                    "Free snacks & beverages"
-                                                ].map((perk) => (
-                                                    <label key={perk} className="flex items-center space-x-2 cursor-pointer">
-                                                        <input
-                                                            type="checkbox"
-                                                            checked={formData.perks.includes(perk)}
-                                                            onChange={(e) => {
-                                                                setFormData(prev => ({
-                                                                    ...prev,
-                                                                    perks: e.target.checked
-                                                                        ? [...prev.perks, perk]
-                                                                        : prev.perks.filter(p => p !== perk)
-                                                                }));
-                                                            }}
-                                                            className="form-checkbox rounded border-gray-300 text-[#00A55F] focus:ring-[#00A55F]"
-                                                        />
-                                                        <span className="text-sm text-gray-700">{perk}</span>
-                                                    </label>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    </div>
-                                </motion.section>
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
-
-                    {/* Screening Questions Section */}
-                    <motion.section
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="bg-white rounded-xl shadow-sm p-6"
-                    >
-                        <h2 className="text-xl font-semibold text-gray-800 mb-1">Screening Questions</h2>
-                        <p className="text-gray-500 text-sm mb-6">You can use these questions to filter relevant applications</p>
-                        <div className="space-y-8">
-                            {/* Default Question (always present) */}
-                            <div className="bg-gray-50 p-4 rounded-lg border border-gray-100 flex items-center justify-between">
-                                <div>
-                                    <div className="text-sm font-medium text-gray-700 mb-1">Availability <span className="text-xs text-gray-400">(Default)</span></div>
-                                    <div className="text-sm text-gray-700">Please confirm your availability for this job. If not available immediately, how early would you be able to join?</div>
-                                </div>
-                            </div>
-
-                            {/* Additional Questions (from bank or custom) */}
-                            <div className="space-y-4">
-                                {formData.additionalQuestions.map((q, idx) => (
-                                    <div key={idx} className="bg-gray-50 p-4 rounded-lg border border-gray-100 flex flex-col md:flex-row md:items-center gap-2 md:gap-4 relative group transition-all">
-                                        <div className="flex-1">
-                                            <div className="text-sm text-gray-800 mb-1">{q.text}</div>
-                                            {q.idealAnswer && <div className="text-xs text-gray-500">Ideal answer: <span className="font-medium text-gray-700">{q.idealAnswer}</span></div>}
-                                            {q.type && <div className="text-xs text-gray-400 mt-1">Response type: {q.type}</div>}
-                                        </div>
-                                        <button
-                                            type="button"
-                                            onClick={() => setFormData(prev => ({
-                                                ...prev,
-                                                additionalQuestions: prev.additionalQuestions.filter((_, i) => i !== idx)
-                                            }))}
-                                            className="absolute top-2 right-2 text-gray-400 hover:text-red-500 transition-colors"
-                                            aria-label="Remove question"
-                                        >
-                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                                                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                                            </svg>
-                                        </button>
-                                    </div>
-                                ))}
-                            </div>
-
-                            {/* Question Bank Chips */}
-                            <div className="flex flex-wrap gap-2 mt-2">
-                                {[
-                                    { text: 'Why should you be hired for this role?', idealAnswer: '', type: 'Short Answer' },
-                                    { text: 'Do you have a working laptop and internet?', idealAnswer: 'Yes', type: 'Yes/No' },
-                                    { text: 'Cover Letter', idealAnswer: '', type: 'Short Answer' },
-                                    { text: 'Laptop & Internet', idealAnswer: '', type: 'Yes/No' },
-                                    { text: 'Driving License', idealAnswer: '', type: 'Yes/No' },
-                                    { text: '2/4 Wheeler', idealAnswer: '', type: 'Yes/No' },
-                                    { text: 'Weekend Availability', idealAnswer: '', type: 'Yes/No' },
-                                    { text: 'Open for Fieldwork', idealAnswer: '', type: 'Yes/No' },
-                                    { text: 'Night Shift', idealAnswer: '', type: 'Yes/No', probable: 'Are you comfortable working night shifts?' },
-                                    { text: 'Work Experience', idealAnswer: '', type: 'Short Answer' },
-                                    { text: 'Skill Proficiency', idealAnswer: '', type: 'Short Answer' },
-                                    { text: 'Portfolio Link', idealAnswer: '', type: 'Short Answer' },
-                                    { text: 'Language Proficiency', idealAnswer: '', type: 'Short Answer' },
-                                ].map((q, i) => {
-                                    // If 'probable', use that as the question text
-                                    const questionText = q.probable || q.text;
-                                    const alreadyAdded = formData.additionalQuestions.some(added => added.text === questionText);
-                                    return (
-                                        <button
-                                            key={i}
-                                            type="button"
-                                            disabled={formData.additionalQuestions.length >= 4 || alreadyAdded}
-                                            onClick={() => {
-                                                if (!alreadyAdded && formData.additionalQuestions.length < 4) {
-                                                    setFormData(prev => ({
-                                                        ...prev,
-                                                        additionalQuestions: [
-                                                            ...prev.additionalQuestions,
-                                                            { text: questionText, idealAnswer: q.idealAnswer, type: q.type }
-                                                        ]
-                                                    }));
-                                                }
-                                            }}
-                                            className={`px-3 py-1 rounded-lg text-sm border border-gray-200 bg-gray-50 hover:bg-[#00A55F] hover:text-white transition-all ${formData.additionalQuestions.length >= 4 || alreadyAdded ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                        >
-                                            {q.text}
-                                        </button>
-                                    );
-                                })}
-                            </div>
-
-                            {/* Add Custom Question Button & Card */}
-                            {formData.additionalQuestions.length < 4 && !formData.showCustom && (
-                                <button
-                                    type="button"
-                                    onClick={() => setFormData(prev => ({ ...prev, showCustom: true }))}
-                                    className="mt-4 px-4 py-2 border border-[#00A55F] text-[#00A55F] rounded-lg font-medium hover:bg-[#00A55F] hover:text-white transition-all"
-                                >
-                                    + Add custom question
-                                </button>
-                            )}
-                            {formData.showCustom && formData.additionalQuestions.length < 4 && (
-                                <div className="bg-gray-50 p-4 rounded-lg border border-gray-100 mt-2">
-                                    <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
-                                        <div className="flex-1">
-                                            <div className="text-sm font-medium text-gray-700 mb-1">Custom question {formData.additionalQuestions.length + 1}</div>
-                                            <textarea
-                                                value={formData.customQuestionText || ''}
-                                                onChange={e => setFormData(prev => ({ ...prev, customQuestionText: e.target.value }))}
-                                                className="w-full border border-gray-200 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#00A55F] focus:border-transparent transition-all bg-white"
-                                                placeholder="Type in your question"
-                                                rows={2}
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="block text-xs text-gray-500 mb-1">Response type</label>
-                                            <select
-                                                value={formData.customQuestionType || 'Short Answer'}
-                                                onChange={e => setFormData(prev => ({ ...prev, customQuestionType: e.target.value }))}
-                                                className="border border-gray-200 rounded-lg px-2 py-2 focus:ring-2 focus:ring-[#00A55F] focus:border-transparent transition-all bg-white text-sm"
-                                            >
-                                                <option>Short Answer</option>
-                                                <option>Yes/No</option>
-                                                <option>Multiple choice</option>
-                                                <option>Numbers</option>
-                                                <option>Linear Scale (on 1 to 5)</option>
-                                            </select>
-                                        </div>
-                                        <button
-                                            type="button"
-                                            disabled={!formData.customQuestionText || !formData.customQuestionText.trim()}
-                                            onClick={() => {
-                                                if (!formData.customQuestionText || !formData.customQuestionText.trim()) return;
-                                                setFormData(prev => ({
-                                                    ...prev,
-                                                    additionalQuestions: [
-                                                        ...prev.additionalQuestions,
-                                                        {
-                                                            text: prev.customQuestionText,
-                                                            idealAnswer: '',
-                                                            type: prev.customQuestionType || 'Short Answer',
-                                                        }
-                                                    ],
-                                                    customQuestionText: '',
-                                                    customQuestionType: 'Short Answer',
-                                                    showCustom: false,
-                                                }));
-                                            }}
-                                            className="px-4 py-2 bg-[#00A55F] text-white rounded-lg font-medium hover:bg-[#008c4f] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                                        >
-                                            Save
-                                        </button>
-                                        <button
-                                            type="button"
-                                            onClick={() => setFormData(prev => ({ ...prev, showCustom: false, customQuestionText: '' }))}
-                                            className="px-2 py-2 text-gray-400 hover:text-red-500 transition-colors"
-                                            aria-label="Cancel custom question"
-                                        >
-                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                                                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                                            </svg>
-                                        </button>
-                                    </div>
-                                    {!formData.customQuestionText && <div className="text-xs text-red-500 mt-2">This field is required</div>}
-                                </div>
-                            )}
-                            {/* Max questions warning */}
-                            {formData.additionalQuestions.length >= 4 && (
-                                <div className="text-xs text-red-500 mt-2">You've reached the maximum questions limit. Please remove one to add another.</div>
-                            )}
-                        </div>
-                    </motion.section>
-                </form>
+                <div className="mt-4">
+                    <label className="block font-semibold mb-1 text-gray-800">Description</label>
+                    <textarea name="description" value={form.description} onChange={handleChange} rows={4} className="w-full border border-gray-200 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#00A55F] focus:border-transparent transition-all bg-white" />
+                    {errors.description && <p className="text-red-500 text-sm mt-1">{errors.description}</p>}
+                </div>
             </div>
-
-            {/* Sticky Bottom Action Bar */}
-            <motion.div
-                initial={{ opacity: 0, y: 100 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 py-4 px-4"
-            >
-                <div className="max-w-5xl mx-auto flex justify-between items-center">
-                    {/* Debug button for development */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label className="block font-semibold mb-1 text-gray-800">Type</label>
+                    <div className="relative">
+                        <select name="type" value={form.type} onChange={handleChange} className="w-full border border-gray-200 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#00A55F] focus:border-transparent transition-all bg-white appearance-none pr-10">
+                            <option value="remote">Remote</option>
+                            <option value="hybrid">Hybrid</option>
+                            <option value="in-office">In Office</option>
+                        </select>
+                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
+                        </span>
+                    </div>
+                </div>
+                <div>
+                    <label className="block font-semibold mb-1 text-gray-800">Job Type</label>
+                    <div className="relative">
+                        <select name="job_type" value={form.job_type} onChange={handleChange} className="w-full border border-gray-200 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#00A55F] focus:border-transparent transition-all bg-white appearance-none pr-10">
+                            <option value="full-time">Full-time</option>
+                            <option value="part-time">Part-time</option>
+                        </select>
+                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
+                        </span>
+                    </div>
+                </div>
+                <div>
+                    <label className="block font-semibold mb-1 text-gray-800">Openings</label>
+                    <input name="openings" type="number" min="1" value={form.openings} onChange={handleChange} className="w-full border border-gray-200 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#00A55F] focus:border-transparent transition-all bg-white" />
+                </div>
+                <div>
+                    <label className="block font-semibold mb-1 text-gray-800">Duration (months)</label>
+                    <input name="duration" value={form.duration} onChange={handleChange} className="w-full border border-gray-200 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#00A55F] focus:border-transparent transition-all bg-white" />
+                </div>
+                <div>
+                    <label className="block font-semibold mb-1 text-gray-800">Duration (weeks)</label>
+                    <input name="duration_weeks" type="number" min="1" value={form.duration_weeks} onChange={handleChange} className="w-full border border-gray-200 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#00A55F] focus:border-transparent transition-all bg-white" />
+                </div>
+            </div>
+            <div className="border-t border-gray-100 pt-6 mt-6">
+                <label className="block font-semibold mb-1 text-gray-800">Responsibilities</label>
+                <textarea name="responsibilities" value={form.responsibilities} onChange={handleChange} rows={4} className="w-full border border-gray-200 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#00A55F] focus:border-transparent transition-all bg-white" placeholder="Enter detailed responsibilities..." />
+            </div>
+            {/* Preferences Section */}
+            <div>
+                <label className="block font-semibold mb-1 text-gray-800">Preferences</label>
+                <div className="flex flex-wrap gap-2 mb-3">
+                    {form.preferences.map((pref, i) => (
+                        <div key={i} className="flex items-center bg-blue-50 border border-blue-200 rounded-full px-4 py-1 text-sm text-blue-800 shadow-sm">
+                            <span>{pref}</span>
+                            <button type="button" onClick={() => removePreference(i)} className="ml-2 text-blue-500 hover:text-red-600 font-bold">×</button>
+                        </div>
+                    ))}
+                </div>
+                <div className="flex gap-2">
+                    <input
+                        type="text"
+                        value={newPreference}
+                        onChange={e => setNewPreference(e.target.value)}
+                        placeholder="Add a preference..."
+                        className="flex-1 border border-gray-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#00A55F] focus:border-transparent"
+                        maxLength={120}
+                        onKeyPress={(e) => {
+                            if (e.key === 'Enter') {
+                                e.preventDefault();
+                                addPreference(newPreference);
+                            }
+                        }}
+                    />
                     <button
                         type="button"
-                        onClick={() => {
-                            setFormErrors({});
-                            console.log("Cleared all validation errors");
-                        }}
-                        className="px-4 py-2 text-xs bg-gray-200 text-gray-600 rounded hover:bg-gray-300"
+                        onClick={() => addPreference(newPreference)}
+                        className="bg-[#00A55F] text-white px-4 py-2 rounded-lg font-semibold hover:bg-[#008c4f] transition-all"
+                        disabled={!newPreference.trim()}
                     >
-                        Clear Errors (Debug)
+                        Add
                     </button>
-
-                    <div className="flex space-x-4">
-                        <motion.button
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
+                </div>
+            </div>
+            {/* Screening Questions Section */}
+            <div className="border-t border-gray-100 pt-6 mt-6">
+                <div className="flex items-center justify-between mb-2">
+                    <label className="block font-semibold text-gray-800 text-lg">Screening Questions</label>
+                    <span className="text-xs text-gray-500">Max 4</span>
+                </div>
+                <div className="flex flex-wrap gap-2 mb-3">
+                    {form.screening_questions.map((q, i) => (
+                        <div key={i} className="flex items-center bg-orange-50 border border-orange-200 rounded-full px-4 py-1 text-sm text-orange-800 shadow-sm">
+                            <span>{q}</span>
+                            <button type="button" onClick={() => removeQuestion(i)} className="ml-2 text-orange-500 hover:text-red-600 font-bold">×</button>
+                        </div>
+                    ))}
+                </div>
+                {form.screening_questions.length < 4 && (
+                    <div className="flex gap-2 mb-2">
+                        <input
+                            type="text"
+                            value={newQuestion}
+                            onChange={e => setNewQuestion(e.target.value)}
+                            placeholder="Add a question..."
+                            className="flex-1 border border-gray-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#00A55F] focus:border-transparent"
+                            maxLength={120}
+                        />
+                        <button
                             type="button"
-                            onClick={handleSaveDraft}
-                            disabled={isSavingDraft || isSubmitting}
-                            className="px-6 py-2.5 border-2 border-[#00A55F] text-[#00A55F] rounded-lg font-medium hover:bg-[#00A55F] hover:text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                            onClick={() => addQuestion(newQuestion)}
+                            className="bg-[#00A55F] text-white px-4 py-2 rounded-lg font-semibold hover:bg-[#008c4f] transition-all"
+                            disabled={!newQuestion.trim()}
                         >
-                            {isSavingDraft ? (
-                                <div className="flex items-center gap-2">
-                                    <div className="w-4 h-4 border-2 border-[#00A55F] border-t-transparent rounded-full animate-spin"></div>
-                                    Saving...
-                                </div>
-                            ) : (
-                                "Save as Draft"
-                            )}
-                        </motion.button>
-                        <motion.button
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
-                            type="submit"
-                            onClick={handleSubmit}
-                            disabled={isSubmitting || isSavingDraft}
-                            className="px-6 py-2.5 bg-[#00A55F] text-white rounded-lg font-medium hover:bg-[#008f4c] transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                            Add
+                        </button>
+                    </div>
+                )}
+                {form.screening_questions.length < 4 && (
+                    <div className="flex flex-wrap gap-2 mt-2">
+                        {SUGGESTED_QUESTIONS.filter(q => !form.screening_questions.includes(q)).map((q, i) => (
+                            <button
+                                key={i}
+                                type="button"
+                                onClick={() => addQuestion(q)}
+                                className="px-3 py-1 rounded-full bg-orange-100 text-orange-700 border border-orange-200 hover:bg-orange-200 text-xs font-medium"
+                            >
+                                {q}
+                            </button>
+                        ))}
+                    </div>
+                )}
+            </div>
+            {/* Perks Section */}
+            <div>
+                <label className="block font-semibold mb-1 text-gray-800">Perks</label>
+                <div className="flex flex-wrap gap-2 mb-3">
+                    {form.perks.map((perk, i) => (
+                        <div key={i} className="flex items-center bg-green-50 border border-green-200 rounded-full px-4 py-1 text-sm text-green-800 shadow-sm">
+                            <span>{perk}</span>
+                            <button type="button" onClick={() => removePerk(i)} className="ml-2 text-green-500 hover:text-red-600 font-bold">×</button>
+                        </div>
+                    ))}
+                </div>
+                <div className="flex flex-wrap gap-2 mb-2">
+                    {SUGGESTED_PERKS.filter(perk => !form.perks.includes(perk)).map((perk, i) => (
+                        <button
+                            key={i}
+                            type="button"
+                            onClick={() => addPerk(perk)}
+                            className="px-3 py-1 rounded-full bg-green-100 text-green-700 border border-green-200 hover:bg-green-200 text-xs font-medium"
                         >
-                            {isSubmitting ? (
-                                <div className="flex items-center gap-2">
-                                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                                    {isEdit ? 'Updating...' : 'Posting...'}
-                                </div>
-                            ) : (
-                                isEdit ? 'Update Opportunity' : `Post ${formData.opportunityType}`
-                            )}
-                        </motion.button>
+                            {perk}
+                        </button>
+                    ))}
+                </div>
+                <div className="flex gap-2">
+                    <input
+                        type="text"
+                        value={newPerk}
+                        onChange={e => setNewPerk(e.target.value)}
+                        placeholder="Add a custom perk..."
+                        className="flex-1 border border-gray-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#00A55F] focus:border-transparent"
+                        maxLength={60}
+                    />
+                    <button
+                        type="button"
+                        onClick={() => addPerk(newPerk)}
+                        className="bg-[#00A55F] text-white px-4 py-2 rounded-lg font-semibold hover:bg-[#008c4f] transition-all"
+                        disabled={!newPerk.trim()}
+                    >
+                        Add
+                    </button>
+                </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label className="block font-semibold mb-1 text-gray-800">Stipend Type</label>
+                    <select name="stipend_type" value={form.stipend_type} onChange={handleChange} className="w-full border border-gray-200 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#00A55F] focus:border-transparent transition-all bg-white">
+                        <option value="paid">Paid</option>
+                        <option value="unpaid">Unpaid</option>
+                    </select>
+                    {errors.stipend_type && <p className="text-red-500 text-sm mt-1">{errors.stipend_type}</p>}
+                </div>
+                <div>
+                    <label className="block font-semibold mb-1 text-gray-800">
+                        Stipend Amount {form.stipend_type === "unpaid" && <span className="text-gray-500 text-sm">(Not applicable)</span>}
+                    </label>
+                    <input
+                        name="stipend"
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={form.stipend}
+                        onChange={handleChange}
+                        disabled={form.stipend_type === "unpaid"}
+                        className={`w-full border border-gray-200 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#00A55F] focus:border-transparent transition-all bg-white ${form.stipend_type === "unpaid" ? "bg-gray-100 text-gray-500 cursor-not-allowed" : ""
+                            }`}
+                    />
+                    {errors.stipend && <p className="text-red-500 text-sm mt-1">{errors.stipend}</p>}
+                </div>
+            </div>
+            <div className="flex items-center gap-2">
+                <input
+                    type="checkbox"
+                    name="negotiable"
+                    checked={form.negotiable}
+                    onChange={handleChange}
+                    disabled={form.stipend_type === "unpaid"}
+                    className={`w-4 h-4 text-[#00A55F] border-gray-300 rounded focus:ring-[#00A55F] ${form.stipend_type === "unpaid" ? "opacity-50 cursor-not-allowed" : ""
+                        }`}
+                />
+                <label className={`text-sm ${form.stipend_type === "unpaid" ? "text-gray-500" : "text-gray-700"}`}>
+                    Stipend is negotiable {form.stipend_type === "unpaid" && "(Not applicable)"}
+                </label>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label className="block font-semibold mb-1 text-gray-800">Start Date</label>
+                    <div className="relative">
+                        <input
+                            name="start_date"
+                            type="date"
+                            value={form.start_date}
+                            onChange={handleChange}
+                            className="w-full border border-gray-200 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#00A55F] focus:border-transparent transition-all bg-white appearance-none pr-10"
+                            placeholder="mm/dd/yyyy"
+                        />
+                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 4h10a2 2 0 012 2v10a2 2 0 01-2 2H7a2 2 0 01-2-2V9a2 2 0 012-2z" /></svg>
+                        </span>
                     </div>
                 </div>
-            </motion.div>
-        </div>
+                <div>
+                    <label className="block font-semibold mb-1 text-gray-800">Deadline</label>
+                    <div className="relative">
+                        <input
+                            name="deadline"
+                            type="date"
+                            value={form.deadline}
+                            onChange={handleChange}
+                            className="w-full border border-gray-200 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#00A55F] focus:border-transparent transition-all bg-white appearance-none pr-10"
+                            placeholder="mm/dd/yyyy"
+                        />
+                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 4h10a2 2 0 012 2v10a2 2 0 01-2 2H7a2 2 0 01-2-2V9a2 2 0 012-2z" /></svg>
+                        </span>
+                    </div>
+                    {errors.deadline && <p className="text-red-500 text-sm mt-1">{errors.deadline}</p>}
+                </div>
+            </div>
+            <button type="submit" disabled={isSubmitting} className="w-full bg-gradient-to-r from-[#00A55F] to-[#008c4f] text-white py-3 rounded-xl font-bold text-lg shadow-md hover:from-[#008c4f] hover:to-[#00A55F] transition-all mt-4">
+                {isSubmitting ? (isEdit ? "Updating..." : "Posting...") : (isEdit ? "Update Internship" : "Post Internship")}
+            </button>
+        </form>
     );
 };
 
