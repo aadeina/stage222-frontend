@@ -41,6 +41,7 @@ import { getInternshipDetail, applyToInternship } from '@/services/internshipApi
 import { useAuth } from '@/context/AuthContext';
 import SkillBadge from '@/components/ui/SkillBadge';
 import AuthModal from '@/components/ui/AuthModal';
+import api from '@/services/api';
 
 const fallbackLogo = 'https://ui-avatars.com/api/?name=Stage222&background=00A55F&color=fff&rounded=true';
 
@@ -295,7 +296,9 @@ const InternshipDetail = () => {
     const navigate = useNavigate();
     const { user, isAuthenticated } = useAuth();
     const [internship, setInternship] = useState(null);
+    const [organization, setOrganization] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [orgLoading, setOrgLoading] = useState(false);
     const [error, setError] = useState(null);
     const [isSaved, setIsSaved] = useState(false);
     const [showAuthModal, setShowAuthModal] = useState(false);
@@ -313,6 +316,25 @@ const InternshipDetail = () => {
             const isUpdate = internship && JSON.stringify(response.data) !== JSON.stringify(internship);
             setInternship(response.data);
             setLastUpdated(new Date());
+
+            // Fetch complete organization details if organization exists
+            if (response.data.organization && response.data.organization.id) {
+                setOrgLoading(true);
+                try {
+                    const orgResponse = await api.get(`/organizations/${response.data.organization.id}/`);
+                    const orgData = orgResponse.data.data || orgResponse.data;
+                    setOrganization(orgData);
+                    console.log('Organization details fetched:', orgData);
+                } catch (orgError) {
+                    console.error('Error fetching organization details:', orgError);
+                    // Fallback to basic organization data from internship
+                    setOrganization(response.data.organization || {});
+                } finally {
+                    setOrgLoading(false);
+                }
+            } else {
+                setOrganization(response.data.organization || {});
+            }
 
             // Check if internship is saved (from localStorage for now)
             const savedInternships = JSON.parse(localStorage.getItem('savedInternships') || '[]');
@@ -357,6 +379,21 @@ const InternshipDetail = () => {
                 // Only update if there are actual changes
                 if (JSON.stringify(response.data) !== JSON.stringify(internship)) {
                     setInternship(response.data);
+
+                    // Also refresh organization details
+                    if (response.data.organization && response.data.organization.id) {
+                        try {
+                            const orgResponse = await api.get(`/organizations/${response.data.organization.id}/`);
+                            const orgData = orgResponse.data.data || orgResponse.data;
+                            setOrganization(orgData);
+                        } catch (orgError) {
+                            console.error('Auto-refresh: Error fetching organization details:', orgError);
+                            setOrganization(response.data.organization || {});
+                        }
+                    } else {
+                        setOrganization(response.data.organization || {});
+                    }
+
                     console.log('Auto-refresh: Internship data updated');
                 }
             } catch (err) {
@@ -496,8 +533,7 @@ const InternshipDetail = () => {
         );
     }
 
-    const organization = internship.organization || {};
-    const logoUrl = organization.logo
+    const logoUrl = organization?.logo
         ? (organization.logo.startsWith('http')
             ? organization.logo
             : `${import.meta.env.VITE_MEDIA_BASE_URL}${organization.logo}`)
@@ -524,7 +560,13 @@ const InternshipDetail = () => {
                                 <h1 className="text-lg font-semibold text-gray-900 line-clamp-1">
                                     {internship.title}
                                 </h1>
-                                <p className="text-sm text-gray-600">{organization.name}</p>
+                                <p className="text-sm text-gray-600">
+                                    {orgLoading ? (
+                                        <div className="animate-pulse bg-gray-200 h-4 w-32 rounded"></div>
+                                    ) : (
+                                        organization?.name || 'Organization'
+                                    )}
+                                </p>
                                 {lastUpdated && (
                                     <p className="text-xs text-gray-400 mt-1">
                                         Last updated: {moment(lastUpdated).fromNow()}
@@ -671,7 +713,7 @@ const InternshipDetail = () => {
                             <div className="flex-shrink-0">
                                 <img
                                     src={logoUrl}
-                                    alt={organization.name || 'Organization'}
+                                    alt={organization?.name || 'Organization'}
                                     className="w-20 h-20 object-contain rounded-xl border border-gray-200"
                                     onError={e => (e.target.src = fallbackLogo)}
                                 />
@@ -687,7 +729,7 @@ const InternshipDetail = () => {
                                         <div className="flex items-center gap-2 mb-3">
                                             <FaBuilding className="text-gray-400" />
                                             <span className="text-lg font-semibold text-gray-700">
-                                                {organization.name}
+                                                {organization?.name}
                                             </span>
                                         </div>
                                     </div>
@@ -777,7 +819,7 @@ const InternshipDetail = () => {
                                                 </div>
                                                 <div>
                                                     <h4 className="font-semibold text-gray-900">Company Website</h4>
-                                                    <p className="text-sm text-gray-600">{organization.name}</p>
+                                                    <p className="text-sm text-gray-600">{organization?.name}</p>
                                                 </div>
                                             </div>
                                             <a
@@ -1151,11 +1193,11 @@ const InternshipDetail = () => {
                             >
                                 <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
                                     <FaBuilding className="text-[#00A55F]" />
-                                    About {organization.name}
+                                    About {organization?.name || 'Organization'}
                                 </h3>
 
                                 {/* Company Description */}
-                                {organization.about && (
+                                {organization?.about && (
                                     <div className="mb-4">
                                         <p className="text-gray-700 text-sm leading-relaxed">
                                             {organization.about}
@@ -1173,7 +1215,11 @@ const InternshipDetail = () => {
                                         <div>
                                             <p className="text-xs text-gray-500">Company Size</p>
                                             <p className="text-sm font-medium text-gray-900">
-                                                {organization.employee_count || '10-50 employees'}
+                                                {orgLoading ? (
+                                                    <div className="animate-pulse bg-gray-200 h-4 w-20 rounded"></div>
+                                                ) : (
+                                                    organization?.employee_range || organization?.employee_count || 'Not specified'
+                                                )}
                                             </p>
                                         </div>
                                     </div>
@@ -1186,7 +1232,11 @@ const InternshipDetail = () => {
                                         <div>
                                             <p className="text-xs text-gray-500">Industry</p>
                                             <p className="text-sm font-medium text-gray-900">
-                                                {organization.industry || 'Technology'}
+                                                {orgLoading ? (
+                                                    <div className="animate-pulse bg-gray-200 h-4 w-24 rounded"></div>
+                                                ) : (
+                                                    organization?.industry || 'Not specified'
+                                                )}
                                             </p>
                                         </div>
                                     </div>
@@ -1199,7 +1249,11 @@ const InternshipDetail = () => {
                                         <div>
                                             <p className="text-xs text-gray-500">Location</p>
                                             <p className="text-sm font-medium text-gray-900">
-                                                {organization.city || 'Remote'}
+                                                {orgLoading ? (
+                                                    <div className="animate-pulse bg-gray-200 h-4 w-16 rounded"></div>
+                                                ) : (
+                                                    organization?.city || 'Remote'
+                                                )}
                                             </p>
                                         </div>
                                     </div>
@@ -1212,14 +1266,18 @@ const InternshipDetail = () => {
                                         <div>
                                             <p className="text-xs text-gray-500">Founded</p>
                                             <p className="text-sm font-medium text-gray-900">
-                                                {organization.founded_year || '2020'}
+                                                {orgLoading ? (
+                                                    <div className="animate-pulse bg-gray-200 h-4 w-16 rounded"></div>
+                                                ) : (
+                                                    organization?.founded_year || 'Not specified'
+                                                )}
                                             </p>
                                         </div>
                                     </div>
                                 </div>
 
                                 {/* Company Website - Enhanced */}
-                                {organization.website && (
+                                {organization?.website && (
                                     <div className="border-t pt-4">
                                         <div className="flex items-center justify-between">
                                             <div className="flex items-center gap-2">
@@ -1413,22 +1471,22 @@ const InternshipDetail = () => {
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                             <div className="text-center p-4 bg-gray-50 rounded-xl">
                                 <div className="text-2xl font-bold text-[#00A55F]">
-                                    {organization.hiring_since ?
+                                    {organization?.hiring_since ?
                                         moment(organization.hiring_since).format('MMM YYYY') :
-                                        moment(organization.created_at || internship.created_at).format('MMM YYYY')
+                                        moment(organization?.created_at || internship.created_at).format('MMM YYYY')
                                     }
                                 </div>
                                 <p className="text-sm text-gray-600">Hiring since</p>
                             </div>
                             <div className="text-center p-4 bg-gray-50 rounded-xl">
                                 <div className="text-2xl font-bold text-[#00A55F]">
-                                    {organization.total_opportunities_posted || '10+'}
+                                    {organization?.total_opportunities_posted || '10+'}
                                 </div>
                                 <p className="text-sm text-gray-600">opportunities posted</p>
                             </div>
                             <div className="text-center p-4 bg-gray-50 rounded-xl">
                                 <div className="text-2xl font-bold text-[#00A55F]">
-                                    {organization.total_hires || '5+'}
+                                    {organization?.total_hires || '5+'}
                                 </div>
                                 <p className="text-sm text-gray-600">candidates hired</p>
                             </div>
