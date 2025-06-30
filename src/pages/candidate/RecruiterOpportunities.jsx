@@ -25,10 +25,20 @@ const RecruiterOpportunities = () => {
     const fetchRecruiterOpportunities = async () => {
         try {
             // Use public internships endpoint filtered by recruiter
-            const response = await api.get(`/internships/?recruiter=${recruiterId}`);
-            const opportunities = response.data.results || response.data || [];
-            console.log('Public recruiter opportunities:', opportunities);
-            setOpportunities(opportunities);
+            const response = await api.get(`/internships/?recruiter=${recruiterId}&limit=100`);
+            const allOpportunities = response.data.results || response.data || [];
+
+            // Filter opportunities to only include those by this specific recruiter
+            const recruiterOpportunities = allOpportunities.filter(opportunity => {
+                return opportunity.recruiter === parseInt(recruiterId) ||
+                    opportunity.recruiter_id === parseInt(recruiterId) ||
+                    opportunity.user === parseInt(recruiterId) ||
+                    opportunity.recruiter === recruiterId ||
+                    opportunity.recruiter_id === recruiterId ||
+                    opportunity.user === recruiterId;
+            });
+
+            setOpportunities(recruiterOpportunities);
         } catch (error) {
             console.error('Error fetching recruiter opportunities:', error);
             // Fallback to empty array
@@ -43,7 +53,6 @@ const RecruiterOpportunities = () => {
             // Try to get recruiter profile data
             const response = await api.get(`/recruiters/${recruiterId}/`);
             const recruiterData = response.data.data || response.data;
-            console.log('Recruiter data:', recruiterData);
             setRecruiter(recruiterData);
         } catch (error) {
             console.error('Error fetching recruiter data:', error);

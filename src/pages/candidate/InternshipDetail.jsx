@@ -349,12 +349,26 @@ const InternshipDetail = () => {
                                         repeat_hires: dashboardData.repeat_candidates || 0
                                     };
                                 } else {
-                                    // For non-recruiters, try to get public data
-                                    const opportunitiesResponse = await api.get(`/internships/?recruiter=${recruiterId}`);
+                                    // For non-recruiters, get opportunities by the specific recruiter who posted this internship
+                                    const opportunitiesResponse = await api.get(`/internships/?recruiter=${recruiterId}&limit=100`);
                                     const opportunitiesData = opportunitiesResponse.data;
-                                    opportunitiesCount = opportunitiesData.count ||
-                                        opportunitiesData.results?.length ||
-                                        opportunitiesData.length || 0;
+
+                                    // Count only opportunities by this specific recruiter
+                                    if (opportunitiesData.results) {
+                                        opportunitiesCount = opportunitiesData.results.filter(opp =>
+                                            opp.recruiter === recruiterId ||
+                                            opp.recruiter_id === recruiterId ||
+                                            opp.user === recruiterId
+                                        ).length;
+                                    } else if (Array.isArray(opportunitiesData)) {
+                                        opportunitiesCount = opportunitiesData.filter(opp =>
+                                            opp.recruiter === recruiterId ||
+                                            opp.recruiter_id === recruiterId ||
+                                            opp.user === recruiterId
+                                        ).length;
+                                    } else {
+                                        opportunitiesCount = opportunitiesData.count || 0;
+                                    }
                                 }
                             } catch (oppError) {
                                 console.warn('Auto-refresh: Could not fetch opportunities data:', oppError);
@@ -478,12 +492,26 @@ const InternshipDetail = () => {
                                                 repeat_hires: dashboardData.repeat_candidates || 0
                                             };
                                         } else {
-                                            // For non-recruiters, try to get public data
-                                            const opportunitiesResponse = await api.get(`/internships/?recruiter=${recruiterId}`);
+                                            // For non-recruiters, get opportunities by the specific recruiter who posted this internship
+                                            const opportunitiesResponse = await api.get(`/internships/?recruiter=${recruiterId}&limit=100`);
                                             const opportunitiesData = opportunitiesResponse.data;
-                                            opportunitiesCount = opportunitiesData.count ||
-                                                opportunitiesData.results?.length ||
-                                                opportunitiesData.length || 0;
+
+                                            // Count only opportunities by this specific recruiter
+                                            if (opportunitiesData.results) {
+                                                opportunitiesCount = opportunitiesData.results.filter(opp =>
+                                                    opp.recruiter === recruiterId ||
+                                                    opp.recruiter_id === recruiterId ||
+                                                    opp.user === recruiterId
+                                                ).length;
+                                            } else if (Array.isArray(opportunitiesData)) {
+                                                opportunitiesCount = opportunitiesData.filter(opp =>
+                                                    opp.recruiter === recruiterId ||
+                                                    opp.recruiter_id === recruiterId ||
+                                                    opp.user === recruiterId
+                                                ).length;
+                                            } else {
+                                                opportunitiesCount = opportunitiesData.count || 0;
+                                            }
                                         }
                                     } catch (oppError) {
                                         console.warn('Auto-refresh: Could not fetch opportunities data:', oppError);
@@ -521,8 +549,6 @@ const InternshipDetail = () => {
                     } else {
                         setOrganization(response.data.organization || {});
                     }
-
-                    console.log('Auto-refresh: Internship data updated');
                 }
             } catch (err) {
                 console.error('Auto-refresh error:', err);
@@ -1672,11 +1698,8 @@ const InternshipDetail = () => {
                                                 // For authenticated recruiters, use dashboard data
                                                 return organization?.total_opportunities_posted || 0;
                                             } else {
-                                                // For non-recruiters, show public data
-                                                return organization?.total_opportunities_posted ||
-                                                    organization?.opportunities_count ||
-                                                    organization?.internships_count ||
-                                                    0;
+                                                // For non-recruiters, show the data we already fetched
+                                                return organization?.total_opportunities_posted || 0;
                                             }
                                         })()}
                                     </div>
@@ -1689,11 +1712,8 @@ const InternshipDetail = () => {
                                                     // For authenticated recruiters, use dashboard data
                                                     return organization?.total_opportunities_posted || 0;
                                                 } else {
-                                                    // For non-recruiters, show public data
-                                                    return organization?.total_opportunities_posted ||
-                                                        organization?.opportunities_count ||
-                                                        organization?.internships_count ||
-                                                        0;
+                                                    // For non-recruiters, show the data we already fetched
+                                                    return organization?.total_opportunities_posted || 0;
                                                 }
                                             })();
 
