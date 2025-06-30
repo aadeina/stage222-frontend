@@ -20,3 +20,9 @@ export const applyToInternship = (id, formData) =>
 // ✅ Admin: Approve or Reject
 export const approveInternship = (id) => api.patch(`/internships/${id}/approve/`, { approve: true });
 export const rejectInternship = (id, reason) => api.patch(`/internships/${id}/approve/`, { approve: false, reason });
+
+// 📝 Update internship (Recruiter)
+export const updateInternship = (id, data) => api.put(`/internships/${id}/`, data);
+
+// ❌ Delete internship (Recruiter)
+export const deleteInternship = (id) => api.delete(`/internships/${id}/`);

@@ -21,6 +21,7 @@ import RecruiterDashboard from '@/features/recruiter/pages/RecruiterDashboard';
 import EditOrganization from '@/features/recruiter/pages/EditOrganization';
 import RecruiterPricing from '@/features/recruiter/pages/RecruiterPricing';
 import StudentDashboard from '@/features/candidate/pages/StudentDashboard';
+import EditOpportunity from '@/features/recruiter/pages/EditOpportunity';
 
 const AppRoutes = () => {
     const location = useLocation();
@@ -179,6 +180,9 @@ const AppRoutes = () => {
                         </ProtectedRoute>
                     }
                 />
+
+                {/* Edit Opportunity Route */}
+                <Route path="/recruiter/edit-opportunity/:id" element={<EditOpportunity />} />
 
             </Routes>
         </AnimatePresence>

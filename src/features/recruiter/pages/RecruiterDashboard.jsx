@@ -8,6 +8,7 @@ import { getDashboardStats, getRecentOpportunities } from '../api/dashboardApi';
 import RecruiterHeader from '../components/RecruiterHeader';
 import api from '../../../services/api';
 import VerifiedBadge from '@/components/VerifiedBadge';
+import { deleteInternship } from '@/services/internshipApi';
 
 const RecruiterDashboard = () => {
     const navigate = useNavigate();
@@ -17,6 +18,11 @@ const RecruiterDashboard = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [isRefreshing, setIsRefreshing] = useState(false);
     const [recruiterData, setRecruiterData] = useState(null);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [deletingId, setDeletingId] = useState(null);
+    const [deleteLoading, setDeleteLoading] = useState(false);
+    const [deleteError, setDeleteError] = useState(null);
+    const [selectedOpportunity, setSelectedOpportunity] = useState(null);
 
     useEffect(() => {
         // Check if user is authenticated and is a recruiter
@@ -155,6 +161,25 @@ const RecruiterDashboard = () => {
     const getOpportunityType = (opportunity) => {
         // Handle both opportunity_type and type fields
         return opportunity.opportunity_type || opportunity.type || 'job';
+    };
+
+    // Delete handler
+    const handleDeleteOpportunity = async () => {
+        if (!selectedOpportunity) return;
+        setDeleteLoading(true);
+        setDeleteError(null);
+        try {
+            await deleteInternship(selectedOpportunity.id);
+            toast.success('Opportunity deleted!');
+            setShowDeleteModal(false);
+            setSelectedOpportunity(null);
+            // Refresh list
+            fetchDashboardData();
+        } catch (err) {
+            setDeleteError('Failed to delete. Please try again.');
+        } finally {
+            setDeleteLoading(false);
+        }
     };
 
     if (isLoading) {
@@ -478,6 +503,14 @@ const RecruiterDashboard = () => {
                                                         >
                                                             <FaUsers className="h-4 w-4" />
                                                         </button>
+                                                        <button
+                                                            onClick={() => { setSelectedOpportunity(opportunity); setShowDeleteModal(true); }}
+                                                            className="text-red-600 hover:text-red-800 transition-colors"
+                                                            title="Delete Opportunity"
+                                                            disabled={deleteLoading && deletingId === opportunity.id}
+                                                        >
+                                                            <FaTrash className="h-4 w-4" />
+                                                        </button>
                                                     </div>
                                                 </td>
                                             </tr>
@@ -699,6 +732,34 @@ const RecruiterDashboard = () => {
                     </div>
                 </div>
             </main>
+
+            {/* Delete Confirmation Modal */}
+            {showDeleteModal && selectedOpportunity && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+                    <div className="bg-white rounded-xl shadow-lg p-8 max-w-sm w-full text-center">
+                        <FaTrash className="mx-auto text-red-500 mb-4" size={32} />
+                        <h3 className="text-lg font-bold mb-2">Delete Opportunity?</h3>
+                        <p className="text-gray-600 mb-4">Are you sure you want to delete <span className="font-semibold">{selectedOpportunity.title}</span>? This action cannot be undone.</p>
+                        {deleteError && <p className="text-red-500 mb-2">{deleteError}</p>}
+                        <div className="flex justify-center gap-3">
+                            <button
+                                onClick={() => setShowDeleteModal(false)}
+                                className="px-4 py-2 rounded bg-gray-100 text-gray-700 hover:bg-gray-200"
+                                disabled={deleteLoading}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleDeleteOpportunity}
+                                className="px-4 py-2 rounded bg-red-600 text-white hover:bg-red-700 font-semibold"
+                                disabled={deleteLoading}
+                            >
+                                {deleteLoading ? 'Deleting...' : 'Delete'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

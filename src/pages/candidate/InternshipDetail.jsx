@@ -1658,7 +1658,7 @@ const InternshipDetail = () => {
                             </div>
                         </motion.div>
 
-                    
+
 
                         {/* Call to Action */}
                         <motion.div
