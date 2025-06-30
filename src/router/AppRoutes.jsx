@@ -22,6 +22,8 @@ import RecruiterDashboard from '@/features/recruiter/pages/RecruiterDashboard';
 import EditOrganization from '@/features/recruiter/pages/EditOrganization';
 import RecruiterPricing from '@/features/recruiter/pages/RecruiterPricing';
 import RecruiterProfile from '@/features/recruiter/pages/RecruiterProfile';
+import ChangePassword from '@/features/recruiter/pages/ChangePassword';
+import RecruiterBilling from '@/features/recruiter/pages/RecruiterBilling';
 import StudentDashboard from '@/features/candidate/pages/StudentDashboard';
 import EditOpportunity from '@/features/recruiter/pages/EditOpportunity';
 
@@ -203,6 +205,30 @@ const AppRoutes = () => {
                         <ProtectedRoute>
                             <PageWrapper>
                                 <RecruiterProfile />
+                            </PageWrapper>
+                        </ProtectedRoute>
+                    }
+                />
+
+                {/* Recruiter Change Password Route */}
+                <Route
+                    path="/recruiter/change-password"
+                    element={
+                        <ProtectedRoute>
+                            <PageWrapper>
+                                <ChangePassword />
+                            </PageWrapper>
+                        </ProtectedRoute>
+                    }
+                />
+
+                {/* Recruiter Billing Route */}
+                <Route
+                    path="/recruiter/billing"
+                    element={
+                        <ProtectedRoute>
+                            <PageWrapper>
+                                <RecruiterBilling />
                             </PageWrapper>
                         </ProtectedRoute>
                     }
