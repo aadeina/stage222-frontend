@@ -70,33 +70,33 @@ const EditOrganization = () => {
     const [errors, setErrors] = useState({});
     const [hasChanges, setHasChanges] = useState(false);
 
-    // Enhanced dropdown options
+    // Enhanced dropdown options - Matching backend choices exactly
     const industries = [
-        "Technology",
-        "Healthcare",
-        "Finance",
-        "Education",
-        "Manufacturing",
-        "Retail",
-        "Consulting",
-        "Marketing/Advertising",
-        "Real Estate",
-        "Transportation",
-        "Energy",
-        "Media/Entertainment",
-        "Non-profit",
-        "Government",
-        "Agriculture",
-        "Construction",
-        "Hospitality/Tourism",
-        "Legal Services",
-        "Telecommunications",
+        "Advertising/Marketing",
+        "Agriculture/Dairy",
+        "Animation",
+        "Architecture/Interior Design",
+        "Automobile",
+        "BPO",
         "Biotechnology",
+        "Consulting",
+        "Data Science/AI",
+        "Design/UX",
         "E-commerce",
-        "Food & Beverage",
-        "Fashion/Apparel",
-        "Automotive",
-        "Pharmaceuticals",
+        "Education",
+        "Finance",
+        "Government/Public Sector",
+        "Healthcare",
+        "HR/Recruitment",
+        "IT/Software",
+        "Legal",
+        "Logistics/Supply Chain",
+        "Manufacturing",
+        "Media/Journalism",
+        "NGO / Non-Profit",
+        "Retail",
+        "Telecommunications",
+        "Travel & Tourism",
         "Other"
     ];
 
@@ -117,12 +117,13 @@ const EditOrganization = () => {
     ];
 
     const employeeRanges = [
-        "1-10",
-        "11-50",
-        "51-200",
-        "201-500",
-        "501-1000",
-        "1001-5000",
+        "0–1",
+        "2–10",
+        "11–50",
+        "51–200",
+        "201–500",
+        "501–1000",
+        "1001–5000",
         "5000+"
     ];
 
@@ -172,6 +173,37 @@ const EditOrganization = () => {
             const orgData = response.data.data || response.data;
 
             console.log('Organization data received:', orgData);
+            console.log('Social links data:', orgData.social_links);
+
+            // Handle different social links data structures
+            let socialLinks = {
+                linkedin: '',
+                facebook: '',
+                instagram: ''
+            };
+
+            if (orgData.social_links) {
+                if (Array.isArray(orgData.social_links)) {
+                    // Handle array format: [linkedin, facebook, instagram]
+                    socialLinks = {
+                        linkedin: orgData.social_links[0] || '',
+                        facebook: orgData.social_links[1] || '',
+                        instagram: orgData.social_links[2] || ''
+                    };
+                } else if (typeof orgData.social_links === 'object') {
+                    // Handle object format: {linkedin: '', facebook: '', instagram: ''}
+                    socialLinks = {
+                        linkedin: orgData.social_links.linkedin || '',
+                        facebook: orgData.social_links.facebook || '',
+                        instagram: orgData.social_links.instagram || ''
+                    };
+                } else if (typeof orgData.social_links === 'string') {
+                    // Handle single string format (treat as LinkedIn)
+                    socialLinks.linkedin = orgData.social_links;
+                }
+            }
+
+            console.log('Processed social links:', socialLinks);
 
             setOriginalData(orgData);
             setFormData({
@@ -182,14 +214,10 @@ const EditOrganization = () => {
                 city: orgData.city || '',
                 employee_range: orgData.employee_range || '',
                 founded_year: orgData.founded_year || '',
-                phone: orgData.phone || '',
+                phone: orgData.phone_number || orgData.phone || '',
                 email: orgData.email || '',
                 address: orgData.address || '',
-                social_links: {
-                    linkedin: orgData.social_links?.linkedin || '',
-                    facebook: orgData.social_links?.facebook || '',
-                    instagram: orgData.social_links?.instagram || ''
-                },
+                social_links: socialLinks,
                 is_independent: orgData.is_independent || false
             });
 
@@ -213,6 +241,31 @@ const EditOrganization = () => {
     useEffect(() => {
         if (!originalData) return;
 
+        // Process social links for comparison (same logic as fetchOrganizationData)
+        let originalSocialLinks = {
+            linkedin: '',
+            facebook: '',
+            instagram: ''
+        };
+
+        if (originalData.social_links) {
+            if (Array.isArray(originalData.social_links)) {
+                originalSocialLinks = {
+                    linkedin: originalData.social_links[0] || '',
+                    facebook: originalData.social_links[1] || '',
+                    instagram: originalData.social_links[2] || ''
+                };
+            } else if (typeof originalData.social_links === 'object') {
+                originalSocialLinks = {
+                    linkedin: originalData.social_links.linkedin || '',
+                    facebook: originalData.social_links.facebook || '',
+                    instagram: originalData.social_links.instagram || ''
+                };
+            } else if (typeof originalData.social_links === 'string') {
+                originalSocialLinks.linkedin = originalData.social_links;
+            }
+        }
+
         const hasFormChanges = JSON.stringify(formData) !== JSON.stringify({
             name: originalData.name || '',
             about: originalData.about || '',
@@ -221,18 +274,16 @@ const EditOrganization = () => {
             city: originalData.city || '',
             employee_range: originalData.employee_range || '',
             founded_year: originalData.founded_year || '',
-            phone: originalData.phone || '',
+            phone: originalData.phone_number || originalData.phone || '',
             email: originalData.email || '',
             address: originalData.address || '',
-            social_links: {
-                linkedin: originalData.social_links?.linkedin || '',
-                facebook: originalData.social_links?.facebook || '',
-                instagram: originalData.social_links?.instagram || ''
-            },
+            social_links: originalSocialLinks,
             is_independent: originalData.is_independent || false
         });
 
-        setHasChanges(hasFormChanges || files.logo || files.license_document);
+        const hasFileChanges = files.logo || files.license_document;
+
+        setHasChanges(hasFormChanges || hasFileChanges);
     }, [formData, files, originalData]);
 
     const handleInputChange = (e) => {
@@ -262,23 +313,25 @@ const EditOrganization = () => {
         const file = e.target.files[0];
         if (!file) return;
 
+        console.log(`Handling ${fileType} file:`, file);
+
         // Validate file size (5MB for logo, 10MB for license)
         const maxSize = fileType === 'logo' ? 5 : 10;
         if (file.size > maxSize * 1024 * 1024) {
-            toast.error(`File size must be less than ${maxSize}MB`);
+            toast.error(`${fileType === 'logo' ? 'Logo' : 'License document'} size must be less than ${maxSize}MB`);
             return;
         }
 
         // Validate file type
         if (fileType === 'logo') {
             if (!file.type.startsWith('image/')) {
-                toast.error('Please select a valid image file');
+                toast.error('Please select a valid image file for logo');
                 return;
             }
         } else if (fileType === 'license_document') {
             const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
             if (!allowedTypes.includes(file.type)) {
-                toast.error('Please select a valid document file (PDF, DOC, or DOCX)');
+                toast.error('Please select a valid document file (PDF, DOC, or DOCX) for license document');
                 return;
             }
         }
@@ -296,13 +349,49 @@ const EditOrganization = () => {
             };
             reader.readAsDataURL(file);
         }
+
+        console.log(`File ${fileType} set successfully`);
     };
 
     const removeLogo = () => {
         setFiles(prev => ({ ...prev, logo: null }));
         setLogoPreview(null);
+        console.log('Logo removed');
     };
 
+    const removeLicenseDocument = () => {
+        setFiles(prev => ({ ...prev, license_document: null }));
+        // Mark that we want to remove the existing license document
+        setOriginalData(prev => ({ ...prev, license_document: null }));
+        console.log('License document removed');
+    };
+
+    // Transform form data to match API requirements
+    const transformFormDataForAPI = () => {
+        const apiData = {
+            founded_year: formData.founded_year ? parseInt(formData.founded_year) : null,
+            phone_number: formData.phone || '',
+            email: formData.email || '',
+            address: formData.address || '',
+            website: formData.website || '',
+            social_links: [
+                formData.social_links.linkedin || '',
+                formData.social_links.facebook || '',
+                formData.social_links.instagram || ''
+            ].filter(link => link.trim() !== '') // Remove empty links
+        };
+
+        // Add optional fields if they have values
+        if (formData.industry) apiData.industry = formData.industry;
+        if (formData.city) apiData.city = formData.city;
+        if (formData.employee_range) apiData.employee_range = formData.employee_range;
+        if (formData.name) apiData.name = formData.name;
+        if (formData.about) apiData.about = formData.about;
+
+        return apiData;
+    };
+
+    // Validate form according to API requirements
     const validateForm = () => {
         const newErrors = {};
 
@@ -316,6 +405,15 @@ const EditOrganization = () => {
 
         if (formData.email && !isValidEmail(formData.email)) {
             newErrors.email = 'Please enter a valid email address';
+        }
+
+        // API requirement: at least one verification method
+        const hasWebsite = formData.website && formData.website.trim() !== '';
+        const hasSocialLinks = Object.values(formData.social_links).some(link => link && link.trim() !== '');
+        const hasLicenseDocument = files.license_document || originalData?.license_document;
+
+        if (!hasWebsite && !hasSocialLinks && !hasLicenseDocument) {
+            newErrors.verification = 'Please provide at least one verification method (website, social media links, or license document)';
         }
 
         setErrors(newErrors);
@@ -352,39 +450,143 @@ const EditOrganization = () => {
     const saveChanges = async () => {
         setIsSaving(true);
         try {
-            const formDataToSend = new FormData();
+            const apiData = transformFormDataForAPI();
 
-            // Append form data
-            Object.keys(formData).forEach(key => {
+            console.log('Submitting organization data:', apiData);
+            console.log('Organization ID:', organizationId);
+            console.log('Files to upload:', files);
+
+            // Always use FormData for consistency with backend expectations
+            const formData = new FormData();
+
+            // Add all the form data
+            Object.keys(apiData).forEach(key => {
                 if (key === 'social_links') {
-                    formDataToSend.append(key, JSON.stringify(formData[key]));
-                } else {
-                    formDataToSend.append(key, formData[key]);
+                    // Handle social links array
+                    apiData.social_links.forEach((link, index) => {
+                        if (link) {
+                            formData.append(`social_links[${index}]`, link);
+                            console.log(`Added social link ${index}:`, link);
+                        }
+                    });
+                } else if (apiData[key] !== null && apiData[key] !== undefined && apiData[key] !== '') {
+                    formData.append(key, apiData[key]);
+                    console.log(`Added form field ${key}:`, apiData[key]);
                 }
             });
 
-            // Append files
+            // Add files if present
             if (files.logo) {
-                formDataToSend.append('logo', files.logo);
+                formData.append('logo', files.logo);
+                console.log('Added logo file:', files.logo.name, files.logo.size);
             }
             if (files.license_document) {
-                formDataToSend.append('license_document', files.license_document);
+                formData.append('license_document', files.license_document);
+                console.log('Added license document:', files.license_document.name, files.license_document.size);
             }
 
-            const response = await api.patch(`/organizations/${organizationId}/`, formDataToSend, {
+            console.log('Using FormData for organization update');
+            console.log('FormData entries:');
+            for (let [key, value] of formData.entries()) {
+                console.log(`${key}:`, value);
+            }
+
+            // Always use direct API call with FormData
+            const response = await api.put(`/organizations/${organizationId}/update/`, formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
             });
 
-            toast.success('Organization updated successfully!');
-            setOriginalData(response.data.data || response.data);
-            setFiles({ logo: null, license_document: null });
-            setHasChanges(false);
-            setShowNameWarning(false);
+            console.log('API Response:', response.data);
+
+            if (response.data.status === 'success') {
+                toast.success(response.data.message || 'Organization updated successfully!');
+
+                // Update local state with new data
+                setOriginalData(response.data.data);
+                setFiles({ logo: null, license_document: null });
+                setHasChanges(false);
+                setShowNameWarning(false);
+
+                // Refresh the form data with updated values
+                const updatedData = response.data.data;
+
+                // Process social links from response (same logic as fetchOrganizationData)
+                let updatedSocialLinks = {
+                    linkedin: '',
+                    facebook: '',
+                    instagram: ''
+                };
+
+                if (updatedData.social_links) {
+                    if (Array.isArray(updatedData.social_links)) {
+                        updatedSocialLinks = {
+                            linkedin: updatedData.social_links[0] || '',
+                            facebook: updatedData.social_links[1] || '',
+                            instagram: updatedData.social_links[2] || ''
+                        };
+                    } else if (typeof updatedData.social_links === 'object') {
+                        updatedSocialLinks = {
+                            linkedin: updatedData.social_links.linkedin || '',
+                            facebook: updatedData.social_links.facebook || '',
+                            instagram: updatedData.social_links.instagram || ''
+                        };
+                    } else if (typeof updatedData.social_links === 'string') {
+                        updatedSocialLinks.linkedin = updatedData.social_links;
+                    }
+                }
+
+                setFormData(prev => ({
+                    ...prev,
+                    name: updatedData.name || prev.name,
+                    about: updatedData.about || prev.about,
+                    website: updatedData.website || prev.website,
+                    industry: updatedData.industry || prev.industry,
+                    city: updatedData.city || prev.city,
+                    employee_range: updatedData.employee_range || prev.employee_range,
+                    founded_year: updatedData.founded_year || prev.founded_year,
+                    phone: updatedData.phone_number || updatedData.phone || prev.phone,
+                    email: updatedData.email || prev.email,
+                    address: updatedData.address || prev.address,
+                    social_links: updatedSocialLinks
+                }));
+
+                // Update logo preview if a new logo was uploaded
+                if (files.logo && response.data.data.logo) {
+                    const logoUrl = response.data.data.logo.startsWith('http')
+                        ? response.data.data.logo
+                        : `${import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:8000'}${response.data.data.logo}`;
+                    setLogoPreview(logoUrl);
+                }
+            } else {
+                toast.error('Failed to update organization');
+            }
         } catch (error) {
             console.error('Error updating organization:', error);
-            toast.error('Failed to update organization');
+
+            if (error.response?.data?.non_field_errors) {
+                // Handle backend validation errors
+                error.response.data.non_field_errors.forEach(errorMsg => {
+                    toast.error(errorMsg);
+                });
+                setErrors(prev => ({ ...prev, verification: error.response.data.non_field_errors[0] }));
+            } else if (error.response?.data?.detail) {
+                // Handle specific error messages
+                toast.error(error.response.data.detail);
+            } else if (error.response?.data?.message) {
+                toast.error(error.response.data.message);
+            } else if (error.response?.status === 400) {
+                toast.error('Please check your input and try again');
+            } else if (error.response?.status === 401) {
+                toast.error('You are not authorized to update this organization');
+            } else if (error.response?.status === 404) {
+                toast.error('Organization not found');
+            } else if (error.response?.status === 415) {
+                toast.error('File upload error. Please check file format and size.');
+            } else {
+                toast.error('Failed to update organization. Please try again.');
+            }
         } finally {
             setIsSaving(false);
         }
@@ -597,10 +799,7 @@ const EditOrganization = () => {
                                                     <FaEye className="h-4 w-4" />
                                                 </a>
                                                 <button
-                                                    onClick={() => {
-                                                        setFiles(prev => ({ ...prev, license_document: null }));
-                                                        setOriginalData(prev => ({ ...prev, license_document: null }));
-                                                    }}
+                                                    onClick={removeLicenseDocument}
                                                     className="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-colors"
                                                     title="Remove Document"
                                                 >
@@ -903,6 +1102,16 @@ const EditOrganization = () => {
                         >
                             <h3 className="text-lg font-semibold text-gray-900 mb-6">Social Media</h3>
 
+                            {/* Verification Error Display */}
+                            {errors.verification && (
+                                <div className="mb-4 bg-red-50 border border-red-200 rounded-lg p-4">
+                                    <div className="flex items-center gap-2">
+                                        <FaExclamationTriangle className="h-4 w-4 text-red-500" />
+                                        <p className="text-sm text-red-700">{errors.verification}</p>
+                                    </div>
+                                </div>
+                            )}
+
                             <div className="space-y-4">
                                 {/* LinkedIn */}
                                 <div className="relative">
@@ -999,10 +1208,13 @@ const EditOrganization = () => {
                                     disabled={!hasChanges || isSaving}
                                     whileHover={{ scale: hasChanges && !isSaving ? 1.02 : 1 }}
                                     whileTap={{ scale: hasChanges && !isSaving ? 0.98 : 1 }}
-                                    className={`px-8 py-3 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#00A55F] transition-colors font-medium ${hasChanges && !isSaving
-                                        ? 'bg-[#00A55F] hover:bg-[#008c4f]'
-                                        : 'bg-gray-300 cursor-not-allowed'
-                                        }`}
+                                    className={`
+                                        px-8 py-3 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#00A55F] transition-colors font-medium 
+                                        ${hasChanges && !isSaving
+                                            ? 'bg-[#00A55F] hover:bg-[#008c4f]'
+                                            : 'bg-gray-300 cursor-not-allowed'
+                                        }
+                                    `}
                                 >
                                     {isSaving ? (
                                         <div className="flex items-center">
@@ -1070,4 +1282,4 @@ const EditOrganization = () => {
     );
 };
 
-export default EditOrganization; 
+export default EditOrganization;
