@@ -3,6 +3,7 @@ import { AnimatePresence } from 'framer-motion';
 import PageWrapper from '@/components/layout/PageWrapper';
 import InternshipList from '@/pages/candidate/InternshipList';
 import InternshipDetail from '@/pages/candidate/InternshipDetail';
+import RecruiterOpportunities from '@/pages/candidate/RecruiterOpportunities';
 
 // Public Pages
 import Home from '@/pages/Home';
@@ -92,6 +93,16 @@ const AppRoutes = () => {
                     element={
                         <PageWrapper>
                             <InternshipDetail />
+                        </PageWrapper>
+                    }
+                />
+
+                {/* Recruiter Opportunities Route */}
+                <Route
+                    path="/recruiter/:recruiterId/opportunities"
+                    element={
+                        <PageWrapper>
+                            <RecruiterOpportunities />
                         </PageWrapper>
                     }
                 />

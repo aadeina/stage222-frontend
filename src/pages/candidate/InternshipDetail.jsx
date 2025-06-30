@@ -325,27 +325,64 @@ const InternshipDetail = () => {
                     const orgResponse = await api.get(`/organizations/${response.data.organization.id}/`);
                     const orgData = orgResponse.data.data || orgResponse.data;
 
-                    // Fetch recruiter dashboard data for real metrics
-                    try {
-                        const recruiterResponse = await api.get('/recruiters/me/');
-                        const recruiterData = recruiterResponse.data.data || recruiterResponse.data;
+                    // Get recruiter ID from the internship
+                    const recruiterId = response.data.recruiter || response.data.recruiter_id;
 
-                        // Merge organization data with recruiter metrics
-                        const enhancedOrgData = {
-                            ...orgData,
-                            total_opportunities_posted: recruiterData.total_internships_posted || recruiterData.total_jobs_posted || 0,
-                            total_hires: recruiterData.total_applications_approved || recruiterData.successful_hires || 0,
-                            avg_response_time: recruiterData.avg_response_time || '24h',
-                            avg_application_time: recruiterData.avg_application_review_time || '2.3',
-                            repeat_hires: recruiterData.repeat_candidates || 0,
-                            is_verified: orgData.is_verified || false
-                        };
+                    if (recruiterId) {
+                        try {
+                            // Use the same dashboard API that the recruiter dashboard uses
+                            let opportunitiesCount = 0;
+                            let recruiterData = {};
 
-                        setOrganization(enhancedOrgData);
-                        console.log('Enhanced organization data with recruiter metrics:', enhancedOrgData);
-                    } catch (recruiterError) {
-                        console.error('Error fetching recruiter metrics:', recruiterError);
-                        // Fallback to basic organization data
+                            try {
+                                // If the authenticated user is a recruiter, get their dashboard data
+                                if (user && user.role === 'recruiter') {
+                                    const dashboardResponse = await api.get('/recruiters/dashboard/');
+                                    const dashboardData = dashboardResponse.data;
+                                    opportunitiesCount = dashboardData.total_opportunities || 0;
+
+                                    // Use dashboard data for other metrics too
+                                    recruiterData = {
+                                        total_hires: dashboardData.total_hires || 0,
+                                        avg_response_time: dashboardData.avg_response_time || '24h',
+                                        avg_application_time: dashboardData.avg_application_review_time || '2.3',
+                                        repeat_hires: dashboardData.repeat_candidates || 0
+                                    };
+                                } else {
+                                    // For non-recruiters, try to get public data
+                                    const opportunitiesResponse = await api.get(`/internships/?recruiter=${recruiterId}`);
+                                    const opportunitiesData = opportunitiesResponse.data;
+                                    opportunitiesCount = opportunitiesData.count ||
+                                        opportunitiesData.results?.length ||
+                                        opportunitiesData.length || 0;
+                                }
+                            } catch (oppError) {
+                                console.warn('Auto-refresh: Could not fetch opportunities data:', oppError);
+                                // Fallback to basic data
+                                opportunitiesCount = 0;
+                            }
+
+                            // Merge organization data with recruiter metrics
+                            const enhancedOrgData = {
+                                ...orgData,
+                                total_opportunities_posted: opportunitiesCount,
+                                total_hires: recruiterData.total_hires || 0,
+                                avg_response_time: recruiterData.avg_response_time || '24h',
+                                avg_application_time: recruiterData.avg_application_review_time || '2.3',
+                                repeat_hires: recruiterData.repeat_candidates || 0,
+                                is_verified: orgData.is_verified || false,
+                                recruiter_id: recruiterId
+                            };
+
+                            setOrganization(enhancedOrgData);
+                        } catch (recruiterError) {
+                            console.error('Auto-refresh: Error fetching recruiter data:', recruiterError);
+                            setOrganization({
+                                ...orgData,
+                                recruiter_id: recruiterId
+                            });
+                        }
+                    } else {
                         setOrganization(orgData);
                     }
                 } catch (orgError) {
@@ -392,6 +429,14 @@ const InternshipDetail = () => {
         }
     }, [id]);
 
+    // Debug: Log organization data changes
+    useEffect(() => {
+        if (organization) {
+            console.log('Organization data updated:', organization);
+            console.log('Total opportunities posted:', organization.total_opportunities_posted);
+        }
+    }, [organization]);
+
     // Auto-refresh every 30 seconds to check for status changes
     useEffect(() => {
         if (!id) return;
@@ -409,25 +454,64 @@ const InternshipDetail = () => {
                             const orgResponse = await api.get(`/organizations/${response.data.organization.id}/`);
                             const orgData = orgResponse.data.data || orgResponse.data;
 
-                            // Also fetch recruiter dashboard data for real metrics
-                            try {
-                                const recruiterResponse = await api.get('/recruiters/me/');
-                                const recruiterData = recruiterResponse.data.data || recruiterResponse.data;
+                            // Get recruiter ID from the internship
+                            const recruiterId = response.data.recruiter || response.data.recruiter_id;
 
-                                // Merge organization data with recruiter metrics
-                                const enhancedOrgData = {
-                                    ...orgData,
-                                    total_opportunities_posted: recruiterData.total_internships_posted || recruiterData.total_jobs_posted || 0,
-                                    total_hires: recruiterData.total_applications_approved || recruiterData.successful_hires || 0,
-                                    avg_response_time: recruiterData.avg_response_time || '24h',
-                                    avg_application_time: recruiterData.avg_application_review_time || '2.3',
-                                    repeat_hires: recruiterData.repeat_candidates || 0,
-                                    is_verified: orgData.is_verified || false
-                                };
+                            if (recruiterId) {
+                                try {
+                                    // Use the same dashboard API that the recruiter dashboard uses
+                                    let opportunitiesCount = 0;
+                                    let recruiterData = {};
 
-                                setOrganization(enhancedOrgData);
-                            } catch (recruiterError) {
-                                console.error('Auto-refresh: Error fetching recruiter metrics:', recruiterError);
+                                    try {
+                                        // If the authenticated user is a recruiter, get their dashboard data
+                                        if (user && user.role === 'recruiter') {
+                                            const dashboardResponse = await api.get('/recruiters/dashboard/');
+                                            const dashboardData = dashboardResponse.data;
+                                            opportunitiesCount = dashboardData.total_opportunities || 0;
+
+                                            // Use dashboard data for other metrics too
+                                            recruiterData = {
+                                                total_hires: dashboardData.total_hires || 0,
+                                                avg_response_time: dashboardData.avg_response_time || '24h',
+                                                avg_application_time: dashboardData.avg_application_review_time || '2.3',
+                                                repeat_hires: dashboardData.repeat_candidates || 0
+                                            };
+                                        } else {
+                                            // For non-recruiters, try to get public data
+                                            const opportunitiesResponse = await api.get(`/internships/?recruiter=${recruiterId}`);
+                                            const opportunitiesData = opportunitiesResponse.data;
+                                            opportunitiesCount = opportunitiesData.count ||
+                                                opportunitiesData.results?.length ||
+                                                opportunitiesData.length || 0;
+                                        }
+                                    } catch (oppError) {
+                                        console.warn('Auto-refresh: Could not fetch opportunities data:', oppError);
+                                        // Fallback to basic data
+                                        opportunitiesCount = 0;
+                                    }
+
+                                    // Merge organization data with recruiter metrics
+                                    const enhancedOrgData = {
+                                        ...orgData,
+                                        total_opportunities_posted: opportunitiesCount,
+                                        total_hires: recruiterData.total_hires || 0,
+                                        avg_response_time: recruiterData.avg_response_time || '24h',
+                                        avg_application_time: recruiterData.avg_application_review_time || '2.3',
+                                        repeat_hires: recruiterData.repeat_candidates || 0,
+                                        is_verified: orgData.is_verified || false,
+                                        recruiter_id: recruiterId
+                                    };
+
+                                    setOrganization(enhancedOrgData);
+                                } catch (recruiterError) {
+                                    console.error('Auto-refresh: Error fetching recruiter data:', recruiterError);
+                                    setOrganization({
+                                        ...orgData,
+                                        recruiter_id: recruiterId
+                                    });
+                                }
+                            } else {
                                 setOrganization(orgData);
                             }
                         } catch (orgError) {
@@ -1565,22 +1649,62 @@ const InternshipDetail = () => {
                                 initial={{ scale: 0.9, opacity: 0 }}
                                 animate={{ scale: 1, opacity: 1 }}
                                 transition={{ delay: 0.9, type: "spring", damping: 20 }}
-                                className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300 group"
+                                className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all duration-300 group cursor-pointer"
+                                onClick={() => {
+                                    const recruiterId = internship.recruiter || internship.recruiter_id || organization?.recruiter_id;
+                                    if (recruiterId) {
+                                        navigate(`/recruiter/${recruiterId}/opportunities`);
+                                    } else {
+                                        toast.error('Recruiter information not available');
+                                    }
+                                }}
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
                             >
                                 <div className="text-center">
                                     <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-600 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
                                         <FaBriefcase className="text-white text-xl" />
                                     </div>
                                     <div className="text-3xl font-bold text-gray-900 mb-2">
-                                        {organization?.total_opportunities_posted ||
-                                            organization?.opportunities_count ||
-                                            organization?.internships_count ||
-                                            '5+'}
+                                        {(() => {
+                                            // Use the same dashboard data source as the recruiter dashboard
+                                            if (user && user.role === 'recruiter') {
+                                                // For authenticated recruiters, use dashboard data
+                                                return organization?.total_opportunities_posted || 0;
+                                            } else {
+                                                // For non-recruiters, show public data
+                                                return organization?.total_opportunities_posted ||
+                                                    organization?.opportunities_count ||
+                                                    organization?.internships_count ||
+                                                    0;
+                                            }
+                                        })()}
                                     </div>
                                     <p className="text-sm text-gray-600 font-medium">Opportunities Posted</p>
                                     <div className="mt-2 text-xs text-gray-500">
-                                        {organization?.total_opportunities_posted > 10 ? 'Very Active' :
-                                            organization?.total_opportunities_posted > 5 ? 'Active' : 'Getting Started'}
+                                        {(() => {
+                                            const count = (() => {
+                                                // Use the same dashboard data source as the recruiter dashboard
+                                                if (user && user.role === 'recruiter') {
+                                                    // For authenticated recruiters, use dashboard data
+                                                    return organization?.total_opportunities_posted || 0;
+                                                } else {
+                                                    // For non-recruiters, show public data
+                                                    return organization?.total_opportunities_posted ||
+                                                        organization?.opportunities_count ||
+                                                        organization?.internships_count ||
+                                                        0;
+                                                }
+                                            })();
+
+                                            if (count > 10) return 'Very Active';
+                                            if (count > 5) return 'Active';
+                                            if (count > 0) return 'Getting Started';
+                                            return 'No opportunities yet';
+                                        })()}
+                                    </div>
+                                    <div className="mt-3 text-xs text-purple-600 font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                        Click to view all opportunities →
                                     </div>
                                 </div>
                             </motion.div>
