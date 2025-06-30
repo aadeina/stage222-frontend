@@ -5,14 +5,56 @@ import toast from "react-hot-toast";
 import { createInternship } from "@/services/internshipApi";
 import { useAuth } from "@/context/AuthContext";
 
-const PostInternshipJob = () => {
+// Accept props for edit mode
+const PostInternshipJob = ({ initialFormData = null, onSubmit = null, isEdit = false }) => {
     const navigate = useNavigate();
     const { user } = useAuth();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSavingDraft, setIsSavingDraft] = useState(false);
     const [formErrors, setFormErrors] = useState({});
 
-    const [formData, setFormData] = useState({
+    // Use initialFormData if provided, otherwise use default
+    const [formData, setFormData] = useState(() => initialFormData ? {
+        ...{
+            opportunityType: "Internship",
+            title: "",
+            experience: "0",
+            skills: [],
+            jobType: "Remote",
+            workType: "Full-time",
+            city: "",
+            inOfficeDays: "5",
+            timeZone: "",
+            workTimings: { start: "", end: "" },
+            openings: 1,
+            description: "",
+            responsibilities: [],
+            preferences: [],
+            salary: { fixed: { min: "", max: "" }, variable: { min: "", max: "" } },
+            perks: [],
+            screeningQuestions: [
+                "Please confirm your availability for this job. If not available immediately, how early would you be able to join?"
+            ],
+            additionalQuestions: [],
+            alternatePhone: "",
+            employeeCount: "",
+            startDate: "Immediately",
+            duration: "3",
+            duration_weeks: 12,
+            allowWomenRestart: false,
+            stipend: { type: "Paid", fixed: { min: "", max: "" }, incentives: { min: "", max: "" } },
+            deadline: "",
+            stipend_type: "paid",
+            fixed_pay_min: "",
+            fixed_pay_max: "",
+            incentives_min: "",
+            incentives_max: "",
+            screening_questions: [],
+            eligibility_rules: [],
+            other_requirements: ""
+        },
+        ...initialFormData
+    } : {
         opportunityType: "Internship",
         title: "",
         experience: "0",
@@ -22,24 +64,12 @@ const PostInternshipJob = () => {
         city: "",
         inOfficeDays: "5",
         timeZone: "",
-        workTimings: {
-            start: "",
-            end: ""
-        },
+        workTimings: { start: "", end: "" },
         openings: 1,
         description: "",
         responsibilities: [],
         preferences: [],
-        salary: {
-            fixed: {
-                min: "",
-                max: ""
-            },
-            variable: {
-                min: "",
-                max: ""
-            }
-        },
+        salary: { fixed: { min: "", max: "" }, variable: { min: "", max: "" } },
         perks: [],
         screeningQuestions: [
             "Please confirm your availability for this job. If not available immediately, how early would you be able to join?"
@@ -51,18 +81,7 @@ const PostInternshipJob = () => {
         duration: "3",
         duration_weeks: 12,
         allowWomenRestart: false,
-        stipend: {
-            type: "Paid",
-            fixed: {
-                min: "",
-                max: ""
-            },
-            incentives: {
-                min: "",
-                max: ""
-            }
-        },
-        // New fields for API integration
+        stipend: { type: "Paid", fixed: { min: "", max: "" }, incentives: { min: "", max: "" } },
         deadline: "",
         stipend_type: "paid",
         fixed_pay_min: "",
@@ -388,59 +407,25 @@ const PostInternshipJob = () => {
         }
     };
 
+    // Update handleSubmit to use onSubmit if provided
     const handleSubmit = async (e) => {
         e.preventDefault();
-
-        // Debug logging
-        console.log("Current form data:", formData);
-        console.log("Skills array:", formData.skills);
-        console.log("Skills length:", formData.skills.length);
-
         if (!validateForm()) {
-            console.log("Validation errors:", formErrors);
             toast.error("Please fix the errors in the form");
             return;
         }
-
         setIsSubmitting(true);
         try {
             const apiData = transformFormDataForAPI();
-            console.log("Submitting data:", apiData);
-            console.log("API Payload for Django:", JSON.stringify(apiData, null, 2));
-            console.log("Location field value:", apiData.location);
-            console.log("Job type:", formData.jobType);
-            console.log("City value:", formData.city);
-
-            const response = await createInternship(apiData);
-            console.log("API Response:", response.data);
-
-            toast.success(`${formData.opportunityType} posted successfully!`);
-
-            // Redirect to recruiter dashboard
-            navigate('/recruiter/dashboard');
-        } catch (error) {
-            console.error("Submission error:", error);
-
-            if (error.response?.data?.message) {
-                toast.error(error.response.data.message);
-            } else if (error.response?.data) {
-                // Handle field-specific errors
-                const fieldErrors = error.response.data;
-                const newErrors = {};
-
-                Object.keys(fieldErrors).forEach(field => {
-                    if (Array.isArray(fieldErrors[field])) {
-                        newErrors[field] = fieldErrors[field][0];
-                    } else {
-                        newErrors[field] = fieldErrors[field];
-                    }
-                });
-
-                setFormErrors(newErrors);
-                toast.error("Please fix the errors in the form");
+            if (onSubmit) {
+                await onSubmit(apiData); // Use parent handler for edit
             } else {
-                toast.error("Failed to post opportunity. Please try again.");
+                const response = await createInternship(apiData);
+                toast.success(`${formData.opportunityType} posted successfully!`);
+                navigate('/recruiter/dashboard');
             }
+        } catch (err) {
+            toast.error('Failed to submit opportunity');
         } finally {
             setIsSubmitting(false);
         }
@@ -1088,7 +1073,7 @@ const PostInternshipJob = () => {
                                             </label>
                                             <textarea
                                                 name="preferences"
-                                                value={formData.preferences.join("\n")}
+                                                value={Array.isArray(formData.preferences) ? formData.preferences.join("\n") : (formData.preferences || "")}
                                                 onChange={(e) => handleArrayInput("preferences", e.target.value)}
                                                 rows={4}
                                                 className="w-full border border-gray-200 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#00A55F] focus:border-transparent transition-all bg-white"
@@ -1544,7 +1529,7 @@ const PostInternshipJob = () => {
                                             </label>
                                             <textarea
                                                 name="responsibilities"
-                                                value={formData.responsibilities.join("\n")}
+                                                value={Array.isArray(formData.responsibilities) ? formData.responsibilities.join("\n") : (formData.responsibilities || "")}
                                                 onChange={(e) => handleArrayInput("responsibilities", e.target.value)}
                                                 rows={4}
                                                 className="w-full border border-gray-200 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#00A55F] focus:border-transparent transition-all bg-white"
@@ -1558,7 +1543,7 @@ const PostInternshipJob = () => {
                                             </label>
                                             <textarea
                                                 name="preferences"
-                                                value={formData.preferences.join("\n")}
+                                                value={Array.isArray(formData.preferences) ? formData.preferences.join("\n") : (formData.preferences || "")}
                                                 onChange={(e) => handleArrayInput("preferences", e.target.value)}
                                                 rows={4}
                                                 className="w-full border border-gray-200 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#00A55F] focus:border-transparent transition-all bg-white"
@@ -1927,10 +1912,10 @@ const PostInternshipJob = () => {
                             {isSubmitting ? (
                                 <div className="flex items-center gap-2">
                                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                                    Posting...
+                                    {isEdit ? 'Updating...' : 'Posting...'}
                                 </div>
                             ) : (
-                                `Post ${formData.opportunityType}`
+                                isEdit ? 'Update Opportunity' : `Post ${formData.opportunityType}`
                             )}
                         </motion.button>
                     </div>
