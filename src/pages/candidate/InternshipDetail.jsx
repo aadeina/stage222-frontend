@@ -1658,37 +1658,7 @@ const InternshipDetail = () => {
                             </div>
                         </motion.div>
 
-                        {/* Success Metrics */}
-                        <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 1.2 }}
-                            className="mt-8 bg-white/90 backdrop-blur-sm rounded-xl p-6 border border-white/50"
-                        >
-                            <h4 className="text-lg font-semibold text-gray-900 mb-4 text-center">Success Metrics</h4>
-                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                                <div className="text-center">
-                                    <div className="text-2xl font-bold text-[#00A55F]">
-                                        {organization?.total_opportunities_posted > 0 && organization?.total_hires > 0 ?
-                                            Math.round((organization.total_hires / organization.total_opportunities_posted) * 100) :
-                                            '85'}%
-                                    </div>
-                                    <p className="text-sm text-gray-600">Hiring Success Rate</p>
-                                </div>
-                                <div className="text-center">
-                                    <div className="text-2xl font-bold text-[#00A55F]">
-                                        {organization?.avg_application_time || '2.3'} days
-                                    </div>
-                                    <p className="text-sm text-gray-600">Avg. Application Review</p>
-                                </div>
-                                <div className="text-center">
-                                    <div className="text-2xl font-bold text-[#00A55F]">
-                                        {organization?.repeat_hires || '2+'}
-                                    </div>
-                                    <p className="text-sm text-gray-600">Repeat Collaborations</p>
-                                </div>
-                            </div>
-                        </motion.div>
+                    
 
                         {/* Call to Action */}
                         <motion.div

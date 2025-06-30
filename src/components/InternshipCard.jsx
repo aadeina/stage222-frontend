@@ -151,8 +151,8 @@ const InternshipCard = ({ internship, onClick }) => {
                     <div className="flex items-center gap-2 text-sm text-gray-600 mb-1">
                         <FaBuilding className="inline-block mr-1 text-gray-400" />
                         <span className="font-medium flex items-center gap-1">
-                            {organization_name}
-                            {organization?.is_verified && <VerifiedBadge />}
+                            <span>{organization_name}</span>
+                            {organization?.is_verified && <VerifiedBadge className="ml-1" />}
                         </span>
                     </div>
                     <div className="flex flex-wrap gap-3 items-center text-xs mb-2">

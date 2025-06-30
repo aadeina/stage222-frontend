@@ -6,12 +6,14 @@ import { useAuth } from '../../../context/AuthContext';
 import { FaUser, FaSignOutAlt, FaBars, FaTimes, FaBriefcase, FaPlus, FaCreditCard, FaChartBar } from 'react-icons/fa';
 import api from '../../../services/api';
 import toast from 'react-hot-toast';
+import VerifiedBadge from '@/components/VerifiedBadge';
 
 const RecruiterHeader = ({ title, subtitle }) => {
     const { user, logout } = useAuth();
     const [menuOpen, setMenuOpen] = useState(false);
     const [organizationName, setOrganizationName] = useState('');
     const [isLoadingOrg, setIsLoadingOrg] = useState(true);
+    const [isVerified, setIsVerified] = useState(false);
     const menuRef = useRef();
     const navigate = useNavigate();
     const location = useLocation();
@@ -38,12 +40,15 @@ const RecruiterHeader = ({ title, subtitle }) => {
                 const orgResponse = await api.get(`/organizations/${recruiterData.organization}/`);
                 const orgData = orgResponse.data.data || orgResponse.data;
                 setOrganizationName(orgData.name || 'Your Organization');
+                setIsVerified(!!orgData.is_verified);
             } else {
                 setOrganizationName('Your Organization');
+                setIsVerified(false);
             }
         } catch (error) {
             console.error('Error fetching organization name:', error);
             setOrganizationName('Your Organization');
+            setIsVerified(false);
         } finally {
             setIsLoadingOrg(false);
         }
@@ -126,7 +131,7 @@ const RecruiterHeader = ({ title, subtitle }) => {
                                 <p className="text-sm font-medium text-gray-900">
                                     {user?.first_name || 'Recruiter'}
                                 </p>
-                                <p className="text-xs text-gray-500">
+                                <p className="text-xs text-gray-500 flex items-center gap-1">
                                     {isLoadingOrg ? (
                                         <span className="inline-flex items-center">
                                             <svg className="animate-spin -ml-1 mr-1 h-3 w-3 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -136,7 +141,10 @@ const RecruiterHeader = ({ title, subtitle }) => {
                                             Loading...
                                         </span>
                                     ) : (
-                                        organizationName
+                                        <>
+                                            <span>{organizationName}</span>
+                                            {isVerified && <VerifiedBadge size={16} className="ml-1" />}
+                                        </>
                                     )}
                                 </p>
                             </div>
@@ -207,8 +215,8 @@ const RecruiterHeader = ({ title, subtitle }) => {
                                             <p className="text-sm font-medium text-gray-900">
                                                 {user?.first_name || 'Recruiter'}
                                             </p>
-                                            <p className="text-xs text-gray-500">
-                                                {isLoadingOrg ? 'Loading...' : organizationName}
+                                            <p className="text-xs text-gray-500 flex items-center gap-1">
+                                                {isLoadingOrg ? 'Loading...' : <><span>{organizationName}</span>{isVerified && <VerifiedBadge size={16} className="ml-1" />}</>}
                                             </p>
                                         </div>
                                     </div>
