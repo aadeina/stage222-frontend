@@ -26,6 +26,7 @@ import ChangePassword from '@/features/recruiter/pages/ChangePassword';
 import RecruiterBilling from '@/features/recruiter/pages/RecruiterBilling';
 import StudentDashboard from '@/features/candidate/pages/StudentDashboard';
 import EditOpportunity from '@/features/recruiter/pages/EditOpportunity';
+import Messages from '@/features/recruiter/pages/Messages';
 
 const AppRoutes = () => {
     const location = useLocation();
@@ -99,16 +100,6 @@ const AppRoutes = () => {
                     }
                 />
 
-                {/* Recruiter Opportunities Route */}
-                <Route
-                    path="/recruiter/:recruiterId/opportunities"
-                    element={
-                        <PageWrapper>
-                            <RecruiterOpportunities />
-                        </PageWrapper>
-                    }
-                />
-
                 {/* Protected Routes */}
 
                 {/* Recruiter Onboarding Route */}
@@ -144,6 +135,28 @@ const AppRoutes = () => {
                                 <PostInternshipJob />
                             </PageWrapper>
                         </ProtectedRoute>
+                    }
+                />
+
+                {/* Recruiter Messages Route */}
+                <Route
+                    path="/recruiter/messages"
+                    element={
+                        <ProtectedRoute>
+                            <PageWrapper>
+                                <Messages />
+                            </PageWrapper>
+                        </ProtectedRoute>
+                    }
+                />
+
+                {/* Recruiter Opportunities Route */}
+                <Route
+                    path="/recruiter/:recruiterId/opportunities"
+                    element={
+                        <PageWrapper>
+                            <RecruiterOpportunities />
+                        </PageWrapper>
                     }
                 />
 

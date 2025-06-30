@@ -630,7 +630,7 @@ const RecruiterDashboard = () => {
                                 <h3 className="text-lg font-semibold text-gray-900 mb-2">Messages</h3>
                                 <p className="text-sm text-gray-600 mb-4">Stay connected with candidates</p>
                                 <button
-                                    onClick={() => navigate('/messages')}
+                                    onClick={() => navigate('/recruiter/messages')}
                                     className="w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium"
                                 >
                                     Go to Inbox

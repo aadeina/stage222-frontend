@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, useLocation } from 'react-router-dom';
 import logo from '@/assets/images/Stage222RecuiterLogo.png';
 import { useAuth } from '../../../context/AuthContext';
-import { FaUser, FaSignOutAlt, FaBars, FaTimes, FaBriefcase, FaPlus, FaCreditCard, FaChartBar, FaCog } from 'react-icons/fa';
+import { FaUser, FaSignOutAlt, FaBars, FaTimes, FaBriefcase, FaPlus, FaCreditCard, FaChartBar, FaCog, FaInbox } from 'react-icons/fa';
 import api from '../../../services/api';
 import toast from 'react-hot-toast';
 import VerifiedBadge from '@/components/VerifiedBadge';
@@ -24,6 +24,7 @@ const RecruiterHeader = ({ title, subtitle }) => {
     const navigationItems = [
         { name: 'Dashboard', path: '/recruiter/dashboard', icon: FaChartBar },
         { name: 'Post Job/Internship', path: '/recruiter/post-opportunity', icon: FaPlus },
+        { name: 'Messages', path: '/recruiter/messages', icon: FaInbox },
         { name: 'Plans and Pricing', path: '/recruiter/pricing', icon: FaCreditCard },
         { name: 'Profile', path: '/recruiter/profile', icon: FaCog },
     ];
