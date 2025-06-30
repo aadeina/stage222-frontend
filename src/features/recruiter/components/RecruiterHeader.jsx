@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, useLocation } from 'react-router-dom';
 import logo from '@/assets/images/Stage222RecuiterLogo.png';
 import { useAuth } from '../../../context/AuthContext';
-import { FaUser, FaSignOutAlt, FaBars, FaTimes, FaBriefcase, FaPlus, FaCreditCard, FaChartBar } from 'react-icons/fa';
+import { FaUser, FaSignOutAlt, FaBars, FaTimes, FaBriefcase, FaPlus, FaCreditCard, FaChartBar, FaCog } from 'react-icons/fa';
 import api from '../../../services/api';
 import toast from 'react-hot-toast';
 import VerifiedBadge from '@/components/VerifiedBadge';
@@ -11,10 +11,12 @@ import VerifiedBadge from '@/components/VerifiedBadge';
 const RecruiterHeader = ({ title, subtitle }) => {
     const { user, logout } = useAuth();
     const [menuOpen, setMenuOpen] = useState(false);
+    const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
     const [organizationName, setOrganizationName] = useState('');
     const [isLoadingOrg, setIsLoadingOrg] = useState(true);
     const [isVerified, setIsVerified] = useState(false);
     const menuRef = useRef();
+    const profileRef = useRef();
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -23,6 +25,7 @@ const RecruiterHeader = ({ title, subtitle }) => {
         { name: 'Dashboard', path: '/recruiter/dashboard', icon: FaChartBar },
         { name: 'Post Job/Internship', path: '/recruiter/post-opportunity', icon: FaPlus },
         { name: 'Plans and Pricing', path: '/recruiter/pricing', icon: FaCreditCard },
+        { name: 'Profile', path: '/recruiter/profile', icon: FaCog },
     ];
 
     // Fetch organization name
@@ -72,6 +75,9 @@ const RecruiterHeader = ({ title, subtitle }) => {
         const handleClickOutside = (event) => {
             if (menuRef.current && !menuRef.current.contains(event.target)) {
                 setMenuOpen(false);
+            }
+            if (profileRef.current && !profileRef.current.contains(event.target)) {
+                setProfileDropdownOpen(false);
             }
         };
 
@@ -125,8 +131,8 @@ const RecruiterHeader = ({ title, subtitle }) => {
 
                     {/* User Menu and Mobile Toggle */}
                     <div className="flex items-center space-x-4">
-                        {/* User Info */}
-                        <div className="hidden sm:flex items-center space-x-3">
+                        {/* User Info with Profile Dropdown */}
+                        <div className="hidden sm:flex items-center space-x-3 relative" ref={profileRef}>
                             <div className="text-right">
                                 <p className="text-sm font-medium text-gray-900">
                                     {user?.first_name || 'Recruiter'}
@@ -148,19 +154,47 @@ const RecruiterHeader = ({ title, subtitle }) => {
                                     )}
                                 </p>
                             </div>
-                            <div className="w-8 h-8 bg-[#00A55F] rounded-full flex items-center justify-center">
+                            <button
+                                onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
+                                className="w-8 h-8 bg-[#00A55F] rounded-full flex items-center justify-center hover:bg-[#008c4f] transition-colors"
+                            >
                                 <FaUser className="h-4 w-4 text-white" />
-                            </div>
-                        </div>
+                            </button>
 
-                        {/* Logout Button */}
-                        <button
-                            onClick={handleLogout}
-                            className="hidden sm:flex items-center space-x-2 px-3 py-2 text-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                        >
-                            <FaSignOutAlt className="h-4 w-4" />
-                            <span>Logout</span>
-                        </button>
+                            {/* Profile Dropdown */}
+                            <AnimatePresence>
+                                {profileDropdownOpen && (
+                                    <motion.div
+                                        initial={{ opacity: 0, y: -10 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        exit={{ opacity: 0, y: -10 }}
+                                        transition={{ duration: 0.2 }}
+                                        className="absolute top-full right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50"
+                                    >
+                                        <button
+                                            onClick={() => {
+                                                navigate('/recruiter/profile');
+                                                setProfileDropdownOpen(false);
+                                            }}
+                                            className="w-full flex items-center space-x-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                                        >
+                                            <FaCog className="h-4 w-4" />
+                                            <span>Profile Settings</span>
+                                        </button>
+                                        <button
+                                            onClick={() => {
+                                                logout();
+                                                setProfileDropdownOpen(false);
+                                            }}
+                                            className="w-full flex items-center space-x-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                                        >
+                                            <FaSignOutAlt className="h-4 w-4" />
+                                            <span>Logout</span>
+                                        </button>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+                        </div>
 
                         {/* Mobile Menu Toggle */}
                         <button
@@ -220,6 +254,17 @@ const RecruiterHeader = ({ title, subtitle }) => {
                                             </p>
                                         </div>
                                     </div>
+
+                                    <button
+                                        onClick={() => {
+                                            navigate('/recruiter/profile');
+                                            setMenuOpen(false);
+                                        }}
+                                        className="w-full flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                                    >
+                                        <FaCog className="h-4 w-4" />
+                                        <span>Profile Settings</span>
+                                    </button>
 
                                     <button
                                         onClick={handleLogout}

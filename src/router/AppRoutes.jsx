@@ -20,6 +20,7 @@ import PostInternshipJob from '@/features/recruiter/pages/PostInternshipJob';
 import RecruiterDashboard from '@/features/recruiter/pages/RecruiterDashboard';
 import EditOrganization from '@/features/recruiter/pages/EditOrganization';
 import RecruiterPricing from '@/features/recruiter/pages/RecruiterPricing';
+import RecruiterProfile from '@/features/recruiter/pages/RecruiterProfile';
 import StudentDashboard from '@/features/candidate/pages/StudentDashboard';
 import EditOpportunity from '@/features/recruiter/pages/EditOpportunity';
 
@@ -183,6 +184,18 @@ const AppRoutes = () => {
 
                 {/* Edit Opportunity Route */}
                 <Route path="/recruiter/edit-opportunity/:id" element={<EditOpportunity />} />
+
+                {/* Recruiter Profile Route */}
+                <Route
+                    path="/recruiter/profile"
+                    element={
+                        <ProtectedRoute>
+                            <PageWrapper>
+                                <RecruiterProfile />
+                            </PageWrapper>
+                        </ProtectedRoute>
+                    }
+                />
 
             </Routes>
         </AnimatePresence>
