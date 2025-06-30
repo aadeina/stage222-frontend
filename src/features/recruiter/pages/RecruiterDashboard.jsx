@@ -7,6 +7,7 @@ import toast from 'react-hot-toast';
 import { getDashboardStats, getRecentOpportunities } from '../api/dashboardApi';
 import RecruiterHeader from '../components/RecruiterHeader';
 import api from '../../../services/api';
+import VerifiedBadge from '@/components/VerifiedBadge';
 
 const RecruiterDashboard = () => {
     const navigate = useNavigate();
@@ -15,6 +16,7 @@ const RecruiterDashboard = () => {
     const [recentOpportunities, setRecentOpportunities] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isRefreshing, setIsRefreshing] = useState(false);
+    const [recruiterData, setRecruiterData] = useState(null);
 
     useEffect(() => {
         // Check if user is authenticated and is a recruiter
@@ -24,6 +26,7 @@ const RecruiterDashboard = () => {
         }
 
         fetchDashboardData();
+        fetchRecruiterData();
     }, [user, navigate]);
 
     const fetchDashboardData = async () => {
@@ -53,6 +56,15 @@ const RecruiterDashboard = () => {
             toast.error('Failed to load dashboard data');
         } finally {
             setIsLoading(false);
+        }
+    };
+
+    const fetchRecruiterData = async () => {
+        try {
+            const response = await api.get('/recruiters/me/');
+            setRecruiterData(response.data.data || response.data);
+        } catch (error) {
+            console.error('Error fetching recruiter data:', error);
         }
     };
 
@@ -636,7 +648,6 @@ const RecruiterDashboard = () => {
                                         try {
                                             const response = await api.get('/recruiters/me/');
                                             const recruiterData = response.data.data || response.data;
-
                                             if (recruiterData?.organization) {
                                                 navigate(`/recruiter/organization/${recruiterData.organization}/update`);
                                             } else {
@@ -650,7 +661,17 @@ const RecruiterDashboard = () => {
                                     className="w-full flex items-center space-x-3 px-3 py-2 text-left text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
                                 >
                                     <FaBuilding className="h-4 w-4 text-gray-500" />
-                                    <span>Edit Organization</span>
+                                    <span className=" flex items-center gap-1">
+                                        {!recruiterData
+                                            ? <span className="text-gray-400 animate-pulse">Loading...</span>
+                                            : <>
+                                                {recruiterData?.organization?.name}
+                                                {recruiterData?.organization?.is_verified && <VerifiedBadge />}
+                                            </>
+                                        }
+                                        Edit Organization
+                                    </span>
+                                    {/* <FaEdit className="h-4 w-4 text-blue-500 ml-auto" title="Edit Organization" /> */}
                                 </button>
                                 <button
                                     onClick={() => navigate('/recruiter/change-password')}

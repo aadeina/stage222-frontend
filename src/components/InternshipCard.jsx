@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { FaMapMarkerAlt, FaMoneyBillWave, FaClock, FaArrowRight, FaBuilding, FaCheckCircle, FaTimes, FaClock as FaClockIcon } from 'react-icons/fa';
 import moment from 'moment';
+import VerifiedBadge from '@/components/VerifiedBadge';
 
 const fallbackLogo = 'https://ui-avatars.com/api/?name=Stage222&background=00A55F&color=fff&rounded=true';
 
@@ -149,7 +150,10 @@ const InternshipCard = ({ internship, onClick }) => {
                     </div>
                     <div className="flex items-center gap-2 text-sm text-gray-600 mb-1">
                         <FaBuilding className="inline-block mr-1 text-gray-400" />
-                        <span className="font-medium">{organization_name}</span>
+                        <span className="font-medium flex items-center gap-1">
+                            {organization_name}
+                            {organization?.is_verified && <VerifiedBadge />}
+                        </span>
                     </div>
                     <div className="flex flex-wrap gap-3 items-center text-xs mb-2">
                         <span className="flex items-center gap-1 text-gray-500"><FaMapMarkerAlt /> {location || 'Remote'}</span>
