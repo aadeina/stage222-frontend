@@ -198,8 +198,18 @@ const EditOrganization = () => {
                         instagram: orgData.social_links.instagram || ''
                     };
                 } else if (typeof orgData.social_links === 'string') {
-                    // Handle single string format (treat as LinkedIn)
-                    socialLinks.linkedin = orgData.social_links;
+                    // Handle JSON string format
+                    try {
+                        const parsedLinks = JSON.parse(orgData.social_links);
+                        socialLinks = {
+                            linkedin: parsedLinks.linkedin || '',
+                            facebook: parsedLinks.facebook || '',
+                            instagram: parsedLinks.instagram || ''
+                        };
+                    } catch (e) {
+                        // If parsing fails, treat as single LinkedIn link
+                        socialLinks.linkedin = orgData.social_links;
+                    }
                 }
             }
 
@@ -262,7 +272,18 @@ const EditOrganization = () => {
                     instagram: originalData.social_links.instagram || ''
                 };
             } else if (typeof originalData.social_links === 'string') {
-                originalSocialLinks.linkedin = originalData.social_links;
+                // Handle JSON string format
+                try {
+                    const parsedLinks = JSON.parse(originalData.social_links);
+                    originalSocialLinks = {
+                        linkedin: parsedLinks.linkedin || '',
+                        facebook: parsedLinks.facebook || '',
+                        instagram: parsedLinks.instagram || ''
+                    };
+                } catch (e) {
+                    // If parsing fails, treat as single LinkedIn link
+                    originalSocialLinks.linkedin = originalData.social_links;
+                }
             }
         }
 
@@ -462,13 +483,9 @@ const EditOrganization = () => {
             // Add all the form data
             Object.keys(apiData).forEach(key => {
                 if (key === 'social_links') {
-                    // Handle social links array
-                    apiData.social_links.forEach((link, index) => {
-                        if (link) {
-                            formData.append(`social_links[${index}]`, link);
-                            console.log(`Added social link ${index}:`, link);
-                        }
-                    });
+                    // Submit social_links as JSON string
+                    formData.append('social_links', JSON.stringify(apiData.social_links));
+                    console.log('Added social_links as JSON:', JSON.stringify(apiData.social_links));
                 } else if (apiData[key] !== null && apiData[key] !== undefined && apiData[key] !== '') {
                     formData.append(key, apiData[key]);
                     console.log(`Added form field ${key}:`, apiData[key]);
@@ -521,19 +538,32 @@ const EditOrganization = () => {
 
                 if (updatedData.social_links) {
                     if (Array.isArray(updatedData.social_links)) {
+                        // Handle array format: [linkedin, facebook, instagram]
                         updatedSocialLinks = {
                             linkedin: updatedData.social_links[0] || '',
                             facebook: updatedData.social_links[1] || '',
                             instagram: updatedData.social_links[2] || ''
                         };
                     } else if (typeof updatedData.social_links === 'object') {
+                        // Handle object format: {linkedin: '', facebook: '', instagram: ''}
                         updatedSocialLinks = {
                             linkedin: updatedData.social_links.linkedin || '',
                             facebook: updatedData.social_links.facebook || '',
                             instagram: updatedData.social_links.instagram || ''
                         };
                     } else if (typeof updatedData.social_links === 'string') {
-                        updatedSocialLinks.linkedin = updatedData.social_links;
+                        // Handle JSON string format
+                        try {
+                            const parsedLinks = JSON.parse(updatedData.social_links);
+                            updatedSocialLinks = {
+                                linkedin: parsedLinks.linkedin || '',
+                                facebook: parsedLinks.facebook || '',
+                                instagram: parsedLinks.instagram || ''
+                            };
+                        } catch (e) {
+                            // If parsing fails, treat as single LinkedIn link
+                            updatedSocialLinks.linkedin = updatedData.social_links;
+                        }
                     }
                 }
 
