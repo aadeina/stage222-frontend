@@ -57,33 +57,33 @@ const ShareMenu = ({ isOpen, onClose, url, title, description }) => {
                 window.open(whatsappUrl, '_blank');
             }
         },
-        {
-            name: 'Twitter',
-            icon: FaTwitter,
-            color: 'bg-sky-500 hover:bg-sky-600',
-            action: () => {
-                const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareData.title)}&url=${encodeURIComponent(shareData.url)}`;
-                window.open(twitterUrl, '_blank', 'width=600,height=400');
-            }
-        },
-        {
-            name: 'LinkedIn',
-            icon: FaLinkedin,
-            color: 'bg-blue-700 hover:bg-blue-800',
-            action: () => {
-                const linkedinUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareData.url)}`;
-                window.open(linkedinUrl, '_blank', 'width=600,height=400');
-            }
-        },
-        {
-            name: 'Telegram',
-            icon: FaTelegram,
-            color: 'bg-blue-500 hover:bg-blue-600',
-            action: () => {
-                const telegramUrl = `https://t.me/share/url?url=${encodeURIComponent(shareData.url)}&text=${encodeURIComponent(shareData.title)}`;
-                window.open(telegramUrl, '_blank');
-            }
-        },
+        // {
+        //     name: 'Twitter',
+        //     icon: FaTwitter,
+        //     color: 'bg-sky-500 hover:bg-sky-600',
+        //     action: () => {
+        //         const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareData.title)}&url=${encodeURIComponent(shareData.url)}`;
+        //         window.open(twitterUrl, '_blank', 'width=600,height=400');
+        //     }
+        // },
+        // {
+        //     name: 'LinkedIn',
+        //     icon: FaLinkedin,
+        //     color: 'bg-blue-700 hover:bg-blue-800',
+        //     action: () => {
+        //         const linkedinUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareData.url)}`;
+        //         window.open(linkedinUrl, '_blank', 'width=600,height=400');
+        //     }
+        // },
+        // {
+        //     name: 'Telegram',
+        //     icon: FaTelegram,
+        //     color: 'bg-blue-500 hover:bg-blue-600',
+        //     action: () => {
+        //         const telegramUrl = `https://t.me/share/url?url=${encodeURIComponent(shareData.url)}&text=${encodeURIComponent(shareData.title)}`;
+        //         window.open(telegramUrl, '_blank');
+        //     }
+        // },
         {
             name: 'Copy Link',
             icon: FaLink,

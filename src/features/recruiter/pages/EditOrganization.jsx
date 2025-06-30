@@ -4,7 +4,30 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../../context/AuthContext';
 import toast from 'react-hot-toast';
 import api from '@/services/api';
-import { FaBuilding, FaGlobe, FaMapMarkerAlt, FaUsers, FaLinkedin, FaFacebook, FaInstagram, FaUpload, FaTrash, FaSave, FaTimes, FaExclamationTriangle } from 'react-icons/fa';
+import {
+    FaBuilding,
+    FaGlobe,
+    FaMapMarkerAlt,
+    FaUsers,
+    FaLinkedin,
+    FaFacebook,
+    FaInstagram,
+    FaUpload,
+    FaTrash,
+    FaSave,
+    FaTimes,
+    FaExclamationTriangle,
+    FaCalendarAlt,
+    FaIndustry,
+    FaPhone,
+    FaEnvelope,
+    FaEye,
+    FaEdit,
+    FaCheckCircle,
+    FaArrowLeft,
+    FaImage,
+    FaFileUpload
+} from 'react-icons/fa';
 
 const EditOrganization = () => {
     const { id } = useParams();
@@ -16,7 +39,9 @@ const EditOrganization = () => {
     const [showNameWarning, setShowNameWarning] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [originalData, setOriginalData] = useState(null);
-    const [organizationId, setOrganizationId] = useState(id); // Use ID from URL if available
+    const [organizationId, setOrganizationId] = useState(id);
+    const [logoPreview, setLogoPreview] = useState(null);
+    const [isLogoHovered, setIsLogoHovered] = useState(false);
 
     const [formData, setFormData] = useState({
         name: '',
@@ -25,6 +50,10 @@ const EditOrganization = () => {
         industry: '',
         city: '',
         employee_range: '',
+        founded_year: '',
+        phone: '',
+        email: '',
+        address: '',
         social_links: {
             linkedin: '',
             facebook: '',
@@ -41,33 +70,33 @@ const EditOrganization = () => {
     const [errors, setErrors] = useState({});
     const [hasChanges, setHasChanges] = useState(false);
 
-    // Dropdown options
+    // Enhanced dropdown options
     const industries = [
-        "Advertising/Marketing",
-        "Agriculture/Dairy",
-        "Animation",
-        "Architecture/Interior Design",
-        "Automobile",
-        "BPO",
-        "Biotechnology",
-        "Consulting",
-        "Data Science/AI",
-        "Design/UX",
-        "E-commerce",
-        "Education",
-        "Finance",
-        "Government/Public Sector",
+        "Technology",
         "Healthcare",
-        "HR/Recruitment",
-        "IT/Software",
-        "Legal",
-        "Logistics/Supply Chain",
+        "Finance",
+        "Education",
         "Manufacturing",
-        "Media/Journalism",
-        "NGO / Non-Profit",
         "Retail",
+        "Consulting",
+        "Marketing/Advertising",
+        "Real Estate",
+        "Transportation",
+        "Energy",
+        "Media/Entertainment",
+        "Non-profit",
+        "Government",
+        "Agriculture",
+        "Construction",
+        "Hospitality/Tourism",
+        "Legal Services",
         "Telecommunications",
-        "Travel & Tourism",
+        "Biotechnology",
+        "E-commerce",
+        "Food & Beverage",
+        "Fashion/Apparel",
+        "Automotive",
+        "Pharmaceuticals",
         "Other"
     ];
 
@@ -88,15 +117,16 @@ const EditOrganization = () => {
     ];
 
     const employeeRanges = [
-        "0–1",
-        "2–10",
-        "11–50",
-        "51–200",
-        "201–500",
-        "501–1000",
-        "1001–5000",
+        "1-10",
+        "11-50",
+        "51-200",
+        "201-500",
+        "501-1000",
+        "1001-5000",
         "5000+"
     ];
+
+    const foundedYears = Array.from({ length: 30 }, (_, i) => new Date().getFullYear() - i);
 
     // Check if user is authorized and fetch organization data
     useEffect(() => {
@@ -105,7 +135,6 @@ const EditOrganization = () => {
             return;
         }
 
-        // If no ID in URL, fetch it from recruiter data
         if (!organizationId) {
             fetchRecruiterAndOrganization();
         } else {
@@ -115,7 +144,6 @@ const EditOrganization = () => {
 
     const fetchRecruiterAndOrganization = async () => {
         try {
-            // Fetch current recruiter data to get organization ID
             const response = await api.get('/recruiters/me/');
             const recruiterData = response.data.data || response.data;
 
@@ -132,7 +160,6 @@ const EditOrganization = () => {
         }
     };
 
-    // Fetch organization data when organizationId is available
     useEffect(() => {
         if (organizationId) {
             fetchOrganizationData();
@@ -145,15 +172,6 @@ const EditOrganization = () => {
             const orgData = response.data.data || response.data;
 
             console.log('Organization data received:', orgData);
-            console.log('Logo field:', orgData.logo);
-            console.log('Logo URL constructed:', originalData?.logo?.startsWith('http') ? originalData.logo : `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api'}${orgData.logo}`);
-
-            // Check if user owns this organization
-            // if (orgData.owner !== user.id) {
-            //     toast.error('You are not authorized to edit this organization');
-            //     navigate('/recruiter/dashboard');
-            //     return;
-            // }
 
             setOriginalData(orgData);
             setFormData({
@@ -163,6 +181,10 @@ const EditOrganization = () => {
                 industry: orgData.industry || '',
                 city: orgData.city || '',
                 employee_range: orgData.employee_range || '',
+                founded_year: orgData.founded_year || '',
+                phone: orgData.phone || '',
+                email: orgData.email || '',
+                address: orgData.address || '',
                 social_links: {
                     linkedin: orgData.social_links?.linkedin || '',
                     facebook: orgData.social_links?.facebook || '',
@@ -170,6 +192,14 @@ const EditOrganization = () => {
                 },
                 is_independent: orgData.is_independent || false
             });
+
+            // Set logo preview if exists
+            if (orgData.logo) {
+                const logoUrl = orgData.logo.startsWith('http')
+                    ? orgData.logo
+                    : `${import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:8000'}${orgData.logo}`;
+                setLogoPreview(logoUrl);
+            }
         } catch (error) {
             console.error('Error fetching organization:', error);
             toast.error('Failed to load organization data');
@@ -190,6 +220,10 @@ const EditOrganization = () => {
             industry: originalData.industry || '',
             city: originalData.city || '',
             employee_range: originalData.employee_range || '',
+            founded_year: originalData.founded_year || '',
+            phone: originalData.phone || '',
+            email: originalData.email || '',
+            address: originalData.address || '',
             social_links: {
                 linkedin: originalData.social_links?.linkedin || '',
                 facebook: originalData.social_links?.facebook || '',
@@ -198,57 +232,53 @@ const EditOrganization = () => {
             is_independent: originalData.is_independent || false
         });
 
-        const hasFileChanges = files.logo || files.license_document;
-
-        setHasChanges(hasFormChanges || hasFileChanges);
+        setHasChanges(hasFormChanges || files.logo || files.license_document);
     }, [formData, files, originalData]);
 
     const handleInputChange = (e) => {
-        const { name, value, type, checked } = e.target;
+        const { name, value } = e.target;
+        setFormData(prev => ({
+            ...prev,
+            [name]: value
+        }));
 
-        if (name.includes('.')) {
-            const [parent, child] = name.split('.');
-            setFormData(prev => ({
-                ...prev,
-                [parent]: {
-                    ...prev[parent],
-                    [child]: value
-                }
-            }));
-        } else {
-            setFormData(prev => ({
-                ...prev,
-                [name]: type === 'checkbox' ? checked : value
-            }));
-        }
-
-        // Clear error for this field
+        // Clear error when user starts typing
         if (errors[name]) {
             setErrors(prev => ({ ...prev, [name]: '' }));
         }
+    };
+
+    const handleSocialLinkChange = (platform, value) => {
+        setFormData(prev => ({
+            ...prev,
+            social_links: {
+                ...prev.social_links,
+                [platform]: value
+            }
+        }));
     };
 
     const handleFileChange = (e, fileType) => {
         const file = e.target.files[0];
         if (!file) return;
 
-        // Validate file type and size
+        // Validate file size (5MB for logo, 10MB for license)
+        const maxSize = fileType === 'logo' ? 5 : 10;
+        if (file.size > maxSize * 1024 * 1024) {
+            toast.error(`File size must be less than ${maxSize}MB`);
+            return;
+        }
+
+        // Validate file type
         if (fileType === 'logo') {
             if (!file.type.startsWith('image/')) {
-                toast.error('Logo must be an image file (PNG, JPG, GIF)');
-                return;
-            }
-            if (file.size > 2 * 1024 * 1024) { // 2MB
-                toast.error('Logo file size must be less than 2MB');
+                toast.error('Please select a valid image file');
                 return;
             }
         } else if (fileType === 'license_document') {
-            if (file.type !== 'application/pdf') {
-                toast.error('License document must be a PDF file');
-                return;
-            }
-            if (file.size > 10 * 1024 * 1024) { // 10MB
-                toast.error('License document size must be less than 10MB');
+            const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+            if (!allowedTypes.includes(file.type)) {
+                toast.error('Please select a valid document file (PDF, DOC, or DOCX)');
                 return;
             }
         }
@@ -257,6 +287,20 @@ const EditOrganization = () => {
             ...prev,
             [fileType]: file
         }));
+
+        // Create preview for logo
+        if (fileType === 'logo') {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                setLogoPreview(e.target.result);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const removeLogo = () => {
+        setFiles(prev => ({ ...prev, logo: null }));
+        setLogoPreview(null);
     };
 
     const validateForm = () => {
@@ -270,16 +314,8 @@ const EditOrganization = () => {
             newErrors.website = 'Please enter a valid URL';
         }
 
-        if (formData.social_links.linkedin && !isValidUrl(formData.social_links.linkedin)) {
-            newErrors['social_links.linkedin'] = 'Please enter a valid LinkedIn URL';
-        }
-
-        if (formData.social_links.facebook && !isValidUrl(formData.social_links.facebook)) {
-            newErrors['social_links.facebook'] = 'Please enter a valid Facebook URL';
-        }
-
-        if (formData.social_links.instagram && !isValidUrl(formData.social_links.instagram)) {
-            newErrors['social_links.instagram'] = 'Please enter a valid Instagram URL';
+        if (formData.email && !isValidEmail(formData.email)) {
+            newErrors.email = 'Please enter a valid email address';
         }
 
         setErrors(newErrors);
@@ -295,16 +331,22 @@ const EditOrganization = () => {
         }
     };
 
-    const handleSave = async () => {
-        if (!validateForm()) return;
+    const isValidEmail = (email) => {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+    };
 
-        // Show name change warning if needed
-        if (formData.name !== originalData.name) {
-            setShowNameWarning(true);
+    const handleSave = async () => {
+        if (!validateForm()) {
+            toast.error('Please fix the errors in the form');
             return;
         }
 
-        await saveChanges();
+        if (formData.name !== originalData?.name) {
+            setShowNameWarning(true);
+        } else {
+            await saveChanges();
+        }
     };
 
     const saveChanges = async () => {
@@ -312,16 +354,16 @@ const EditOrganization = () => {
         try {
             const formDataToSend = new FormData();
 
-            // Add form fields
+            // Append form data
             Object.keys(formData).forEach(key => {
                 if (key === 'social_links') {
-                    formDataToSend.append('social_links', JSON.stringify(formData.social_links));
+                    formDataToSend.append(key, JSON.stringify(formData[key]));
                 } else {
                     formDataToSend.append(key, formData[key]);
                 }
             });
 
-            // Add files if changed
+            // Append files
             if (files.logo) {
                 formDataToSend.append('logo', files.logo);
             }
@@ -329,25 +371,22 @@ const EditOrganization = () => {
                 formDataToSend.append('license_document', files.license_document);
             }
 
-            await api.patch(`/organizations/${organizationId}/update/`, formDataToSend, {
+            const response = await api.patch(`/organizations/${organizationId}/`, formDataToSend, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
             });
 
             toast.success('Organization updated successfully!');
-            navigate('/recruiter/dashboard');
+            setOriginalData(response.data.data || response.data);
+            setFiles({ logo: null, license_document: null });
+            setHasChanges(false);
+            setShowNameWarning(false);
         } catch (error) {
             console.error('Error updating organization:', error);
-            const errorMessage = error.response?.data?.message || 'Failed to update organization';
-            toast.error(errorMessage);
-
-            if (error.response?.data?.errors) {
-                setErrors(error.response.data.errors);
-            }
+            toast.error('Failed to update organization');
         } finally {
             setIsSaving(false);
-            setShowNameWarning(false);
         }
     };
 
@@ -368,49 +407,26 @@ const EditOrganization = () => {
 
     return (
         <div className="min-h-screen bg-gray-50">
-            {/* Header */}
+            {/* Professional Header */}
             <header className="bg-white shadow-sm border-b border-gray-200">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex items-center justify-between py-4">
+                    <div className="flex items-center justify-between py-6">
                         <div className="flex items-center space-x-4">
                             <button
                                 onClick={() => navigate('/recruiter/dashboard')}
-                                className="text-gray-500 hover:text-gray-700"
+                                className="flex items-center gap-2 text-gray-500 hover:text-gray-700 transition-colors"
                             >
-                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
-                                </svg>
+                                <FaArrowLeft className="w-4 h-4" />
+                                <span className="text-sm font-medium">Back to Dashboard</span>
                             </button>
+                            <div className="h-6 w-px bg-gray-300"></div>
                             <div>
-                                <nav className="flex space-x-2 text-sm text-gray-500">
-                                    <span>Dashboard</span>
-                                    <span>/</span>
-                                    <span className="text-gray-900">Edit Organization</span>
-                                </nav>
-                                <h1 className="text-2xl font-bold text-gray-900 mt-1">Edit Organization</h1>
+                                <h1 className="text-2xl font-bold text-gray-900">Organization Profile</h1>
+                                <p className="text-sm text-gray-600 mt-1">Manage your company information and branding</p>
                             </div>
                         </div>
 
                         <div className="flex items-center space-x-4">
-                            {originalData?.logo && (
-                                <>
-                                                                                <img
-                                            src={
-                                                originalData.logo.startsWith('http')
-                                                ? originalData.logo
-                                                : `${import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:8000'}${originalData.logo}`
-                                            }
-                                            alt="Organization Logo"
-                                            className="w-10 h-10 rounded-full object-cover border border-gray-200 shadow-sm"
-                                            />
-                                    
-                                </>
-                            )}
-                            {!originalData?.logo && (
-                                <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
-                                    <FaBuilding className="h-5 w-5 text-gray-400" />
-                                </div>
-                            )}
                             <div className="text-right">
                                 <p className="text-sm font-medium text-gray-900">{originalData?.name}</p>
                                 <p className="text-xs text-gray-500">Organization</p>
@@ -421,122 +437,589 @@ const EditOrganization = () => {
             </header>
 
             {/* Main Content */}
-            <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="bg-white rounded-lg shadow-sm border border-gray-200"
-                >
-                    <div className="px-6 py-4 border-b border-gray-200">
-                        <h2 className="text-lg font-semibold text-gray-900">Organization Information</h2>
-                        <p className="text-sm text-gray-600 mt-1">Update your organization details and settings</p>
+            <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    {/* Left Column - Logo and Basic Info */}
+                    <div className="lg:col-span-1 space-y-6">
+                        {/* Logo Section */}
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
+                        >
+                            <h3 className="text-lg font-semibold text-gray-900 mb-4">Company Logo</h3>
+
+                            <div className="text-center">
+                                <div
+                                    className="relative mx-auto w-32 h-32 mb-4 cursor-pointer group"
+                                    onMouseEnter={() => setIsLogoHovered(true)}
+                                    onMouseLeave={() => setIsLogoHovered(false)}
+                                >
+                                    {logoPreview ? (
+                                        <div className="relative">
+                                            <img
+                                                src={logoPreview}
+                                                alt="Organization Logo"
+                                                className="w-32 h-32 rounded-xl object-cover border-2 border-gray-200 shadow-sm"
+                                            />
+                                            <AnimatePresence>
+                                                {isLogoHovered && (
+                                                    <motion.div
+                                                        initial={{ opacity: 0 }}
+                                                        animate={{ opacity: 1 }}
+                                                        exit={{ opacity: 0 }}
+                                                        className="absolute inset-0 bg-black bg-opacity-50 rounded-xl flex items-center justify-center"
+                                                    >
+                                                        <div className="flex space-x-2">
+                                                            <label className="cursor-pointer">
+                                                                <FaEdit className="w-5 h-5 text-white hover:text-gray-200" />
+                                                            </label>
+                                                            <button
+                                                                onClick={removeLogo}
+                                                                className="text-white hover:text-red-300"
+                                                            >
+                                                                <FaTrash className="w-5 h-5" />
+                                                            </button>
+                                                        </div>
+                                                    </motion.div>
+                                                )}
+                                            </AnimatePresence>
+                                        </div>
+                                    ) : (
+                                        <div className="w-32 h-32 rounded-xl border-2 border-dashed border-gray-300 flex items-center justify-center bg-gray-50">
+                                            <FaImage className="w-8 h-8 text-gray-400" />
+                                        </div>
+                                    )}
+
+                                    <label className="block">
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            onChange={(e) => handleFileChange(e, 'logo')}
+                                            className="hidden"
+                                        />
+                                        <div className="mt-4 px-4 py-2 bg-[#00A55F] text-white rounded-lg hover:bg-[#008c4f] transition-colors cursor-pointer text-sm font-medium">
+                                            {logoPreview ? 'Change Logo' : 'Upload Logo'}
+                                        </div>
+                                    </label>
+
+                                    <p className="text-xs text-gray-500 mt-2">
+                                        Recommended: 256x256px, Max 5MB
+                                    </p>
+                                </div>
+                            </div>
+                        </motion.div>
+
+                        {/* Quick Stats */}
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.1 }}
+                            className="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
+                        >
+                            <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Stats</h3>
+                            <div className="space-y-4">
+                                <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
+                                    <div className="flex items-center gap-2">
+                                        <FaUsers className="h-4 w-4 text-blue-600" />
+                                        <span className="text-sm font-medium text-gray-700">Company Size</span>
+                                    </div>
+                                    <span className="text-sm font-bold text-blue-600">
+                                        {formData.employee_range || 'Not set'}
+                                    </span>
+                                </div>
+
+                                <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
+                                    <div className="flex items-center gap-2">
+                                        <FaIndustry className="h-4 w-4 text-green-600" />
+                                        <span className="text-sm font-medium text-gray-700">Industry</span>
+                                    </div>
+                                    <span className="text-sm font-bold text-green-600">
+                                        {formData.industry || 'Not set'}
+                                    </span>
+                                </div>
+
+                                <div className="flex items-center justify-between p-3 bg-purple-50 rounded-lg">
+                                    <div className="flex items-center gap-2">
+                                        <FaMapMarkerAlt className="h-4 w-4 text-purple-600" />
+                                        <span className="text-sm font-medium text-gray-700">Location</span>
+                                    </div>
+                                    <span className="text-sm font-bold text-purple-600">
+                                        {formData.city || 'Not set'}
+                                    </span>
+                                </div>
+
+                                <div className="flex items-center justify-between p-3 bg-yellow-50 rounded-lg">
+                                    <div className="flex items-center gap-2">
+                                        <FaCalendarAlt className="h-4 w-4 text-yellow-600" />
+                                        <span className="text-sm font-medium text-gray-700">Founded</span>
+                                    </div>
+                                    <span className="text-sm font-bold text-yellow-600">
+                                        {formData.founded_year || 'Not set'}
+                                    </span>
+                                </div>
+                            </div>
+                        </motion.div>
+
+                        {/* License Document Section */}
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.15 }}
+                            className="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
+                        >
+                            <h3 className="text-lg font-semibold text-gray-900 mb-4">License Document</h3>
+
+                            <div className="space-y-4">
+                                {/* Current License Display */}
+                                {originalData?.license_document && (
+                                    <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-3">
+                                                <div className="p-2 bg-blue-100 rounded-lg">
+                                                    <FaFileUpload className="h-5 w-5 text-blue-600" />
+                                                </div>
+                                                <div>
+                                                    <p className="text-sm font-medium text-gray-900">Current License</p>
+                                                    <p className="text-xs text-gray-500">
+                                                        {originalData.license_document.split('/').pop()}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <a
+                                                    href={`${import.meta.env.VITE_API_BASE_URL?.replace('/api', '') || 'http://localhost:8000'}${originalData.license_document}`}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-colors"
+                                                    title="View Document"
+                                                >
+                                                    <FaEye className="h-4 w-4" />
+                                                </a>
+                                                <button
+                                                    onClick={() => {
+                                                        setFiles(prev => ({ ...prev, license_document: null }));
+                                                        setOriginalData(prev => ({ ...prev, license_document: null }));
+                                                    }}
+                                                    className="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-colors"
+                                                    title="Remove Document"
+                                                >
+                                                    <FaTrash className="h-4 w-4" />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* New File Upload */}
+                                {files.license_document && (
+                                    <div className="bg-green-50 rounded-lg p-4 border border-green-200">
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-3">
+                                                <div className="p-2 bg-green-100 rounded-lg">
+                                                    <FaFileUpload className="h-5 w-5 text-green-600" />
+                                                </div>
+                                                <div>
+                                                    <p className="text-sm font-medium text-gray-900">New License Document</p>
+                                                    <p className="text-xs text-gray-500">
+                                                        {files.license_document.name} ({(files.license_document.size / 1024 / 1024).toFixed(2)} MB)
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <button
+                                                onClick={() => setFiles(prev => ({ ...prev, license_document: null }))}
+                                                className="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-colors"
+                                                title="Remove File"
+                                            >
+                                                <FaTimes className="h-4 w-4" />
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Upload Button */}
+                                {!files.license_document && (
+                                    <label className="block">
+                                        <input
+                                            type="file"
+                                            accept=".pdf,.doc,.docx"
+                                            onChange={(e) => handleFileChange(e, 'license_document')}
+                                            className="hidden"
+                                        />
+                                        <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-[#00A55F] hover:bg-[#00A55F]/5 transition-colors cursor-pointer">
+                                            <div className="p-3 bg-gray-100 rounded-lg inline-block mb-3">
+                                                <FaFileUpload className="h-6 w-6 text-gray-400" />
+                                            </div>
+                                            <p className="text-sm font-medium text-gray-700 mb-1">
+                                                Upload License Document
+                                            </p>
+                                            <p className="text-xs text-gray-500">
+                                                PDF, DOC, or DOCX files only (Max 10MB)
+                                            </p>
+                                        </div>
+                                    </label>
+                                )}
+
+                                {/* Upload Info */}
+                                <div className="bg-blue-50 rounded-lg p-3">
+                                    <div className="flex items-start gap-2">
+                                        <FaExclamationTriangle className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
+                                        <div className="text-xs text-blue-800">
+                                            <p className="font-medium mb-1">License Document Requirements:</p>
+                                            <ul className="space-y-1 text-blue-700">
+                                                <li>• Business registration or trade license</li>
+                                                <li>• Valid government-issued business permit</li>
+                                                <li>• Company registration certificate</li>
+                                                <li>• Maximum file size: 10MB</li>
+                                                <li>• Supported formats: PDF, DOC, DOCX</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </motion.div>
                     </div>
 
-                    <form className="p-6 space-y-8">
+                    {/* Right Column - Form */}
+                    <div className="lg:col-span-2 space-y-6">
                         {/* Basic Information */}
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Organization Name *
-                                </label>
-                                <input
-                                    type="text"
-                                    name="name"
-                                    value={formData.name}
-                                    onChange={handleInputChange}
-                                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#00A55F] focus:border-[#00A55F] outline-none transition-colors ${errors.name ? 'border-red-500' : 'border-gray-300'
-                                        }`}
-                                    placeholder="Enter organization name"
-                                />
-                                {errors.name && (
-                                    <p className="mt-1 text-sm text-red-500">{errors.name}</p>
-                                )}
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.2 }}
+                            className="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
+                        >
+                            <h3 className="text-lg font-semibold text-gray-900 mb-6">Basic Information</h3>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Organization Name *
+                                    </label>
+                                    <input
+                                        type="text"
+                                        name="name"
+                                        value={formData.name}
+                                        onChange={handleInputChange}
+                                        className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#00A55F] focus:border-[#00A55F] outline-none transition-colors ${errors.name ? 'border-red-500' : 'border-gray-300'}`}
+                                        placeholder="Enter organization name"
+                                    />
+                                    {errors.name && (
+                                        <p className="mt-1 text-sm text-red-500">{errors.name}</p>
+                                    )}
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Industry
+                                    </label>
+                                    <select
+                                        name="industry"
+                                        value={formData.industry}
+                                        onChange={handleInputChange}
+                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00A55F] focus:border-[#00A55F] outline-none transition-colors"
+                                    >
+                                        <option value="">Select Industry</option>
+                                        {industries.map((industry) => (
+                                            <option key={industry} value={industry}>
+                                                {industry}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Company Size
+                                    </label>
+                                    <select
+                                        name="employee_range"
+                                        value={formData.employee_range}
+                                        onChange={handleInputChange}
+                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00A55F] focus:border-[#00A55F] outline-none transition-colors"
+                                    >
+                                        <option value="">Select Company Size</option>
+                                        {employeeRanges.map((range) => (
+                                            <option key={range} value={range}>
+                                                {range} employees
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Founded Year
+                                    </label>
+                                    <select
+                                        name="founded_year"
+                                        value={formData.founded_year}
+                                        onChange={handleInputChange}
+                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00A55F] focus:border-[#00A55F] outline-none transition-colors"
+                                    >
+                                        <option value="">Select Year</option>
+                                        {foundedYears.map((year) => (
+                                            <option key={year} value={year}>
+                                                {year}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Website
+                                    </label>
+                                    <div className="relative">
+                                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                            <FaGlobe className="h-5 w-5 text-gray-400" />
+                                        </div>
+                                        <input
+                                            type="url"
+                                            name="website"
+                                            value={formData.website}
+                                            onChange={handleInputChange}
+                                            className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#00A55F] focus:border-[#00A55F] outline-none transition-colors ${errors.website ? 'border-red-500' : 'border-gray-300'}`}
+                                            placeholder="https://example.com"
+                                        />
+                                    </div>
+                                    {errors.website && (
+                                        <p className="mt-1 text-sm text-red-500">{errors.website}</p>
+                                    )}
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Location
+                                    </label>
+                                    <select
+                                        name="city"
+                                        value={formData.city}
+                                        onChange={handleInputChange}
+                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00A55F] focus:border-[#00A55F] outline-none transition-colors"
+                                    >
+                                        <option value="">Select City</option>
+                                        {cities.map((city) => (
+                                            <option key={city} value={city}>
+                                                {city}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
                             </div>
 
-                            <div>
+                            <div className="mt-6">
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Website
+                                    About Organization
                                 </label>
-                                <div className="relative">
-                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <FaGlobe className="h-5 w-5 text-gray-400" />
+                                <textarea
+                                    name="about"
+                                    value={formData.about}
+                                    onChange={handleInputChange}
+                                    rows="4"
+                                    maxLength="500"
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00A55F] focus:border-[#00A55F] outline-none transition-colors resize-none"
+                                    placeholder="Tell us about your organization, mission, and values..."
+                                />
+                                <div className="mt-1 text-xs text-gray-500 text-right">
+                                    {formData.about.length}/500 characters
+                                </div>
+                            </div>
+                        </motion.div>
+
+                        {/* Contact Information */}
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.3 }}
+                            className="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
+                        >
+                            <h3 className="text-lg font-semibold text-gray-900 mb-6">Contact Information</h3>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Phone Number
+                                    </label>
+                                    <div className="relative">
+                                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                            <FaPhone className="h-5 w-5 text-gray-400" />
+                                        </div>
+                                        <input
+                                            type="tel"
+                                            name="phone"
+                                            value={formData.phone}
+                                            onChange={handleInputChange}
+                                            className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00A55F] focus:border-[#00A55F] outline-none transition-colors"
+                                            placeholder="+222 XXX XXX XXX"
+                                        />
                                     </div>
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        Email Address
+                                    </label>
+                                    <div className="relative">
+                                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                            <FaEnvelope className="h-5 w-5 text-gray-400" />
+                                        </div>
+                                        <input
+                                            type="email"
+                                            name="email"
+                                            value={formData.email}
+                                            onChange={handleInputChange}
+                                            className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#00A55F] focus:border-[#00A55F] outline-none transition-colors ${errors.email ? 'border-red-500' : 'border-gray-300'}`}
+                                            placeholder="contact@company.com"
+                                        />
+                                    </div>
+                                    {errors.email && (
+                                        <p className="mt-1 text-sm text-red-500">{errors.email}</p>
+                                    )}
+                                </div>
+                            </div>
+
+                            <div className="mt-6">
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Address
+                                </label>
+                                <textarea
+                                    name="address"
+                                    value={formData.address}
+                                    onChange={handleInputChange}
+                                    rows="3"
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00A55F] focus:border-[#00A55F] outline-none transition-colors resize-none"
+                                    placeholder="Enter your company address..."
+                                />
+                            </div>
+                        </motion.div>
+
+                        {/* Social Media Links */}
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.4 }}
+                            className="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
+                        >
+                            <h3 className="text-lg font-semibold text-gray-900 mb-6">Social Media</h3>
+
+                            <div className="space-y-4">
+                                {/* LinkedIn */}
+                                <div className="relative">
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        <div className="flex items-center gap-2">
+                                            <FaLinkedin className="h-4 w-4 text-blue-600" />
+                                            <span>LinkedIn</span>
+                                        </div>
+                                    </label>
                                     <input
                                         type="url"
-                                        name="website"
-                                        value={formData.website}
-                                        onChange={handleInputChange}
-                                        className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#00A55F] focus:border-[#00A55F] outline-none transition-colors ${errors.website ? 'border-red-500' : 'border-gray-300'
-                                            }`}
-                                        placeholder="https://example.com"
+                                        value={formData.social_links.linkedin}
+                                        onChange={(e) => handleSocialLinkChange('linkedin', e.target.value)}
+                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00A55F] focus:border-[#00A55F] outline-none transition-colors"
+                                        placeholder="https://linkedin.com/company/your-company"
                                     />
                                 </div>
-                                {errors.website && (
-                                    <p className="mt-1 text-sm text-red-500">{errors.website}</p>
-                                )}
-                            </div>
-                        </div>
 
-                        {/* About */}
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                About Organization
-                            </label>
-                            <textarea
-                                name="about"
-                                value={formData.about}
-                                onChange={handleInputChange}
-                                rows="4"
-                                maxLength="500"
-                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00A55F] focus:border-[#00A55F] outline-none transition-colors resize-none"
-                                placeholder="Tell us about your organization..."
-                            />
-                            <div className="mt-1 text-xs text-gray-500 text-right">
-                                {formData.about.length}/500 characters
+                                {/* Facebook */}
+                                <div className="relative">
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        <div className="flex items-center gap-2">
+                                            <FaFacebook className="h-4 w-4 text-blue-600" />
+                                            <span>Facebook</span>
+                                        </div>
+                                    </label>
+                                    <input
+                                        type="url"
+                                        value={formData.social_links.facebook}
+                                        onChange={(e) => handleSocialLinkChange('facebook', e.target.value)}
+                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00A55F] focus:border-[#00A55F] outline-none transition-colors"
+                                        placeholder="https://facebook.com/your-company"
+                                    />
+                                </div>
+
+                                {/* Instagram */}
+                                <div className="relative">
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        <div className="flex items-center gap-2">
+                                            <FaInstagram className="h-4 w-4 text-pink-600" />
+                                            <span>Instagram</span>
+                                        </div>
+                                    </label>
+                                    <input
+                                        type="url"
+                                        value={formData.social_links.instagram}
+                                        onChange={(e) => handleSocialLinkChange('instagram', e.target.value)}
+                                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00A55F] focus:border-[#00A55F] outline-none transition-colors"
+                                        placeholder="https://instagram.com/your-company"
+                                    />
+                                </div>
                             </div>
-                        </div>
+
+                            {/* Social Media Tips */}
+                            <div className="mt-6 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-4 border border-blue-100">
+                                <div className="flex items-start gap-3">
+                                    <div className="p-2 bg-blue-100 rounded-lg flex-shrink-0">
+                                        <FaGlobe className="h-4 w-4 text-blue-600" />
+                                    </div>
+                                    <div>
+                                        <h4 className="text-sm font-medium text-blue-900 mb-1">Social Media Tips</h4>
+                                        <ul className="text-xs text-blue-800 space-y-1">
+                                            <li>• Use your company's official social media profiles</li>
+                                            <li>• Ensure URLs are complete and accessible</li>
+                                            <li>• Keep profiles updated and professional</li>
+                                            <li>• These links will be visible to candidates</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </motion.div>
 
                         {/* Action Buttons */}
-                        <div className="flex items-center justify-between pt-6 border-t border-gray-200">
-                            <motion.button
-                                type="button"
-                                onClick={handleCancel}
-                                whileHover={{ scale: 1.02 }}
-                                whileTap={{ scale: 0.98 }}
-                                className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#00A55F] transition-colors"
-                            >
-                                Cancel
-                            </motion.button>
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.5 }}
+                            className="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
+                        >
+                            <div className="flex items-center justify-between">
+                                <motion.button
+                                    type="button"
+                                    onClick={handleCancel}
+                                    whileHover={{ scale: 1.02 }}
+                                    whileTap={{ scale: 0.98 }}
+                                    className="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#00A55F] transition-colors font-medium"
+                                >
+                                    Cancel
+                                </motion.button>
 
-                            <motion.button
-                                type="button"
-                                onClick={handleSave}
-                                disabled={!hasChanges || isSaving}
-                                whileHover={{ scale: hasChanges && !isSaving ? 1.02 : 1 }}
-                                whileTap={{ scale: hasChanges && !isSaving ? 0.98 : 1 }}
-                                className={`px-6 py-2 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#00A55F] transition-colors ${hasChanges && !isSaving
-                                    ? 'bg-[#00A55F] hover:bg-[#008c4f]'
-                                    : 'bg-gray-300 cursor-not-allowed'
-                                    }`}
-                            >
-                                {isSaving ? (
-                                    <div className="flex items-center">
-                                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                        </svg>
-                                        Saving...
-                                    </div>
-                                ) : (
-                                    <div className="flex items-center">
-                                        <FaSave className="h-4 w-4 mr-2" />
-                                        Save Changes
-                                    </div>
-                                )}
-                            </motion.button>
-                        </div>
-                    </form>
-                </motion.div>
+                                <motion.button
+                                    type="button"
+                                    onClick={handleSave}
+                                    disabled={!hasChanges || isSaving}
+                                    whileHover={{ scale: hasChanges && !isSaving ? 1.02 : 1 }}
+                                    whileTap={{ scale: hasChanges && !isSaving ? 0.98 : 1 }}
+                                    className={`px-8 py-3 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#00A55F] transition-colors font-medium ${hasChanges && !isSaving
+                                        ? 'bg-[#00A55F] hover:bg-[#008c4f]'
+                                        : 'bg-gray-300 cursor-not-allowed'
+                                        }`}
+                                >
+                                    {isSaving ? (
+                                        <div className="flex items-center">
+                                            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-3"></div>
+                                            Saving...
+                                        </div>
+                                    ) : (
+                                        <div className="flex items-center">
+                                            <FaSave className="h-4 w-4 mr-2" />
+                                            Save Changes
+                                        </div>
+                                    )}
+                                </motion.button>
+                            </div>
+                        </motion.div>
+                    </div>
+                </div>
             </main>
 
             {/* Name Change Warning Modal */}
@@ -552,7 +1035,7 @@ const EditOrganization = () => {
                             initial={{ scale: 0.9, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
                             exit={{ scale: 0.9, opacity: 0 }}
-                            className="bg-white rounded-lg p-6 max-w-md w-full"
+                            className="bg-white rounded-xl p-6 max-w-md w-full shadow-xl"
                         >
                             <div className="flex items-center mb-4">
                                 <div className="flex-shrink-0">
@@ -568,13 +1051,13 @@ const EditOrganization = () => {
                             <div className="flex justify-end space-x-3">
                                 <button
                                     onClick={() => setShowNameWarning(false)}
-                                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
+                                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     onClick={saveChanges}
-                                    className="px-4 py-2 text-sm font-medium text-white bg-[#00A55F] rounded-md hover:bg-[#008c4f] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#00A55F]"
+                                    className="px-4 py-2 text-sm font-medium text-white bg-[#00A55F] rounded-lg hover:bg-[#008c4f] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#00A55F] transition-colors"
                                 >
                                     Continue
                                 </button>

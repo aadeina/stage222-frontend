@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useAuth } from '../../../context/AuthContext';
-import { FaComments, FaBriefcase, FaUsers, FaCheckCircle, FaEye, FaEdit, FaTrash, FaChartBar, FaUser, FaBuilding, FaLock, FaCreditCard, FaSignOutAlt, FaSyncAlt } from 'react-icons/fa';
+import { FaComments, FaBriefcase, FaUsers, FaCheckCircle, FaEye, FaEdit, FaTrash, FaChartBar, FaUser, FaBuilding, FaLock, FaCreditCard, FaSignOutAlt, FaSyncAlt, FaTimes, FaClock } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 import { getDashboardStats, getRecentOpportunities } from '../api/dashboardApi';
 import RecruiterHeader from '../components/RecruiterHeader';
@@ -77,15 +77,28 @@ const RecruiterDashboard = () => {
         switch (status?.toLowerCase()) {
             case 'open':
             case 'active':
-                return 'bg-green-100 text-green-800';
+                return 'bg-gradient-to-r from-green-500 to-emerald-600 text-white border-green-400 shadow-green-200/50';
             case 'draft':
             case 'pending':
-                return 'bg-yellow-100 text-yellow-800';
+                return 'bg-gradient-to-r from-yellow-500 to-orange-600 text-white border-yellow-400 shadow-yellow-200/50';
             case 'closed':
             case 'inactive':
-                return 'bg-red-100 text-red-800';
+                return 'bg-gradient-to-r from-red-500 to-pink-600 text-white border-red-400 shadow-red-200/50';
             default:
-                return 'bg-gray-100 text-gray-800';
+                return 'bg-gradient-to-r from-gray-500 to-gray-600 text-white border-gray-400 shadow-gray-200/50';
+        }
+    };
+
+    const getApprovalStatusColor = (approvalStatus) => {
+        switch (approvalStatus?.toLowerCase()) {
+            case 'approved':
+                return 'bg-gradient-to-r from-green-500 to-emerald-600 text-white border-green-400 shadow-green-200/50';
+            case 'pending':
+                return 'bg-gradient-to-r from-yellow-500 to-orange-600 text-white border-yellow-400 shadow-yellow-200/50';
+            case 'rejected':
+                return 'bg-gradient-to-r from-red-500 to-pink-600 text-white border-red-400 shadow-red-200/50';
+            default:
+                return 'bg-gradient-to-r from-gray-500 to-gray-600 text-white border-gray-400 shadow-gray-200/50';
         }
     };
 
@@ -106,6 +119,19 @@ const RecruiterDashboard = () => {
                 return 'Pending';
             default:
                 return status || 'Unknown';
+        }
+    };
+
+    const formatApprovalStatus = (approvalStatus) => {
+        switch (approvalStatus?.toLowerCase()) {
+            case 'approved':
+                return 'Approved';
+            case 'pending':
+                return 'Pending Approval';
+            case 'rejected':
+                return 'Rejected';
+            default:
+                return approvalStatus || 'Unknown';
         }
     };
 
@@ -234,195 +260,323 @@ const RecruiterDashboard = () => {
                     </motion.div>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                    {/* Recently Posted Jobs/Internships */}
-                    <div className="lg:col-span-2">
-                        <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.5 }}
-                            className="bg-white rounded-lg shadow-sm border border-gray-200"
-                        >
-                            <div className="px-6 py-4 border-b border-gray-200">
-                                <h2 className="text-lg font-semibold text-gray-900">Recently Posted Opportunities</h2>
+                {/* Approval Status Notifications */}
+                {recentOpportunities.filter(opp => opp.approval_status?.toLowerCase() === 'pending').length > 0 && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.5 }}
+                        className="mb-6 bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-lg p-4"
+                    >
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 bg-yellow-100 rounded-lg">
+                                <FaClock className="h-5 w-5 text-yellow-600" />
                             </div>
-                            <div className="overflow-x-auto">
-                                <table className="min-w-full divide-y divide-gray-200">
-                                    <thead className="bg-gray-50">
-                                        <tr>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                Title
-                                            </th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                Type
-                                            </th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                <div className="flex items-center gap-1">
-                                                    <span>Applicants</span>
-                                                    <div className="w-2 h-2 bg-gray-300 rounded-full" title="Competition level indicator"></div>
-                                                </div>
-                                            </th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                Posted
-                                            </th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                Status
-                                            </th>
-                                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                Actions
-                                            </th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="bg-white divide-y divide-gray-200">
-                                        {recentOpportunities.length > 0 ? (
-                                            recentOpportunities.map((opportunity) => (
-                                                <tr key={opportunity.id} className="hover:bg-gray-50">
-                                                    <td className="px-6 py-4 whitespace-nowrap">
-                                                        <div className="text-sm font-medium text-gray-900">
-                                                            {opportunity.title}
-                                                        </div>
-                                                    </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap">
-                                                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getTypeColor(getOpportunityType(opportunity))}`}>
-                                                            {formatType(getOpportunityType(opportunity))}
-                                                        </span>
-                                                    </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap">
-                                                        <div className="flex items-center gap-2">
-                                                            <div className="flex items-center gap-1">
-                                                                <FaUsers className="h-3 w-3 text-gray-400" />
-                                                                <span className="text-sm font-medium text-gray-900">
-                                                                    {opportunity.applicants_count || 0}
-                                                                </span>
-                                                            </div>
-                                                            {/* Competition Level Indicator */}
-                                                            <div className={`w-2 h-2 rounded-full ${opportunity.applicants_count > 20 ? 'bg-red-500' :
-                                                                opportunity.applicants_count > 10 ? 'bg-yellow-500' : 'bg-green-500'
-                                                                }`} />
-                                                            <span className={`text-xs font-medium ${opportunity.applicants_count > 20 ? 'text-red-600' :
-                                                                opportunity.applicants_count > 10 ? 'text-yellow-600' : 'text-green-600'
-                                                                }`}>
-                                                                {opportunity.applicants_count > 20 ? 'High' :
-                                                                    opportunity.applicants_count > 10 ? 'Med' : 'Low'}
+                            <div className="flex-1">
+                                <h3 className="text-sm font-semibold text-yellow-800">
+                                    Pending Approvals ({recentOpportunities.filter(opp => opp.approval_status?.toLowerCase() === 'pending').length})
+                                </h3>
+                                <p className="text-sm text-yellow-700">
+                                    You have {recentOpportunities.filter(opp => opp.approval_status?.toLowerCase() === 'pending').length} opportunity{recentOpportunities.filter(opp => opp.approval_status?.toLowerCase() === 'pending').length !== 1 ? 'ies' : 'y'} waiting for admin approval. They will be visible to candidates once approved.
+                                </p>
+                            </div>
+                        </div>
+                    </motion.div>
+                )}
+
+                {/* Success Notifications */}
+                {recentOpportunities.filter(opp => opp.approval_status?.toLowerCase() === 'approved').length > 0 && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.6 }}
+                        className="mb-6 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-4"
+                    >
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 bg-green-100 rounded-lg">
+                                <FaCheckCircle className="h-5 w-5 text-green-600" />
+                            </div>
+                            <div className="flex-1">
+                                <h3 className="text-sm font-semibold text-green-800">
+                                    Successfully Approved ({recentOpportunities.filter(opp => opp.approval_status?.toLowerCase() === 'approved').length})
+                                </h3>
+                                <p className="text-sm text-green-700">
+                                    {recentOpportunities.filter(opp => opp.approval_status?.toLowerCase() === 'approved').length} opportunity{recentOpportunities.filter(opp => opp.approval_status?.toLowerCase() === 'approved').length !== 1 ? 'ies' : 'y'} {recentOpportunities.filter(opp => opp.approval_status?.toLowerCase() === 'approved').length !== 1 ? 'are' : 'is'} now live and visible to candidates!
+                                </p>
+                            </div>
+                        </div>
+                    </motion.div>
+                )}
+
+                <div className="space-y-8">
+                    {/* All Posted Opportunities - Full Width */}
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.5 }}
+                        className="bg-white rounded-xl shadow-sm border border-gray-200"
+                    >
+                        <div className="px-6 py-4 border-b border-gray-200">
+                            <div className="flex items-center justify-between">
+                                <h2 className="text-lg font-semibold text-gray-900">All Posted Opportunities</h2>
+                                <div className="flex items-center gap-4 text-sm text-gray-600">
+                                    <div className="flex items-center gap-2">
+                                        <div className="flex items-center gap-1">
+                                            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                                            <span>Active</span>
+                                        </div>
+                                        <div className="flex items-center gap-1">
+                                            <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                                            <span>Pending</span>
+                                        </div>
+                                        <div className="flex items-center gap-1">
+                                            <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                                            <span>Closed</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="overflow-x-auto">
+                            <table className="min-w-full divide-y divide-gray-200">
+                                <thead className="bg-gray-50">
+                                    <tr>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Title
+                                        </th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Type
+                                        </th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            <div className="flex items-center gap-1">
+                                                <span>Applicants</span>
+                                                <div className="w-2 h-2 bg-gray-300 rounded-full" title="Competition level indicator"></div>
+                                            </div>
+                                        </th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Posted
+                                        </th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Status
+                                        </th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Approval
+                                        </th>
+                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            Actions
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody className="bg-white divide-y divide-gray-200">
+                                    {recentOpportunities.length > 0 ? (
+                                        recentOpportunities.map((opportunity) => (
+                                            <tr key={opportunity.id} className="hover:bg-gray-50">
+                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                    <div className="text-sm font-medium text-gray-900">
+                                                        {opportunity.title}
+                                                    </div>
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getTypeColor(getOpportunityType(opportunity))}`}>
+                                                        {formatType(getOpportunityType(opportunity))}
+                                                    </span>
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="flex items-center gap-1">
+                                                            <FaUsers className="h-3 w-3 text-gray-400" />
+                                                            <span className="text-sm font-medium text-gray-900">
+                                                                {opportunity.applicants_count || 0}
                                                             </span>
                                                         </div>
-                                                    </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                                        {new Date(opportunity.created_at || opportunity.postedDate).toLocaleDateString()}
-                                                    </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap">
-                                                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(opportunity.status)}`}>
+                                                        {/* Competition Level Indicator */}
+                                                        <div className={`w-2 h-2 rounded-full ${opportunity.applicants_count > 20 ? 'bg-red-500' :
+                                                            opportunity.applicants_count > 10 ? 'bg-yellow-500' : 'bg-green-500'
+                                                            }`} />
+                                                        <span className={`text-xs font-medium ${opportunity.applicants_count > 20 ? 'text-red-600' :
+                                                            opportunity.applicants_count > 10 ? 'text-yellow-600' : 'text-green-600'
+                                                            }`}>
+                                                            {opportunity.applicants_count > 20 ? 'High' :
+                                                                opportunity.applicants_count > 10 ? 'Med' : 'Low'}
+                                                        </span>
+                                                    </div>
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                                    {new Date(opportunity.created_at || opportunity.postedDate).toLocaleDateString()}
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                    <div className="flex flex-col gap-1">
+                                                        <span className={`inline-flex items-center gap-1 px-3 py-1.5 text-xs font-bold rounded-full border shadow-sm ${getStatusColor(opportunity.status)}`}>
+                                                            {opportunity.status?.toLowerCase() === 'open' ? (
+                                                                <FaCheckCircle className="h-3 w-3" />
+                                                            ) : opportunity.status?.toLowerCase() === 'closed' ? (
+                                                                <FaTimes className="h-3 w-3" />
+                                                            ) : (
+                                                                <FaClock className="h-3 w-3" />
+                                                            )}
                                                             {formatStatus(opportunity.status)}
                                                         </span>
-                                                    </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                                        <div className="flex space-x-2">
-                                                            <button
-                                                                onClick={() => navigate(`/internships/${opportunity.id}`)}
-                                                                className="text-[#00A55F] hover:text-[#008c4f] transition-colors"
-                                                                title="View Details"
-                                                            >
-                                                                <FaEye className="h-4 w-4" />
-                                                            </button>
-                                                            <button
-                                                                onClick={() => navigate(`/recruiter/edit-opportunity/${opportunity.id}`)}
-                                                                className="text-blue-600 hover:text-blue-800 transition-colors"
-                                                                title="Edit Opportunity"
-                                                            >
-                                                                <FaEdit className="h-4 w-4" />
-                                                            </button>
-                                                            <button
-                                                                onClick={() => navigate(`/recruiter/applicants/${opportunity.id}`)}
-                                                                className="text-purple-600 hover:text-purple-800 transition-colors"
-                                                                title="View Applicants"
-                                                            >
-                                                                <FaUsers className="h-4 w-4" />
-                                                            </button>
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            ))
-                                        ) : (
-                                            <tr>
-                                                <td colSpan="6" className="px-6 py-8 text-center">
-                                                    <div className="text-gray-500">
-                                                        <FaBriefcase className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                                                        <p className="text-lg font-medium">No opportunities found</p>
-                                                        <p className="text-sm">Start posting opportunities to see them here</p>
+                                                        {/* Show approval status as a small indicator */}
+                                                        {opportunity.approval_status && (
+                                                            <div className="flex items-center gap-1">
+                                                                <div className={`w-2 h-2 rounded-full ${opportunity.approval_status?.toLowerCase() === 'approved' ? 'bg-green-500' :
+                                                                    opportunity.approval_status?.toLowerCase() === 'pending' ? 'bg-yellow-500' : 'bg-red-500'
+                                                                    }`}></div>
+                                                                <span className="text-xs text-gray-500">
+                                                                    {formatApprovalStatus(opportunity.approval_status)}
+                                                                </span>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                    <div className="flex items-center gap-2">
+                                                        <span className={`inline-flex items-center gap-1 px-3 py-1.5 text-xs font-bold rounded-full border shadow-sm ${getApprovalStatusColor(opportunity.approval_status)}`}>
+                                                            {opportunity.approval_status?.toLowerCase() === 'approved' ? (
+                                                                <FaCheckCircle className="h-3 w-3" />
+                                                            ) : opportunity.approval_status?.toLowerCase() === 'pending' ? (
+                                                                <FaClock className="h-3 w-3" />
+                                                            ) : (
+                                                                <FaTimes className="h-3 w-3" />
+                                                            )}
+                                                            {formatApprovalStatus(opportunity.approval_status)}
+                                                        </span>
+                                                    </div>
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                                    <div className="flex space-x-2">
                                                         <button
-                                                            onClick={() => navigate('/recruiter/post-opportunity')}
-                                                            className="mt-4 px-4 py-2 bg-[#00A55F] text-white rounded-lg hover:bg-[#008c4f] transition-colors"
+                                                            onClick={() => navigate(`/internships/${opportunity.id}`)}
+                                                            className="text-[#00A55F] hover:text-[#008c4f] transition-colors"
+                                                            title="View Details"
                                                         >
-                                                            Post Your First Opportunity
+                                                            <FaEye className="h-4 w-4" />
+                                                        </button>
+                                                        <button
+                                                            onClick={() => navigate(`/recruiter/edit-opportunity/${opportunity.id}`)}
+                                                            className="text-blue-600 hover:text-blue-800 transition-colors"
+                                                            title="Edit Opportunity"
+                                                        >
+                                                            <FaEdit className="h-4 w-4" />
+                                                        </button>
+                                                        <button
+                                                            onClick={() => navigate(`/recruiter/applicants/${opportunity.id}`)}
+                                                            className="text-purple-600 hover:text-purple-800 transition-colors"
+                                                            title="View Applicants"
+                                                        >
+                                                            <FaUsers className="h-4 w-4" />
                                                         </button>
                                                     </div>
                                                 </td>
                                             </tr>
-                                        )}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </motion.div>
-                    </div>
+                                        ))
+                                    ) : (
+                                        <tr>
+                                            <td colSpan="7" className="px-6 py-8 text-center">
+                                                <div className="text-gray-500">
+                                                    <FaBriefcase className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+                                                    <p className="text-lg font-medium">No opportunities found</p>
+                                                    <p className="text-sm">Start posting opportunities to see them here</p>
+                                                    <button
+                                                        onClick={() => navigate('/recruiter/post-opportunity')}
+                                                        className="mt-4 px-4 py-2 bg-[#00A55F] text-white rounded-lg hover:bg-[#008c4f] transition-colors"
+                                                    >
+                                                        Post Your First Opportunity
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </motion.div>
 
-                    {/* Right Sidebar */}
-                    <div className="space-y-6">
-                        {/* Applications Summary */}
-                        <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.6 }}
-                            className="bg-white rounded-lg shadow-sm border border-gray-200 p-6"
-                        >
-                            <h3 className="text-lg font-semibold text-gray-900 mb-4">Applications Overview</h3>
-
-                            {/* Applicants Statistics */}
-                            <div className="space-y-4 mb-6">
-                                <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
-                                    <div className="flex items-center gap-2">
-                                        <FaUsers className="h-4 w-4 text-blue-600" />
-                                        <span className="text-sm font-medium text-gray-700">Total Applicants</span>
-                                    </div>
-                                    <span className="text-lg font-bold text-blue-600">
-                                        {recentOpportunities.reduce((sum, opp) => sum + (opp.applicants_count || 0), 0)}
-                                    </span>
-                                </div>
-
-                                <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
-                                    <div className="flex items-center gap-2">
-                                        <FaCheckCircle className="h-4 w-4 text-green-600" />
-                                        <span className="text-sm font-medium text-gray-700">Active Posts</span>
-                                    </div>
-                                    <span className="text-lg font-bold text-green-600">
-                                        {recentOpportunities.filter(opp => opp.status?.toLowerCase() === 'open').length}
-                                    </span>
-                                </div>
-
-                                <div className="flex items-center justify-between p-3 bg-yellow-50 rounded-lg">
-                                    <div className="flex items-center gap-2">
-                                        <FaChartBar className="h-4 w-4 text-yellow-600" />
-                                        <span className="text-sm font-medium text-gray-700">Avg. per Post</span>
-                                    </div>
-                                    <span className="text-lg font-bold text-yellow-600">
-                                        {Math.round(recentOpportunities.reduce((sum, opp) => sum + (opp.applicants_count || 0), 0) / Math.max(recentOpportunities.length, 1))}
-                                    </span>
-                                </div>
-                            </div>
-
+                    {/* Applications Overview - Full Width Cards */}
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.6 }}
+                        className="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
+                    >
+                        <div className="flex items-center justify-between mb-6">
+                            <h3 className="text-lg font-semibold text-gray-900">Applications Overview</h3>
                             <button
                                 onClick={() => navigate('/recruiter/applicants')}
-                                className="w-full bg-[#00A55F] text-white px-4 py-2 rounded-lg hover:bg-[#008c4f] transition-colors font-medium"
+                                className="px-4 py-2 bg-[#00A55F] text-white rounded-lg hover:bg-[#008c4f] transition-colors font-medium text-sm"
                             >
                                 View All Applicants
                             </button>
-                        </motion.div>
+                        </div>
 
+                        {/* Statistics Grid */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                            <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-xl border border-blue-200">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-sm font-medium text-blue-700 mb-1">Total Applicants</p>
+                                        <p className="text-2xl font-bold text-blue-900">
+                                            {recentOpportunities.reduce((sum, opp) => sum + (opp.applicants_count || 0), 0)}
+                                        </p>
+                                    </div>
+                                    <div className="p-3 bg-blue-200 rounded-lg">
+                                        <FaUsers className="h-6 w-6 text-blue-700" />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="bg-gradient-to-br from-green-50 to-green-100 p-6 rounded-xl border border-green-200">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-sm font-medium text-green-700 mb-1">Active Posts</p>
+                                        <p className="text-2xl font-bold text-green-900">
+                                            {recentOpportunities.filter(opp => opp.status?.toLowerCase() === 'open').length}
+                                        </p>
+                                    </div>
+                                    <div className="p-3 bg-green-200 rounded-lg">
+                                        <FaCheckCircle className="h-6 w-6 text-green-700" />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="bg-gradient-to-br from-red-50 to-red-100 p-6 rounded-xl border border-red-200">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-sm font-medium text-red-700 mb-1">Closed Posts</p>
+                                        <p className="text-2xl font-bold text-red-900">
+                                            {recentOpportunities.filter(opp => opp.status?.toLowerCase() === 'closed').length}
+                                        </p>
+                                    </div>
+                                    <div className="p-3 bg-red-200 rounded-lg">
+                                        <FaTimes className="h-6 w-6 text-red-700" />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 p-6 rounded-xl border border-yellow-200">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-sm font-medium text-yellow-700 mb-1">Avg. per Post</p>
+                                        <p className="text-2xl font-bold text-yellow-900">
+                                            {Math.round(recentOpportunities.reduce((sum, opp) => sum + (opp.applicants_count || 0), 0) / Math.max(recentOpportunities.length, 1))}
+                                        </p>
+                                    </div>
+                                    <div className="p-3 bg-yellow-200 rounded-lg">
+                                        <FaChartBar className="h-6 w-6 text-yellow-700" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </motion.div>
+
+                    {/* Quick Actions Row */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         {/* Chat Shortcut */}
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.7 }}
-                            className="bg-white rounded-lg shadow-sm border border-gray-200 p-6"
+                            className="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
                         >
                             <div className="text-center">
                                 <div className="p-3 bg-blue-100 rounded-lg inline-block mb-4">
@@ -439,12 +593,34 @@ const RecruiterDashboard = () => {
                             </div>
                         </motion.div>
 
-                        {/* Manage Account */}
+                        {/* Post New Opportunity */}
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.8 }}
-                            className="bg-white rounded-lg shadow-sm border border-gray-200 p-6"
+                            className="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
+                        >
+                            <div className="text-center">
+                                <div className="p-3 bg-[#00A55F]/10 rounded-lg inline-block mb-4">
+                                    <FaBriefcase className="h-8 w-8 text-[#00A55F]" />
+                                </div>
+                                <h3 className="text-lg font-semibold text-gray-900 mb-2">Post Opportunity</h3>
+                                <p className="text-sm text-gray-600 mb-4">Create new job or internship</p>
+                                <button
+                                    onClick={() => navigate('/recruiter/post-opportunity')}
+                                    className="w-full bg-[#00A55F] text-white px-4 py-2 rounded-lg hover:bg-[#008c4f] transition-colors font-medium"
+                                >
+                                    Post Now
+                                </button>
+                            </div>
+                        </motion.div>
+
+                        {/* Manage Account */}
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.9 }}
+                            className="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
                         >
                             <h3 className="text-lg font-semibold text-gray-900 mb-4">Manage Account</h3>
                             <div className="space-y-3">
@@ -458,19 +634,16 @@ const RecruiterDashboard = () => {
                                 <button
                                     onClick={async () => {
                                         try {
-                                            // Fetch current recruiter data to get organization ID
                                             const response = await api.get('/recruiters/me/');
                                             const recruiterData = response.data.data || response.data;
 
                                             if (recruiterData?.organization) {
-                                                // Navigate to edit page with organization ID
                                                 navigate(`/recruiter/organization/${recruiterData.organization}/update`);
                                             } else {
                                                 toast.error('No organization found. Please contact support.');
                                             }
                                         } catch (error) {
                                             console.error('Error fetching recruiter data:', error);
-                                            // Fallback to cleaner route that fetches data internally
                                             navigate('/recruiter/organization/edit');
                                         }
                                     }}
