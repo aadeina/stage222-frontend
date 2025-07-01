@@ -58,7 +58,7 @@ export const changeUserRole = (id, data) => adminApi.post(`/admin/users/${id}/ro
 // =============================
 export const fetchPendingInternships = () => adminApi.get('/admin/internships/pending/');
 export const approveInternship = (id) => adminApi.patch(`/admin/internships/${id}/approve/`);
-export const rejectInternship = (id) => adminApi.patch(`/admin/internships/${id}/reject/`);
+export const rejectInternship = (id, reason) => adminApi.patch(`/admin/internships/${id}/reject/`, { reason });
 export const toggleVerifyOrganization = (id) => adminApi.patch(`/admin/organizations/${id}/toggle-verify/`);
 
 // Fetch all organizations for admin moderation
