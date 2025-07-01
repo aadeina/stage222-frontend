@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { fetchAdminUsers } from '../api/adminApi';
+import { fetchAdminUsers } from '../../../services/adminApi';
 import AdminLayout from '../components/AdminLayout';
 import UserTable from '../components/UserTable';
 import toast from 'react-hot-toast';

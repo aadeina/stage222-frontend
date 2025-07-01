@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import toast from 'react-hot-toast';
-import { toggleVerifyUser, toggleActiveUser, deleteUser, changeUserRole } from '../api/adminApi';
+import { toggleVerifyUser, toggleActiveUser, deleteUser, changeUserRole } from '../../../services/adminApi';
 
 const UserTable = ({ users = [], onActionComplete }) => {
     const [loadingId, setLoadingId] = useState(null);

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import toast from 'react-hot-toast';
-import { approveInternship, rejectInternship, toggleVerifyOrganization } from '../api/adminApi';
+import { approveInternship, rejectInternship, toggleVerifyOrganization } from '../../../services/adminApi';
 
 const InternshipTable = ({ internships = [], onActionComplete }) => {
     const [loadingId, setLoadingId] = useState(null);

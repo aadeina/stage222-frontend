@@ -6,7 +6,7 @@ import api from './api';
  * POST /organizations/
  */
 export const createOrganization = (formData) => {
-  return api.post('/organizations/create/', formData);
+    return api.post('/organizations/create/', formData);
 };
 
 /**
@@ -14,7 +14,7 @@ export const createOrganization = (formData) => {
  * PUT /organizations/:id/update/
  */
 export const updateOrganization = (id, formData) => {
-  return api.put(`/organizations/${id}/update/`, formData);
+    return api.put(`/organizations/${id}/update/`, formData);
 };
 
 /**
@@ -22,7 +22,7 @@ export const updateOrganization = (id, formData) => {
  * GET /organizations/
  */
 export const fetchAllOrganizations = () => {
-  return api.get('/organizations/');
+    return api.get('/organizations/');
 };
 
 /**
@@ -30,5 +30,5 @@ export const fetchAllOrganizations = () => {
  * GET /organizations/:id/
  */
 export const fetchOrganizationById = (id) => {
-  return api.get(`/organizations/${id}/`);
+    return api.get(`/organizations/${id}/`);
 };

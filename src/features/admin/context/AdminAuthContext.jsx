@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { adminLogin } from '../api/adminAuthApi';
+import { adminLogin } from '../../../services/adminApi';
 import toast from 'react-hot-toast';
 
 const AdminAuthContext = createContext(null);

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { fetchPlatformStats } from '../api/adminApi';
+import { fetchPlatformStats } from '../../../services/adminApi';
 import AnalyticsCards from '../components/AnalyticsCards';
 
 const AdminDashboard = () => {

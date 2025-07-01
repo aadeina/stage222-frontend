@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { fetchPendingInternships } from '../api/adminApi';
+import { fetchPendingInternships } from '../../../services/adminApi';
 import AdminLayout from '../components/AdminLayout';
 import InternshipTable from '../components/InternshipTable';
 import toast from 'react-hot-toast';
