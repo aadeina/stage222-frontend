@@ -207,7 +207,7 @@ const PostInternshipJob = ({ initialFormData = null, isEdit = false, internshipI
                         {errors.title && <p className="text-red-500 text-sm mt-1">{errors.title}</p>}
                     </div>
                     <div className="relative">
-                        <label className="block font-semibold mb-1 text-gray-800">Location (Mauritanian city or Remote)</label>
+                        <label className="block font-semibold mb-1 text-gray-800">Location</label>
                         <div className="relative">
                             <input
                                 name="location"

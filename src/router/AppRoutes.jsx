@@ -1,4 +1,4 @@
-import { Routes, Route, useLocation } from 'react-router-dom';
+import { Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
 import PageWrapper from '@/components/layout/PageWrapper';
 import InternshipList from '@/pages/candidate/InternshipList';
@@ -28,226 +28,252 @@ import StudentDashboard from '@/features/candidate/pages/StudentDashboard';
 import EditOpportunity from '@/features/recruiter/pages/EditOpportunity';
 import Messages from '@/features/recruiter/pages/Messages';
 
+// Admin Pages
+import AdminDashboard from '@/features/admin/pages/AdminDashboard';
+import UserManagement from '@/features/admin/pages/UserManagement';
+import InternshipModeration from '@/features/admin/pages/InternshipModeration';
+import AdminLogin from '@/features/admin/pages/AdminLogin';
+import { AdminAuthProvider, useAdminAuth } from '@/features/admin/context/AdminAuthContext';
+
+// RequireAdmin wrapper for admin routes
+function RequireAdmin({ children }) {
+    const { admin, loading } = useAdminAuth();
+    if (loading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+            </div>
+        );
+    }
+    if (!admin || admin.role !== 'admin') {
+        return <Navigate to="/admin/login" replace />;
+    }
+    return children;
+}
+
 const AppRoutes = () => {
     const location = useLocation();
 
     return (
         <AnimatePresence mode="wait">
-            <Routes location={location} key={location.pathname}>
-                {/* Public Routes */}
-                <Route
-                    path="/"
-                    element={
-                        <PageWrapper>
-                            <Home />
-                        </PageWrapper>
-                    }
-                />
-                <Route
-                    path="/login"
-                    element={
-                        <PageWrapper>
-                            <Login />
-                        </PageWrapper>
-                    }
-                />
-                <Route
-                    path="/register/student"
-                    element={
-                        <PageWrapper>
-                            <RegisterStudent />
-                        </PageWrapper>
-                    }
-                />
-                <Route
-                    path="/register/employer"
-                    element={
-                        <PageWrapper>
-                            <RecruiterSignup />
-                        </PageWrapper>
-                    }
-                />
-                <Route
-                    path="/verify-otp"
-                    element={
-                        <PageWrapper>
-                            <VerifyOtp />
-                        </PageWrapper>
-                    }
-                />
-                <Route
-                    path="/reset-password"
-                    element={
-                        <PageWrapper>
-                            <ResetPassword />
-                        </PageWrapper>
-                    }
-                />
-                <Route
-                    path="/internships"
-                    element={
-                        <PageWrapper>
-                            <InternshipList />
-                        </PageWrapper>
-                    }
-                />
-                <Route
-                    path="/internships/:id"
-                    element={
-                        <PageWrapper>
-                            <InternshipDetail />
-                        </PageWrapper>
-                    }
-                />
-
-                {/* Protected Routes */}
-
-                {/* Recruiter Onboarding Route */}
-                <Route
-                    path="/recruiter/onboarding"
-                    element={
-                        <ProtectedOnboardingRoute>
+            {/* Admin context wraps all admin routes */}
+            <AdminAuthProvider>
+                <Routes location={location} key={location.pathname}>
+                    {/* Public Routes */}
+                    <Route
+                        path="/"
+                        element={
                             <PageWrapper>
-                                <RecruiterOnboarding />
+                                <Home />
                             </PageWrapper>
-                        </ProtectedOnboardingRoute>
-                    }
-                />
-
-                {/* Recruiter Dashboard Route */}
-                <Route
-                    path="/recruiter/dashboard"
-                    element={
-                        <ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/login"
+                        element={
                             <PageWrapper>
-                                <RecruiterDashboard />
+                                <Login />
                             </PageWrapper>
-                        </ProtectedRoute>
-                    }
-                />
-
-                {/* Recruiter Post Opportunity Route */}
-                <Route
-                    path="/recruiter/post-opportunity"
-                    element={
-                        <ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/register/student"
+                        element={
                             <PageWrapper>
-                                <PostInternshipJob />
+                                <RegisterStudent />
                             </PageWrapper>
-                        </ProtectedRoute>
-                    }
-                />
-
-                {/* Recruiter Messages Route */}
-                <Route
-                    path="/recruiter/messages"
-                    element={
-                        <ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/register/employer"
+                        element={
                             <PageWrapper>
-                                <Messages />
+                                <RecruiterSignup />
                             </PageWrapper>
-                        </ProtectedRoute>
-                    }
-                />
-
-                {/* Recruiter Opportunities Route */}
-                <Route
-                    path="/recruiter/:recruiterId/opportunities"
-                    element={
-                        <PageWrapper>
-                            <RecruiterOpportunities />
-                        </PageWrapper>
-                    }
-                />
-
-                {/* Edit Organization Route */}
-                <Route
-                    path="/recruiter/organization/:id/update"
-                    element={
-                        <ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/verify-otp"
+                        element={
                             <PageWrapper>
-                                <EditOrganization />
+                                <VerifyOtp />
                             </PageWrapper>
-                        </ProtectedRoute>
-                    }
-                />
-
-                {/* Alternative Edit Organization Route (without ID parameter) */}
-                <Route
-                    path="/recruiter/organization/edit"
-                    element={
-                        <ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/reset-password"
+                        element={
                             <PageWrapper>
-                                <EditOrganization />
+                                <ResetPassword />
                             </PageWrapper>
-                        </ProtectedRoute>
-                    }
-                />
-
-                {/* Recruiter Pricing Route */}
-                <Route
-                    path="/recruiter/pricing"
-                    element={
-                        <ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/internships"
+                        element={
                             <PageWrapper>
-                                <RecruiterPricing />
+                                <InternshipList />
                             </PageWrapper>
-                        </ProtectedRoute>
-                    }
-                />
-
-                {/* Student Dashboard Route */}
-                <Route
-                    path="/dashboard/student"
-                    element={
-                        <ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/internships/:id"
+                        element={
                             <PageWrapper>
-                                <StudentDashboard />
+                                <InternshipDetail />
                             </PageWrapper>
-                        </ProtectedRoute>
-                    }
-                />
+                        }
+                    />
 
-                {/* Edit Opportunity Route */}
-                <Route path="/recruiter/edit-opportunity/:id" element={<EditOpportunity />} />
-
-                {/* Recruiter Profile Route */}
-                <Route
-                    path="/recruiter/profile"
-                    element={
-                        <ProtectedRoute>
+                    {/* Protected Routes */}
+                    <Route
+                        path="/recruiter/onboarding"
+                        element={
+                            <ProtectedOnboardingRoute>
+                                <PageWrapper>
+                                    <RecruiterOnboarding />
+                                </PageWrapper>
+                            </ProtectedOnboardingRoute>
+                        }
+                    />
+                    <Route
+                        path="/recruiter/dashboard"
+                        element={
+                            <ProtectedRoute>
+                                <PageWrapper>
+                                    <RecruiterDashboard />
+                                </PageWrapper>
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/recruiter/post-opportunity"
+                        element={
+                            <ProtectedRoute>
+                                <PageWrapper>
+                                    <PostInternshipJob />
+                                </PageWrapper>
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/recruiter/messages"
+                        element={
+                            <ProtectedRoute>
+                                <PageWrapper>
+                                    <Messages />
+                                </PageWrapper>
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/recruiter/:recruiterId/opportunities"
+                        element={
                             <PageWrapper>
-                                <RecruiterProfile />
+                                <RecruiterOpportunities />
                             </PageWrapper>
-                        </ProtectedRoute>
-                    }
-                />
+                        }
+                    />
+                    <Route
+                        path="/recruiter/organization/:id/update"
+                        element={
+                            <ProtectedRoute>
+                                <PageWrapper>
+                                    <EditOrganization />
+                                </PageWrapper>
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/recruiter/organization/edit"
+                        element={
+                            <ProtectedRoute>
+                                <PageWrapper>
+                                    <EditOrganization />
+                                </PageWrapper>
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/recruiter/pricing"
+                        element={
+                            <ProtectedRoute>
+                                <PageWrapper>
+                                    <RecruiterPricing />
+                                </PageWrapper>
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/dashboard/student"
+                        element={
+                            <ProtectedRoute>
+                                <PageWrapper>
+                                    <StudentDashboard />
+                                </PageWrapper>
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route path="/recruiter/edit-opportunity/:id" element={<EditOpportunity />} />
+                    <Route
+                        path="/recruiter/profile"
+                        element={
+                            <ProtectedRoute>
+                                <PageWrapper>
+                                    <RecruiterProfile />
+                                </PageWrapper>
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/recruiter/change-password"
+                        element={
+                            <ProtectedRoute>
+                                <PageWrapper>
+                                    <ChangePassword />
+                                </PageWrapper>
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/recruiter/billing"
+                        element={
+                            <ProtectedRoute>
+                                <PageWrapper>
+                                    <RecruiterBilling />
+                                </PageWrapper>
+                            </ProtectedRoute>
+                        }
+                    />
 
-                {/* Recruiter Change Password Route */}
-                <Route
-                    path="/recruiter/change-password"
-                    element={
-                        <ProtectedRoute>
-                            <PageWrapper>
-                                <ChangePassword />
-                            </PageWrapper>
-                        </ProtectedRoute>
-                    }
-                />
-
-                {/* Recruiter Billing Route */}
-                <Route
-                    path="/recruiter/billing"
-                    element={
-                        <ProtectedRoute>
-                            <PageWrapper>
-                                <RecruiterBilling />
-                            </PageWrapper>
-                        </ProtectedRoute>
-                    }
-                />
-
-            </Routes>
+                    {/* Admin Routes */}
+                    <Route path="/admin/login" element={<AdminLogin />} />
+                    <Route
+                        path="/admin/dashboard"
+                        element={
+                            <RequireAdmin>
+                                <AdminDashboard />
+                            </RequireAdmin>
+                        }
+                    />
+                    <Route
+                        path="/admin/users"
+                        element={
+                            <RequireAdmin>
+                                <UserManagement />
+                            </RequireAdmin>
+                        }
+                    />
+                    <Route
+                        path="/admin/internships"
+                        element={
+                            <RequireAdmin>
+                                <InternshipModeration />
+                            </RequireAdmin>
+                        }
+                    />
+                </Routes>
+            </AdminAuthProvider>
         </AnimatePresence>
     );
 };

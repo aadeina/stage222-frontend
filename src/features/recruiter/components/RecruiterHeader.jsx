@@ -26,7 +26,6 @@ const RecruiterHeader = ({ title, subtitle }) => {
         { name: 'Post Job/Internship', path: '/recruiter/post-opportunity', icon: FaPlus },
         { name: 'Messages', path: '/recruiter/messages', icon: FaInbox },
         { name: 'Plans and Pricing', path: '/recruiter/pricing', icon: FaCreditCard },
-        { name: 'Profile', path: '/recruiter/profile', icon: FaCog },
     ];
 
     // Fetch organization name
