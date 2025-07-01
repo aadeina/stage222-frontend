@@ -2,10 +2,11 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useAuth } from '../../../context/AuthContext';
-import { FaComments, FaBriefcase, FaUsers, FaCheckCircle, FaEye, FaEdit, FaTrash, FaChartBar, FaUser, FaBuilding, FaLock, FaCreditCard, FaSignOutAlt, FaSyncAlt, FaTimes, FaClock } from 'react-icons/fa';
+import { FaComments, FaBriefcase, FaUsers, FaCheckCircle, FaEye, FaEdit, FaTrash, FaChartBar, FaUser, FaBuilding, FaLock, FaCreditCard, FaSignOutAlt, FaSyncAlt, FaTimes, FaClock, FaExclamationTriangle } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 import { getDashboardStats, getRecentOpportunities } from '../api/dashboardApi';
 import RecruiterHeader from '../components/RecruiterHeader';
+import RejectionReasonModal from '../components/RejectionReasonModal';
 import api from '../../../services/api';
 import VerifiedBadge from '@/components/VerifiedBadge';
 import { deleteInternship } from '@/services/internshipApi';
@@ -23,6 +24,8 @@ const RecruiterDashboard = () => {
     const [deleteLoading, setDeleteLoading] = useState(false);
     const [deleteError, setDeleteError] = useState(null);
     const [selectedOpportunity, setSelectedOpportunity] = useState(null);
+    const [showRejectionModal, setShowRejectionModal] = useState(false);
+    const [selectedRejectedOpportunity, setSelectedRejectedOpportunity] = useState(null);
 
     useEffect(() => {
         // Check if user is authenticated and is a recruiter
@@ -180,6 +183,12 @@ const RecruiterDashboard = () => {
         } finally {
             setDeleteLoading(false);
         }
+    };
+
+    // Rejection reason handler
+    const handleViewRejectionReason = (opportunity) => {
+        setSelectedRejectedOpportunity(opportunity);
+        setShowRejectionModal(true);
     };
 
     if (isLoading) {
@@ -345,6 +354,30 @@ const RecruiterDashboard = () => {
                     </motion.div>
                 )}
 
+                {/* Rejection Notifications */}
+                {recentOpportunities.filter(opp => opp.approval_status?.toLowerCase() === 'rejected').length > 0 && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.7 }}
+                        className="mb-6 bg-gradient-to-r from-red-50 to-pink-50 border border-red-200 rounded-lg p-4"
+                    >
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 bg-red-100 rounded-lg">
+                                <FaExclamationTriangle className="h-5 w-5 text-red-600" />
+                            </div>
+                            <div className="flex-1">
+                                <h3 className="text-sm font-semibold text-red-800">
+                                    Rejected Opportunities ({recentOpportunities.filter(opp => opp.approval_status?.toLowerCase() === 'rejected').length})
+                                </h3>
+                                <p className="text-sm text-red-700">
+                                    {recentOpportunities.filter(opp => opp.approval_status?.toLowerCase() === 'rejected').length} opportunity{recentOpportunities.filter(opp => opp.approval_status?.toLowerCase() === 'rejected').length !== 1 ? 'ies' : 'y'} {recentOpportunities.filter(opp => opp.approval_status?.toLowerCase() === 'rejected').length !== 1 ? 'were' : 'was'} not approved. Click the warning icon to view rejection reasons and make necessary updates.
+                                </p>
+                            </div>
+                        </div>
+                    </motion.div>
+                )}
+
                 <div className="space-y-8">
                     {/* All Posted Opportunities - Full Width */}
                     <motion.div
@@ -503,6 +536,16 @@ const RecruiterDashboard = () => {
                                                         >
                                                             <FaUsers className="h-4 w-4" />
                                                         </button>
+                                                        {/* Show rejection reason button for rejected opportunities */}
+                                                        {opportunity.approval_status?.toLowerCase() === 'rejected' && (
+                                                            <button
+                                                                onClick={() => handleViewRejectionReason(opportunity)}
+                                                                className="text-red-600 hover:text-red-800 transition-colors"
+                                                                title="View Rejection Reason"
+                                                            >
+                                                                <FaExclamationTriangle className="h-4 w-4" />
+                                                            </button>
+                                                        )}
                                                         <button
                                                             onClick={() => { setSelectedOpportunity(opportunity); setShowDeleteModal(true); }}
                                                             className="text-red-600 hover:text-red-800 transition-colors"
@@ -760,6 +803,17 @@ const RecruiterDashboard = () => {
                     </div>
                 </div>
             )}
+
+            {/* Rejection Reason Modal */}
+            <RejectionReasonModal
+                isOpen={showRejectionModal}
+                onClose={() => {
+                    setShowRejectionModal(false);
+                    setSelectedRejectedOpportunity(null);
+                }}
+                opportunity={selectedRejectedOpportunity}
+                rejectionReason={selectedRejectedOpportunity?.rejection_reason || selectedRejectedOpportunity?.admin_notes}
+            />
         </div>
     );
 };
