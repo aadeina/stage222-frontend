@@ -486,15 +486,7 @@ const AdminDashboard = () => {
                     </div>
                 </motion.div>
 
-                {/* Detailed Analytics */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6, delay: 0.7 }}
-                >
-                    <h2 className="text-xl font-semibold text-gray-900 mb-6">Detailed Analytics</h2>
-                    {(stats || mockStats) && <AnalyticsCards stats={stats || mockStats} />}
-                </motion.div>
+
 
                 {/* Platform Health Status */}
                 <motion.div
