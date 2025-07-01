@@ -38,6 +38,12 @@ export const fetchTopRecruiters = () => adminApi.get('/admin/top-recruiters/');
 export const fetchTopSkills = () => adminApi.get('/admin/top-skills/');
 export const fetchShortlistRate = () => adminApi.get('/admin/shortlist-rate/');
 
+// Advanced Analytics Endpoints
+export const fetchGrowthAnalytics = () => adminApi.get('/admin/analytics/growth/');
+export const fetchEngagementAnalytics = () => adminApi.get('/admin/analytics/engagement/');
+export const fetchConversionAnalytics = () => adminApi.get('/admin/analytics/conversions/');
+export const fetchTopUsersAnalytics = () => adminApi.get('/admin/analytics/top-users/');
+
 // =============================
 // User Management Endpoints
 // =============================
@@ -53,6 +59,9 @@ export const changeUserRole = (id, data) => adminApi.post(`/admin/users/${id}/ro
 export const fetchPendingInternships = () => adminApi.get('/admin/internships/pending/');
 export const approveInternship = (id) => adminApi.post(`/admin/internships/${id}/approve/`);
 export const rejectInternship = (id) => adminApi.post(`/admin/internships/${id}/reject/`);
-export const toggleVerifyOrganization = (id) => adminApi.post(`/admin/organizations/${id}/toggle-verify/`);
+export const toggleVerifyOrganization = (id) => adminApi.patch(`/admin/organizations/${id}/toggle-verify/`);
+
+// Fetch all organizations for admin moderation
+export const fetchAdminOrganizations = () => adminApi.get('/admin/organizations/');
 
 export default adminApi;

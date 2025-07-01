@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import toast from 'react-hot-toast';
 import { approveInternship, rejectInternship, toggleVerifyOrganization } from '../../../services/adminApi';
+import { FaCheckCircle, FaFolderOpen } from 'react-icons/fa';
 
 const InternshipTable = ({ internships = [], onActionComplete }) => {
     const [loadingId, setLoadingId] = useState(null);
@@ -31,14 +32,15 @@ const InternshipTable = ({ internships = [], onActionComplete }) => {
         }
     };
 
-    const handleVerifyOrg = async (orgId) => {
+    // Toggle organization verification status
+    const handleVerifyOrg = async (orgId, isVerified) => {
         setLoadingId(orgId);
         try {
             await toggleVerifyOrganization(orgId);
-            toast.success('Organization verification toggled!');
+            toast.success(isVerified ? 'Organization unverified!' : 'Organization verified!');
             onActionComplete && onActionComplete();
         } catch {
-            toast.error('Failed to verify organization.');
+            toast.error('Failed to toggle verification.');
         } finally {
             setLoadingId(null);
         }
@@ -56,18 +58,37 @@ const InternshipTable = ({ internships = [], onActionComplete }) => {
                     </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-100">
-                    {internships.map((internship) => (
-                        <tr key={internship.id} className="hover:bg-blue-50 transition">
-                            <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-900">{internship.title}</td>
-                            <td className="px-6 py-4 whitespace-nowrap text-gray-700">{internship.recruiter_name || internship.recruiter?.name || internship.recruiter_email}</td>
-                            <td className="px-6 py-4 whitespace-nowrap text-gray-700">{internship.status || 'Pending'}</td>
-                            <td className="px-6 py-4 text-center space-x-2">
-                                <button onClick={() => handleApprove(internship.id)} disabled={loadingId === internship.id} className="px-2 py-1 bg-green-100 text-green-700 rounded hover:bg-green-200 text-xs font-semibold disabled:opacity-50">Approve</button>
-                                <button onClick={() => handleReject(internship.id)} disabled={loadingId === internship.id} className="px-2 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200 text-xs font-semibold disabled:opacity-50">Reject</button>
-                                <button onClick={() => handleVerifyOrg(internship.organization_id || internship.org_id)} disabled={loadingId === internship.organization_id || loadingId === internship.org_id} className="px-2 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 text-xs font-semibold disabled:opacity-50">Verify Org</button>
-                            </td>
-                        </tr>
-                    ))}
+                    {internships.map((internship) => {
+                        // Try to get organization verification status from internship.organization or fallback
+                        const orgId = internship.organization_id || internship.org_id || internship.organization?.id;
+                        const isVerified = internship.organization?.is_verified ?? internship.organization_is_verified ?? false;
+                        return (
+                            <tr key={internship.id} className="hover:bg-blue-50 transition">
+                                <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-900">{internship.title}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-gray-700">{internship.recruiter_name || internship.recruiter?.name || internship.recruiter_email}</td>
+                                <td className="px-6 py-4 whitespace-nowrap text-gray-700">{internship.status || 'Pending'}</td>
+                                <td className="px-6 py-4 text-center space-x-2">
+                                    <button onClick={() => handleApprove(internship.id)} disabled={loadingId === internship.id} className="px-2 py-1 bg-green-100 text-green-700 rounded hover:bg-green-200 text-xs font-semibold disabled:opacity-50">Approve</button>
+                                    <button onClick={() => handleReject(internship.id)} disabled={loadingId === internship.id} className="px-2 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200 text-xs font-semibold disabled:opacity-50">Reject</button>
+                                    {/* Organization Verify/Unverify Button */}
+                                    {orgId && (
+                                        <button
+                                            onClick={() => handleVerifyOrg(orgId, isVerified)}
+                                            disabled={loadingId === orgId}
+                                            className={`px-2 py-1 rounded text-xs font-semibold flex items-center gap-1 transition disabled:opacity-50 ${isVerified
+                                                    ? 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200'
+                                                    : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
+                                                }`}
+                                            title={isVerified ? 'Unverify Organization' : 'Verify Organization'}
+                                        >
+                                            {isVerified ? <FaFolderOpen className="text-base" /> : <FaCheckCircle className="text-base" />}
+                                            {isVerified ? 'Unverify' : 'Verify'} Org
+                                        </button>
+                                    )}
+                                </td>
+                            </tr>
+                        );
+                    })}
                 </tbody>
             </table>
             {internships.length === 0 && (

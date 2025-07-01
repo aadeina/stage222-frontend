@@ -34,6 +34,7 @@ import UserManagement from '@/features/admin/pages/UserManagement';
 import InternshipModeration from '@/features/admin/pages/InternshipModeration';
 import AdminLogin from '@/features/admin/pages/AdminLogin';
 import { AdminAuthProvider, useAdminAuth } from '@/features/admin/context/AdminAuthContext';
+import OrganizationModeration from '@/features/admin/pages/OrganizationModeration';
 
 // RequireAdmin wrapper for admin routes
 function RequireAdmin({ children }) {
@@ -269,6 +270,14 @@ const AppRoutes = () => {
                         element={
                             <RequireAdmin>
                                 <InternshipModeration />
+                            </RequireAdmin>
+                        }
+                    />
+                    <Route
+                        path="/admin/organizations"
+                        element={
+                            <RequireAdmin>
+                                <OrganizationModeration />
                             </RequireAdmin>
                         }
                     />

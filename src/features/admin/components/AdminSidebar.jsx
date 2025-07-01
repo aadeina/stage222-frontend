@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { FaChartBar, FaUserShield, FaClipboardCheck } from 'react-icons/fa';
+import { FaChartBar, FaUserShield, FaClipboardCheck, FaBuilding } from 'react-icons/fa';
 import Stage222Logo from '@/assets/images/Stage222RecuiterLogo.png';
 
 // Navigation items for the admin sidebar with professional icons
@@ -8,6 +8,7 @@ const navItems = [
     { name: 'Dashboard', path: '/admin/dashboard', icon: <FaChartBar className="text-2xl" /> },
     { name: 'User Management', path: '/admin/users', icon: <FaUserShield className="text-2xl" /> },
     { name: 'Internship Moderation', path: '/admin/internships', icon: <FaClipboardCheck className="text-2xl" /> },
+    { name: 'Organization Moderation', path: '/admin/organizations', icon: <FaBuilding className="text-2xl" /> },
 ];
 
 // World-class AdminSidebar with glassmorphism and premium design

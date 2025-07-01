@@ -25,12 +25,25 @@ import toast from 'react-hot-toast';
 import { NavLink } from 'react-router-dom';
 import Stage222Logo from '@/assets/images/Stage222RecuiterLogo.png';
 import AdminSidebar from '../components/AdminSidebar';
+import {
+    fetchGrowthAnalytics,
+    fetchEngagementAnalytics,
+    fetchConversionAnalytics,
+    fetchTopUsersAnalytics
+} from '../../../services/adminApi';
 
 const AdminDashboard = () => {
     const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [isRefreshing, setIsRefreshing] = useState(false);
+    const [growthData, setGrowthData] = useState([]);
+    const [engagementData, setEngagementData] = useState([]);
+    const [conversionData, setConversionData] = useState([]);
+    const [topUsersData, setTopUsersData] = useState([]);
+    const [analyticsLoading, setAnalyticsLoading] = useState(true);
+    const [analyticsError, setAnalyticsError] = useState(null);
+    const [avgDaysToFirstPost, setAvgDaysToFirstPost] = useState(0);
 
     // Mock data for development/demo purposes
     const mockStats = {
@@ -157,6 +170,49 @@ const AdminDashboard = () => {
                 return 'bg-gradient-to-r from-gray-500 to-gray-600 text-white border-gray-400 shadow-gray-200/50';
         }
     };
+
+    // Fetch all analytics data in parallel
+    useEffect(() => {
+        setAnalyticsLoading(true);
+        setAnalyticsError(null);
+        Promise.all([
+            fetchGrowthAnalytics(),
+            fetchEngagementAnalytics(),
+            fetchConversionAnalytics(),
+            fetchTopUsersAnalytics()
+        ])
+            .then(([growthRes, engagementRes, conversionRes, topUsersRes]) => {
+                setGrowthData(growthRes.data.results || growthRes.data);
+                setEngagementData(engagementRes.data.results || engagementRes.data);
+                // Transform conversion data to array for recharts
+                const conversionRaw = conversionRes.data;
+                const conversionData = [
+                    { label: "Signup to Profile Completion", value: conversionRaw.signup_to_profile_completion ?? 0 },
+                    { label: "Post to App Conversion", value: conversionRaw.post_to_app_conversion ?? 0 },
+                    { label: "Avg Days to First Post", value: conversionRaw.avg_days_to_first_post ?? 0 }
+                ];
+                setConversionData(conversionData);
+                setAvgDaysToFirstPost(conversionRaw.avg_days_to_first_post ?? 0);
+                // Transform top users data to array for recharts
+                const topUsersRaw = topUsersRes.data;
+                const topUsersData = [
+                    ...(topUsersRaw.top_candidates || []).map(u => ({
+                        label: u.full_name || 'Candidate',
+                        value: u.total_applications || 0
+                    })),
+                    ...(topUsersRaw.top_recruiters || []).map(u => ({
+                        label: u.full_name || 'Recruiter',
+                        value: u.internships || 0
+                    }))
+                ];
+                setTopUsersData(topUsersData);
+            })
+            .catch((err) => {
+                setAnalyticsError('Failed to load analytics data.');
+                toast.error('Failed to load analytics data.');
+            })
+            .finally(() => setAnalyticsLoading(false));
+    }, []);
 
     if (loading) {
         return (
@@ -548,6 +604,20 @@ const AdminDashboard = () => {
                             </div>
                         </div>
                     </motion.div>
+
+                    {/* Analytics Section */}
+                    <div className="max-w-7xl mx-auto w-full">
+                        <h2 className="text-2xl font-bold text-gray-900 mt-8 mb-2">Platform Analytics</h2>
+                        {analyticsError && <div className="text-red-600 font-medium mb-4">{analyticsError}</div>}
+                        <AnalyticsCards
+                            growthData={growthData}
+                            engagementData={engagementData}
+                            conversionData={conversionData}
+                            topUsersData={topUsersData}
+                            avgDaysToFirstPost={avgDaysToFirstPost}
+                            loading={analyticsLoading}
+                        />
+                    </div>
                 </main>
             </div>
         </div>
