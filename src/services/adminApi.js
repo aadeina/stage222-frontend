@@ -8,6 +8,14 @@ const adminApi = axios.create({
     },
 });
 
+// Create a separate instance for login (no auth required)
+const loginApi = axios.create({
+    baseURL: import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api",
+    headers: {
+        "Content-Type": "application/json",
+    },
+});
+
 // Always use the admin_token from localStorage
 adminApi.interceptors.request.use((config) => {
     const token = localStorage.getItem("admin_token");
@@ -17,8 +25,8 @@ adminApi.interceptors.request.use((config) => {
     return config;
 });
 
-// Admin login endpoint
-export const adminLogin = (credentials) => adminApi.post('/admin/login/', credentials);
+// Admin login endpoint - uses loginApi (no auth required)
+export const adminLogin = (credentials) => loginApi.post('/auth/login/', credentials);
 
 // =============================
 // Analytics Endpoints
