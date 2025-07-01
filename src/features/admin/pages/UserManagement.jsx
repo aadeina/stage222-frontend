@@ -14,7 +14,17 @@ const UserManagement = () => {
         setError(null);
         try {
             const res = await fetchAdminUsers();
-            setUsers(res.data.results || res.data);
+            console.log('Full user data from API:', res.data); // Debug log
+            const userData = res.data.results || res.data;
+            console.log('Processed user data:', userData); // Debug log
+
+            // Debug: Check what fields are available in the first user
+            if (userData.length > 0) {
+                console.log('Available fields in first user:', Object.keys(userData[0]));
+                console.log('First user data:', userData[0]);
+            }
+
+            setUsers(userData);
         } catch (err) {
             setError('Failed to load users.');
             toast.error('Failed to load users.');
@@ -39,6 +49,12 @@ const UserManagement = () => {
                                 <h1 className="text-3xl font-bold text-gray-900">User Management</h1>
                                 <p className="text-gray-600 mt-1">View, verify, and manage all users on Stage222</p>
                             </div>
+                            <button
+                                onClick={getUsers}
+                                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                            >
+                                Refresh Users
+                            </button>
                         </div>
                     </div>
                 </div>
