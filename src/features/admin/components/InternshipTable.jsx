@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import toast from 'react-hot-toast';
 import { approveInternship, rejectInternship } from '../../../services/adminApi';
-import { FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
+import { FaCheckCircle, FaTimesCircle, FaEye } from 'react-icons/fa';
 import RejectionModal from './RejectionModal';
+import InternshipDetailsModal from './InternshipDetailsModal';
 
 // Format date for display
 const formatDate = (dateString) => {
@@ -22,6 +23,10 @@ const InternshipTable = ({ internships = [], onActionComplete }) => {
         isOpen: false,
         internshipId: null,
         internshipTitle: ''
+    });
+    const [detailsModal, setDetailsModal] = useState({
+        isOpen: false,
+        internship: null
     });
 
     const handleApprove = async (id) => {
@@ -65,25 +70,33 @@ const InternshipTable = ({ internships = [], onActionComplete }) => {
         setRejectionModal({ isOpen: false, internshipId: null, internshipTitle: '' });
     };
 
+    const handleViewDetails = (internship) => {
+        setDetailsModal({
+            isOpen: true,
+            internship: internship
+        });
+    };
+
+    const closeDetailsModal = () => {
+        setDetailsModal({ isOpen: false, internship: null });
+    };
+
+    const handleApproveFromModal = async (id) => {
+        await handleApprove(id);
+        closeDetailsModal();
+    };
+
+    const handleRejectFromModal = (id, title) => {
+        closeDetailsModal();
+        setRejectionModal({
+            isOpen: true,
+            internshipId: id,
+            internshipTitle: title
+        });
+    };
+
     return (
         <>
-            {/* Debug info - remove this later */}
-            <div className="mb-4 p-2 bg-yellow-100 text-xs">
-                Modal state: {JSON.stringify(rejectionModal)}
-                <button
-                    onClick={() => {
-                        alert('Test button works!');
-                        setRejectionModal({
-                            isOpen: true,
-                            internshipId: 'test-id',
-                            internshipTitle: 'Test Internship'
-                        });
-                    }}
-                    className="ml-4 px-2 py-1 bg-blue-500 text-white rounded text-xs"
-                >
-                    Test Modal
-                </button>
-            </div>
 
             <div className="overflow-x-auto rounded-xl shadow border border-gray-200 bg-white">
                 <table className="min-w-full divide-y divide-gray-200">
@@ -102,7 +115,16 @@ const InternshipTable = ({ internships = [], onActionComplete }) => {
                             const isPending = internship.approval_status === 'pending';
                             return (
                                 <tr key={internship.id} className="hover:bg-blue-50 transition">
-                                    <td className="px-6 py-4 whitespace-nowrap font-medium text-gray-900">{internship.title}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                        <button
+                                            onClick={() => handleViewDetails(internship)}
+                                            className="text-left font-medium text-[#00A55F] hover:text-[#008c4f] transition-colors flex items-center gap-2 group"
+                                            title="Click to view internship details"
+                                        >
+                                            <span className="group-hover:underline">{internship.title}</span>
+                                            <FaEye className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                        </button>
+                                    </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-gray-700">{internship.organization}</td>
                                     <td className="px-6 py-4 whitespace-nowrap text-gray-700">{internship.recruiter_email}</td>
                                     <td className="px-6 py-4 whitespace-nowrap">
@@ -161,6 +183,16 @@ const InternshipTable = ({ internships = [], onActionComplete }) => {
                 onReject={handleRejectSubmit}
                 internshipTitle={rejectionModal.internshipTitle}
                 loading={loadingId === rejectionModal.internshipId}
+            />
+
+            {/* Internship Details Modal */}
+            <InternshipDetailsModal
+                isOpen={detailsModal.isOpen}
+                onClose={closeDetailsModal}
+                internship={detailsModal.internship}
+                onApprove={handleApproveFromModal}
+                onReject={handleRejectFromModal}
+                loading={loadingId === detailsModal.internship?.id}
             />
         </>
     );
