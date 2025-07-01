@@ -440,6 +440,22 @@ const AdminDashboard = () => {
                         <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                             <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
                             <div className="space-y-3">
+                                {/* User Management Quick Action */}
+                                <motion.button
+                                    whileHover={{ scale: 1.02 }}
+                                    whileTap={{ scale: 0.98 }}
+                                    onClick={() => window.location.href = '/admin/users'}
+                                    className="w-full flex items-center gap-3 p-3 text-left bg-gradient-to-r from-yellow-50 to-yellow-100 hover:from-yellow-100 hover:to-yellow-200 rounded-lg transition-all duration-200 group"
+                                >
+                                    <div className="p-2 bg-yellow-500 rounded-lg group-hover:scale-110 transition-transform">
+                                        <FaUsers className="h-4 w-4 text-white" />
+                                    </div>
+                                    <div>
+                                        <p className="font-medium text-yellow-900">Manage Users</p>
+                                        <p className="text-xs text-yellow-700">View, verify, and edit users</p>
+                                    </div>
+                                </motion.button>
+
                                 <motion.button
                                     whileHover={{ scale: 1.02 }}
                                     whileTap={{ scale: 0.98 }}
@@ -485,8 +501,6 @@ const AdminDashboard = () => {
                         </div>
                     </div>
                 </motion.div>
-
-
 
                 {/* Platform Health Status */}
                 <motion.div

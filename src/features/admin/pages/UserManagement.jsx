@@ -14,7 +14,7 @@ const UserManagement = () => {
         setError(null);
         try {
             const res = await fetchAdminUsers();
-            setUsers(res.data);
+            setUsers(res.data.results || res.data);
         } catch (err) {
             setError('Failed to load users.');
             toast.error('Failed to load users.');
