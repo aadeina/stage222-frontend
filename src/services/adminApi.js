@@ -62,6 +62,6 @@ export const rejectInternship = (id, reason) => adminApi.patch(`/admin/internshi
 export const toggleVerifyOrganization = (id) => adminApi.patch(`/admin/organizations/${id}/toggle-verify/`);
 
 // Fetch all organizations for admin moderation
-export const fetchAdminOrganizations = () => adminApi.get('/admin/organizations/');
+export const fetchAdminOrganizations = () => adminApi.get('/organizations/');
 
 export default adminApi;
