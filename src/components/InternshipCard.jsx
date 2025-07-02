@@ -3,7 +3,7 @@ import { FaMapMarkerAlt, FaMoneyBillWave, FaClock, FaArrowRight, FaBuilding, FaC
 import moment from 'moment';
 import VerifiedBadge from '@/components/VerifiedBadge';
 
-const fallbackLogo = 'https://ui-avatars.com/api/?name=Stage222&background=00A55F&color=fff&rounded=true';
+const fallbackLogo = '/Stage222-icon.png';
 
 const InternshipCard = ({ internship, onClick }) => {
     const {
@@ -23,8 +23,8 @@ const InternshipCard = ({ internship, onClick }) => {
         status,
     } = internship;
 
-    const organization_name = organization?.name;
-    const organization_logo = organization?.logo;
+    const organization_name = internship.organization_name || organization?.name;
+    const organization_logo = internship.organization_logo || organization?.logo;
 
     console.log('InternshipCard received data:', {
         id,
@@ -37,7 +37,7 @@ const InternshipCard = ({ internship, onClick }) => {
     const logoUrl = organization_logo
         ? (organization_logo.startsWith('http')
             ? organization_logo
-            : `${import.meta.env.VITE_MEDIA_BASE_URL}${organization_logo}`)
+            : `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'}${organization_logo}`)
         : fallbackLogo;
 
     // Status helpers

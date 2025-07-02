@@ -26,6 +26,9 @@ const RecruiterDashboard = () => {
     const [selectedOpportunity, setSelectedOpportunity] = useState(null);
     const [showRejectionModal, setShowRejectionModal] = useState(false);
     const [selectedRejectedOpportunity, setSelectedRejectedOpportunity] = useState(null);
+    const [shortlistedCount, setShortlistedCount] = useState(0);
+    const [rejectedCount, setRejectedCount] = useState(0);
+    const [pendingCount, setPendingCount] = useState(0);
 
     useEffect(() => {
         // Check if user is authenticated and is a recruiter
@@ -36,6 +39,13 @@ const RecruiterDashboard = () => {
 
         fetchDashboardData();
         fetchRecruiterData();
+        // Fetch counts for each status
+        api.get('/applications/recruiter/applications/?shortlisted=true')
+            .then(res => setShortlistedCount(res.data.count || 0));
+        api.get('/applications/recruiter/applications/?status=rejected')
+            .then(res => setRejectedCount(res.data.count || 0));
+        api.get('/applications/recruiter/applications/?status=pending&shortlisted=false')
+            .then(res => setPendingCount(res.data.count || 0));
     }, [user, navigate]);
 
     const fetchDashboardData = async () => {
@@ -596,7 +606,39 @@ const RecruiterDashboard = () => {
                                 View All Applicants
                             </button>
                         </div>
-
+                        {/* New: Filtered Applicants Cards */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                            <div className="bg-blue-50 border border-blue-200 rounded-xl p-6 flex flex-col items-center justify-center">
+                                <div className="text-blue-700 text-lg font-semibold mb-1">Shortlisted</div>
+                                <div className="text-3xl font-bold text-blue-900 mb-2">{shortlistedCount}</div>
+                                <button
+                                    onClick={() => navigate('/recruiter/applicants?shortlisted=true')}
+                                    className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-xs font-medium"
+                                >
+                                    View All
+                                </button>
+                            </div>
+                            <div className="bg-red-50 border border-red-200 rounded-xl p-6 flex flex-col items-center justify-center">
+                                <div className="text-red-700 text-lg font-semibold mb-1">Rejected</div>
+                                <div className="text-3xl font-bold text-red-900 mb-2">{rejectedCount}</div>
+                                <button
+                                    onClick={() => navigate('/recruiter/applicants?status=rejected')}
+                                    className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-xs font-medium"
+                                >
+                                    View All
+                                </button>
+                            </div>
+                            <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-6 flex flex-col items-center justify-center">
+                                <div className="text-yellow-700 text-lg font-semibold mb-1">Pending</div>
+                                <div className="text-3xl font-bold text-yellow-900 mb-2">{pendingCount}</div>
+                                <button
+                                    onClick={() => navigate('/recruiter/applicants?status=pending&shortlisted=false')}
+                                    className="px-3 py-1 bg-yellow-600 text-white rounded hover:bg-yellow-700 text-xs font-medium"
+                                >
+                                    View All
+                                </button>
+                            </div>
+                        </div>
                         {/* Statistics Grid */}
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                             <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-xl border border-blue-200">

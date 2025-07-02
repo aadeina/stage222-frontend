@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { FaArrowLeft, FaUser, FaEnvelope, FaClock, FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { FaArrowLeft, FaUser, FaEnvelope, FaClock, FaCheckCircle, FaTimesCircle, FaEye, FaFilePdf } from 'react-icons/fa';
 import api from '../../../services/api';
+import ResumeModal from '../components/ResumeModal';
 
 // Professional, branded applicants page for Stage222 recruiters
 // Fetches applicants from backend and displays in a modern, responsive table
@@ -15,16 +16,37 @@ const statusColors = {
     rejected: 'bg-red-100 text-red-800',
 };
 
+function useQuery() {
+    return new URLSearchParams(useLocation().search);
+}
+
+const getFilterLabel = (status, shortlisted) => {
+    if (shortlisted === 'true') return 'Shortlisted Applicants';
+    if (status === 'rejected') return 'Rejected Applicants';
+    if (status === 'pending') return 'Pending Applicants';
+    if (status === 'accepted') return 'Accepted Applicants';
+    return 'All Applicants';
+};
+
 const RecruiterApplicants = () => {
     const [applicants, setApplicants] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const [resumeModal, setResumeModal] = useState({ isOpen: false, resumeUrl: '', candidateName: '' });
     const navigate = useNavigate();
+    const query = useQuery();
+    const status = query.get('status');
+    const shortlisted = query.get('shortlisted');
 
     useEffect(() => {
         setLoading(true);
         setError('');
-        api.get(API_URL)
+        let url = '/applications/recruiter/applications/';
+        const params = [];
+        if (status) params.push(`status=${status}`);
+        if (shortlisted) params.push(`shortlisted=${shortlisted}`);
+        if (params.length) url += '?' + params.join('&');
+        api.get(url)
             .then(res => {
                 const data = res.data;
                 setApplicants(data.results || data.applications || []);
@@ -34,7 +56,17 @@ const RecruiterApplicants = () => {
                 setError('Could not load applicants.');
                 setLoading(false);
             });
-    }, []);
+    }, [status, shortlisted]);
+
+    // Handle resume modal open
+    const openResumeModal = (resumeUrl, candidateName) => {
+        setResumeModal({ isOpen: true, resumeUrl, candidateName });
+    };
+
+    // Handle resume modal close
+    const closeResumeModal = () => {
+        setResumeModal({ isOpen: false, resumeUrl: '', candidateName: '' });
+    };
 
     return (
         <div className="max-w-7xl mx-auto py-8 px-2 sm:px-6 lg:px-8">
@@ -46,7 +78,8 @@ const RecruiterApplicants = () => {
                 <FaArrowLeft className="mr-2" /> Back to Dashboard
             </button>
 
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6">All Applicants</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Applicants</h1>
+            <div className="mb-6 text-sm text-gray-600 font-medium">{getFilterLabel(status, shortlisted)}</div>
 
             {/* Loading and Error States */}
             {loading && (
@@ -62,53 +95,107 @@ const RecruiterApplicants = () => {
                     <table className="min-w-full divide-y divide-gray-200">
                         <thead className="bg-gray-50">
                             <tr>
-                                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Name</th>
+                                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Candidate</th>
                                 <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Email</th>
                                 <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
                                 <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Applied At</th>
+                                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Resume</th>
                                 <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Answers</th>
                             </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-100">
                             {applicants.length === 0 ? (
                                 <tr>
-                                    <td colSpan={5} className="py-16 text-center text-gray-400">No applicants found.</td>
+                                    <td colSpan={6} className="py-16 text-center text-gray-400">No applicants found.</td>
                                 </tr>
                             ) : (
-                                applicants.map((app, idx) => (
-                                    <tr key={idx} className="hover:bg-gray-50 transition">
-                                        <td className="px-4 py-4 whitespace-nowrap flex items-center gap-2">
-                                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#00A55F] to-[#008c4f] flex items-center justify-center text-white font-bold">
-                                                <FaUser className="h-4 w-4" />
-                                            </div>
-                                            <span className="font-medium text-gray-900 truncate">{app.candidate?.full_name || app.candidate?.name || 'N/A'}</span>
-                                        </td>
-                                        <td className="px-4 py-4 whitespace-nowrap text-gray-700">
-                                            <span className="flex items-center gap-1"><FaEnvelope className="h-4 w-4 text-gray-400" /> {app.candidate?.email || 'N/A'}</span>
-                                        </td>
-                                        <td className="px-4 py-4 whitespace-nowrap">
-                                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColors[app.status] || 'bg-gray-100 text-gray-600'}`}>
-                                                {app.status === 'pending' && <FaClock className="mr-1 h-4 w-4" />}
-                                                {app.status === 'accepted' && <FaCheckCircle className="mr-1 h-4 w-4" />}
-                                                {app.status === 'rejected' && <FaTimesCircle className="mr-1 h-4 w-4" />}
-                                                {app.status}
-                                            </span>
-                                        </td>
-                                        <td className="px-4 py-4 whitespace-nowrap text-gray-600 text-sm">
-                                            {app.created_at ? new Date(app.created_at).toLocaleString() : 'N/A'}
-                                        </td>
-                                        <td className="px-4 py-4 whitespace-pre-line text-gray-700 text-xs max-w-xs">
-                                            {app.answers ? Object.entries(app.answers).map(([q, a], i) => (
-                                                <div key={i} className="mb-1"><span className="font-semibold">{q}:</span> {a}</div>
-                                            )) : '—'}
-                                        </td>
-                                    </tr>
-                                ))
+                                applicants.map((app, idx) => {
+                                    const candidateName = app.candidate?.full_name || app.candidate?.name || app.candidate_name || 'N/A';
+                                    const candidateEmail = app.candidate?.email || app.candidate_email || 'N/A';
+                                    const candidatePhoto = app.candidate?.photo || app.candidate_photo;
+                                    const resumeUrl = app.candidate?.resume || app.candidate_resume;
+
+                                    return (
+                                        <tr key={idx} className="hover:bg-gray-50 transition">
+                                            <td className="px-4 py-4 whitespace-nowrap">
+                                                <div className="flex items-center gap-3">
+                                                    {/* Profile Picture */}
+                                                    {candidatePhoto ? (
+                                                        <img
+                                                            src={candidatePhoto}
+                                                            alt={candidateName}
+                                                            className="w-10 h-10 rounded-full object-cover border-2 border-gray-200"
+                                                            onError={(e) => {
+                                                                e.target.style.display = 'none';
+                                                                e.target.nextSibling.style.display = 'flex';
+                                                            }}
+                                                        />
+                                                    ) : null}
+                                                    <div
+                                                        className={`w-10 h-10 rounded-full bg-gradient-to-br from-[#00A55F] to-[#008c4f] flex items-center justify-center text-white font-bold ${candidatePhoto ? 'hidden' : 'flex'}`}
+                                                    >
+                                                        <FaUser className="h-4 w-4" />
+                                                    </div>
+                                                    <div>
+                                                        <div className="font-medium text-gray-900">{candidateName}</div>
+                                                        <div className="text-sm text-gray-500">{candidateEmail}</div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td className="px-4 py-4 whitespace-nowrap text-gray-700">
+                                                <span className="flex items-center gap-1">
+                                                    <FaEnvelope className="h-4 w-4 text-gray-400" />
+                                                    {candidateEmail}
+                                                </span>
+                                            </td>
+                                            <td className="px-4 py-4 whitespace-nowrap">
+                                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColors[app.status] || 'bg-gray-100 text-gray-600'}`}>
+                                                    {app.status}
+                                                </span>
+                                            </td>
+                                            <td className="px-4 py-4 whitespace-nowrap text-gray-600 text-sm">
+                                                {app.created_at ? new Date(app.created_at).toLocaleString() : 'N/A'}
+                                            </td>
+                                            <td className="px-4 py-4 whitespace-nowrap">
+                                                {resumeUrl ? (
+                                                    <button
+                                                        onClick={() => openResumeModal(resumeUrl, candidateName)}
+                                                        className="flex items-center gap-2 px-3 py-2 bg-[#00A55F] text-white rounded-lg hover:bg-[#008c4f] transition-colors duration-200 text-sm"
+                                                    >
+                                                        <FaEye className="h-4 w-4" />
+                                                        View Resume
+                                                    </button>
+                                                ) : (
+                                                    <span className="text-gray-400 text-sm">No resume</span>
+                                                )}
+                                            </td>
+                                            <td className="px-4 py-4 whitespace-pre-line text-gray-700 text-xs max-w-xs">
+                                                {app.answers ? Object.entries(app.answers).map(([q, a], i) => (
+                                                    <div key={i} className="mb-1">
+                                                        <span className="font-semibold">{q}:</span> {a}
+                                                    </div>
+                                                )) : app.screening_answers ? Object.entries(app.screening_answers).map(([q, a], i) => (
+                                                    <div key={i} className="mb-1">
+                                                        <span className="font-semibold">{q}:</span> {a}
+                                                    </div>
+                                                )) : '—'}
+                                            </td>
+                                        </tr>
+                                    );
+                                })
                             )}
                         </tbody>
                     </table>
                 </div>
             )}
+
+            {/* Resume Modal */}
+            <ResumeModal
+                isOpen={resumeModal.isOpen}
+                onClose={closeResumeModal}
+                resumeUrl={resumeModal.resumeUrl}
+                candidateName={resumeModal.candidateName}
+            />
         </div>
     );
 };

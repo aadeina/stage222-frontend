@@ -321,6 +321,16 @@ const AppRoutes = () => {
                             </ProtectedRoute>
                         }
                     />
+                    <Route
+                        path="/candidate/internships"
+                        element={
+                            <ProtectedRoute>
+                                <PageWrapper>
+                                    <InternshipList />
+                                </PageWrapper>
+                            </ProtectedRoute>
+                        }
+                    />
 
                     {/* Admin Routes */}
                     <Route path="/admin/login" element={<AdminLogin />} />

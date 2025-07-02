@@ -43,6 +43,7 @@ import SkillBadge from '@/components/ui/SkillBadge';
 import AuthModal from '@/components/ui/AuthModal';
 import api from '@/services/api';
 import VerifiedBadge from '@/components/VerifiedBadge';
+import ApplyModal from '@/features/candidate/components/ApplyModal';
 
 const fallbackLogo = 'https://ui-avatars.com/api/?name=Stage222&background=00A55F&color=fff&rounded=true';
 
@@ -308,6 +309,7 @@ const InternshipDetail = () => {
     const [isRefreshing, setIsRefreshing] = useState(false);
     const [lastUpdated, setLastUpdated] = useState(null);
     const applyButtonRef = useRef(null);
+    const [applyModalOpen, setApplyModalOpen] = useState(false);
 
     const fetchInternship = async () => {
         setLoading(true);
@@ -1006,7 +1008,7 @@ const InternshipDetail = () => {
                                 <motion.button
                                     whileHover={{ scale: internship.status !== 'closed' ? 1.02 : 1 }}
                                     whileTap={{ scale: internship.status !== 'closed' ? 0.98 : 1 }}
-                                    onClick={handleApply}
+                                    onClick={() => setApplyModalOpen(true)}
                                     disabled={isApplying || internship.status === 'closed'}
                                     className={`relative px-8 py-4 font-bold rounded-xl transition-all duration-300 shadow-lg border-2 ${internship.status === 'closed'
                                         ? 'bg-gradient-to-r from-gray-400 to-gray-500 text-white cursor-not-allowed border-gray-300'
@@ -1576,7 +1578,7 @@ const InternshipDetail = () => {
                             <motion.button
                                 whileHover={{ scale: internship.status !== 'closed' ? 1.02 : 1 }}
                                 whileTap={{ scale: internship.status !== 'closed' ? 0.98 : 1 }}
-                                onClick={handleApply}
+                                onClick={() => setApplyModalOpen(true)}
                                 disabled={isApplying || internship.status === 'closed'}
                                 className={`relative px-8 py-4 font-bold rounded-xl transition-all duration-300 shadow-lg border-2 ${internship.status === 'closed'
                                     ? 'bg-gradient-to-r from-gray-400 to-gray-500 text-white cursor-not-allowed border-gray-300'
@@ -1843,6 +1845,17 @@ const InternshipDetail = () => {
             <AuthModal
                 isOpen={showAuthModal}
                 onClose={() => setShowAuthModal(false)}
+            />
+
+            {/* Apply Modal */}
+            <ApplyModal
+                isOpen={applyModalOpen}
+                onClose={() => setApplyModalOpen(false)}
+                internship={internship}
+                onSuccess={() => {
+                    setApplyModalOpen(false);
+                    // Optionally, refetch or increment applicant count
+                }}
             />
         </div>
     );

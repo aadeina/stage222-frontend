@@ -114,7 +114,7 @@ const CandidateHeader = () => {
                             Dashboard
                         </Link>
                         <Link
-                            to="/internships"
+                            to="/candidate/internships"
                             className="text-gray-700 hover:text-[#00A55F] font-medium transition-colors text-sm lg:text-base"
                         >
                             Internships

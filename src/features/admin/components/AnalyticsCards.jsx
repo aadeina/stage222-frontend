@@ -53,7 +53,7 @@ const statMeta = {
 
 // Professional analytics cards layout
 const AnalyticsCards = ({ growthData, engagementData, conversionData, topUsersData, avgDaysToFirstPost, loading }) => {
-    return (
+            return (
         <section className="max-w-7xl mx-auto w-full mt-8">
             {/* Section Header */}
             <div className="flex items-center gap-3 mb-2">
@@ -126,9 +126,9 @@ const AnalyticsCards = ({ growthData, engagementData, conversionData, topUsersDa
                     <div className="border-b border-gray-100 mb-4"></div>
                     <TopUsersChart data={topUsersData} loading={loading} />
                 </div>
-            </div>
+    </div>
         </section>
-    );
+);
 };
 
 export default AnalyticsCards; 
