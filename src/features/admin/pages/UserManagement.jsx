@@ -3,6 +3,7 @@ import { fetchAdminUsers } from '../../../services/adminApi';
 import UserTable from '../components/UserTable';
 import toast from 'react-hot-toast';
 import AdminSidebar from '../components/AdminSidebar';
+import AdminProfileDropdown from '../components/AdminProfileDropdown';
 
 const UserManagement = () => {
     const [users, setUsers] = useState([]);
@@ -49,12 +50,15 @@ const UserManagement = () => {
                                 <h1 className="text-3xl font-bold text-gray-900">User Management</h1>
                                 <p className="text-gray-600 mt-1">View, verify, and manage all users on Stage222</p>
                             </div>
-                            <button
-                                onClick={getUsers}
-                                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
-                            >
-                                Refresh Users
-                            </button>
+                            <div className="flex items-center gap-4">
+                                <button
+                                    onClick={getUsers}
+                                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                                >
+                                    Refresh Users
+                                </button>
+                                <AdminProfileDropdown />
+                            </div>
                         </div>
                     </div>
                 </div>

@@ -1,7 +1,7 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { FaChartBar, FaUserShield, FaClipboardCheck, FaBuilding } from 'react-icons/fa';
-import Stage222Logo from '@/assets/images/Stage222RecuiterLogo.png';
+import Stage222Logo from '@/assets/images/MainStage222Logo.png';
 
 // Navigation items for the admin sidebar with professional icons
 const navItems = [

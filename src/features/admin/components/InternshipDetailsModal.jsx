@@ -158,8 +158,8 @@ const InternshipDetailsModal = ({ isOpen, onClose, internship, onApprove, onReje
                                             <div>
                                                 <label className="text-sm font-medium text-gray-600">Status</label>
                                                 <span className={`inline-flex items-center gap-1 px-3 py-1.5 text-xs font-bold rounded-full border shadow-sm mt-1 ${internship.approval_status === 'pending' ? 'bg-yellow-100 text-yellow-800 border-yellow-200' :
-                                                        internship.approval_status === 'approved' ? 'bg-green-100 text-green-800 border-green-200' :
-                                                            'bg-red-100 text-red-800 border-red-200'
+                                                    internship.approval_status === 'approved' ? 'bg-green-100 text-green-800 border-green-200' :
+                                                        'bg-red-100 text-red-800 border-red-200'
                                                     }`}>
                                                     {internship.approval_status === 'pending' ? (
                                                         <FaClock className="h-3 w-3" />
@@ -265,11 +265,16 @@ const InternshipDetailsModal = ({ isOpen, onClose, internship, onApprove, onReje
                                             </div>
                                             <div>
                                                 <label className="text-sm font-medium text-gray-600">Stipend Amount</label>
-                                                <p className="text-gray-900 mt-1">{fullInternshipData?.stipend_amount ? `$${parseFloat(fullInternshipData.stipend_amount).toLocaleString()}` : 'Not specified'}</p>
+                                                <p className="text-gray-900 mt-1">
+                                                    {fullInternshipData?.stipend ?
+                                                        `MRU ${parseFloat(fullInternshipData.stipend).toLocaleString()}` :
+                                                        'Not specified'
+                                                    }
+                                                </p>
                                             </div>
                                             <div>
                                                 <label className="text-sm font-medium text-gray-600">Stipend Negotiable</label>
-                                                <p className="text-gray-900 mt-1">{fullInternshipData?.stipend_negotiable ? 'Yes' : 'No'}</p>
+                                                <p className="text-gray-900 mt-1">{fullInternshipData?.negotiable ? 'Yes' : 'No'}</p>
                                             </div>
                                         </div>
                                     </motion.div>

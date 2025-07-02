@@ -25,6 +25,7 @@ import toast from 'react-hot-toast';
 import { NavLink } from 'react-router-dom';
 import Stage222Logo from '@/assets/images/Stage222RecuiterLogo.png';
 import AdminSidebar from '../components/AdminSidebar';
+import AdminProfileDropdown from '../components/AdminProfileDropdown';
 import {
     fetchGrowthAnalytics,
     fetchEngagementAnalytics,
@@ -257,21 +258,26 @@ const AdminDashboard = () => {
                                     {error && <span className="ml-2 text-yellow-600 text-sm">(Demo data)</span>}
                                 </motion.p>
                             </div>
-                            <motion.button
-                                whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.95 }}
-                                onClick={handleRefresh}
-                                disabled={isRefreshing}
-                                className="flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-[#00A55F] to-[#008c4f] text-white rounded-xl hover:from-[#008c4f] hover:to-[#007a43] transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 font-medium"
-                            >
-                                <motion.div
-                                    animate={{ rotate: isRefreshing ? 360 : 0 }}
-                                    transition={{ duration: 1, repeat: isRefreshing ? Infinity : 0, ease: "linear" }}
+                            <div className="flex items-center gap-4">
+                                <motion.button
+                                    whileHover={{ scale: 1.05 }}
+                                    whileTap={{ scale: 0.95 }}
+                                    onClick={handleRefresh}
+                                    disabled={isRefreshing}
+                                    className="flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-[#00A55F] to-[#008c4f] text-white rounded-xl hover:from-[#008c4f] hover:to-[#007a43] transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 font-medium"
                                 >
-                                    <FaSyncAlt className="h-4 w-4" />
-                                </motion.div>
-                                <span>{isRefreshing ? 'Refreshing...' : 'Refresh Data'}</span>
-                            </motion.button>
+                                    <motion.div
+                                        animate={{ rotate: isRefreshing ? 360 : 0 }}
+                                        transition={{ duration: 1, repeat: isRefreshing ? Infinity : 0, ease: "linear" }}
+                                    >
+                                        <FaSyncAlt className="h-4 w-4" />
+                                    </motion.div>
+                                    <span>{isRefreshing ? 'Refreshing...' : 'Refresh Data'}</span>
+                                </motion.button>
+
+                                {/* Admin Profile Dropdown */}
+                                <AdminProfileDropdown />
+                            </div>
                         </div>
                     </div>
                 </div>
