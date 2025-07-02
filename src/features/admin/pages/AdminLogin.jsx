@@ -48,7 +48,7 @@ const AdminLogin = () => {
                 initial={{ opacity: 0, y: 20, scale: 0.95 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 transition={{ duration: 0.6, ease: "easeOut" }}
-                className="relative z-10 bg-white/80 backdrop-blur-xl shadow-2xl rounded-3xl p-8 w-full max-w-md border border-white/20"
+                className="relative z-10 bg-white/80 backdrop-blur-xl shadow-2xl rounded-3xl p-4 sm:p-8 w-full max-w-md mx-4 border border-white/20"
             >
                 {/* Header */}
                 <motion.div
@@ -58,28 +58,28 @@ const AdminLogin = () => {
                     className="text-center mb-8"
                 >
                     {/* Stage222 Logo */}
-                    <div className="flex justify-center mb-6">
+                    <div className="flex justify-center mb-4 sm:mb-6">
                         <div className="relative">
                             <img
                                 src="/src/assets/images/MainStage222Logo.png"
                                 alt="Stage222"
-                                className="w-32 h-20 object-contain"
+                                className="w-24 h-16 sm:w-32 sm:h-20 object-contain"
                                 onError={(e) => {
                                     e.target.style.display = 'none';
                                     e.target.nextSibling.style.display = 'flex';
                                 }}
                             />
-                            <div className="w-32 h-20 bg-gradient-to-br from-[#00A55F] to-[#008c4f] rounded-2xl flex items-center justify-center shadow-lg hidden">
-                                <FaCrown className="h-10 w-10 text-white" />
+                            <div className="w-24 h-16 sm:w-32 sm:h-20 bg-gradient-to-br from-[#00A55F] to-[#008c4f] rounded-2xl flex items-center justify-center shadow-lg hidden">
+                                <FaCrown className="h-8 w-8 sm:h-10 sm:w-10 text-white" />
                             </div>
                         </div>
                     </div>
 
 
-                    <h1 className="text-3xl font-bold bg-gradient-to-r from-[#00A55F] to-[#008c4f] bg-clip-text text-transparent mb-2">
+                    <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-[#00A55F] to-[#008c4f] bg-clip-text text-transparent mb-2">
                         Welcome Back, Admin
                     </h1>
-                    <p className="text-gray-600 text-sm">
+                    <p className="text-gray-600 text-xs sm:text-sm">
                         Access your administrative dashboard securely
                     </p>
                 </motion.div>
@@ -90,7 +90,7 @@ const AdminLogin = () => {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.4, duration: 0.6 }}
                     onSubmit={handleSubmit}
-                    className="space-y-6"
+                    className="space-y-4 sm:space-y-6"
                 >
                     <div>
                         <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">

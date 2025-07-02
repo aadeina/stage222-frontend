@@ -260,7 +260,7 @@ const RecruiterSignup = () => {
                                 </p>
 
                                 {/* Statistics Grid */}
-                                <div className="grid grid-cols-2 gap-6">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                                     <div className="bg-white p-6 rounded-lg shadow-md">
                                         <h3 className="text-3xl font-bold text-[#00A55F] mb-2">10K+</h3>
                                         <p className="text-gray-600">active students and graduates</p>
@@ -316,7 +316,7 @@ const RecruiterSignup = () => {
             {/* Footer */}
             <footer className="bg-gray-900 text-white mt-12">
                 <div className="container mx-auto px-4 py-12">
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8">
                         <div>
                             <h3 className="font-semibold mb-4">Quick Links</h3>
                             <ul className="space-y-2">

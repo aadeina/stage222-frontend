@@ -198,9 +198,9 @@ const Messages = () => {
                 animate={{ opacity: 1, y: 0 }}
                 className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden"
             >
-                <div className="flex h-[600px]">
+                <div className="flex flex-col lg:flex-row h-[600px]">
                     {/* Conversations List */}
-                    <div className="w-1/3 border-r border-gray-200 flex flex-col">
+                    <div className="w-full lg:w-1/3 border-b lg:border-b-0 lg:border-r border-gray-200 flex flex-col">
                         {/* Search Header */}
                         <div className="p-4 border-b border-gray-200">
                             <div className="relative">
@@ -268,8 +268,93 @@ const Messages = () => {
                         </div>
                     </div>
 
-                    {/* Chat Area */}
-                    <div className="flex-1 flex flex-col">
+                    {/* Mobile Chat Area */}
+                    {selectedConversation && (
+                        <div className="lg:hidden flex-1 flex flex-col">
+                            {/* Mobile Chat Header */}
+                            <div className="p-4 border-b border-gray-200 bg-gray-50">
+                                <div className="flex items-center space-x-3">
+                                    <button
+                                        onClick={() => setSelectedConversation(null)}
+                                        className="p-1 text-gray-500 hover:text-gray-700"
+                                    >
+                                        <FaArrowLeft className="h-4 w-4" />
+                                    </button>
+                                    <div className="w-8 h-8 bg-[#00A55F] rounded-full flex items-center justify-center">
+                                        <FaUser className="h-4 w-4 text-white" />
+                                    </div>
+                                    <div className="flex-1">
+                                        <h3 className="text-sm font-medium text-gray-900">
+                                            {selectedConversation.candidate.name}
+                                        </h3>
+                                        <p className="text-xs text-gray-600">
+                                            {selectedConversation.opportunity.title}
+                                        </p>
+                                    </div>
+                                    <span className={`text-xs px-2 py-1 rounded-full ${getStatusColor(selectedConversation.status)} bg-opacity-10`}>
+                                        {getStatusText(selectedConversation.status)}
+                                    </span>
+                                </div>
+                            </div>
+
+                            {/* Mobile Messages */}
+                            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                                {messages.length === 0 ? (
+                                    <div className="flex flex-col items-center justify-center h-full text-gray-500">
+                                        <FaInbox className="h-12 w-12 mb-4" />
+                                        <p>No messages yet</p>
+                                    </div>
+                                ) : (
+                                    messages.map((message) => (
+                                        <motion.div
+                                            key={message.id}
+                                            initial={{ opacity: 0, y: 10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            className={`flex ${message.sender === 'recruiter' ? 'justify-end' : 'justify-start'}`}
+                                        >
+                                            <div className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${message.sender === 'recruiter'
+                                                ? 'bg-[#00A55F] text-white'
+                                                : 'bg-gray-100 text-gray-900'
+                                                }`}>
+                                                <p className="text-sm">{message.content}</p>
+                                                <p className={`text-xs mt-1 ${message.sender === 'recruiter' ? 'text-white/70' : 'text-gray-500'}`}>
+                                                    {formatTime(message.timestamp)}
+                                                </p>
+                                            </div>
+                                        </motion.div>
+                                    ))
+                                )}
+                            </div>
+
+                            {/* Mobile Message Input */}
+                            <div className="p-4 border-t border-gray-200">
+                                <div className="flex space-x-2">
+                                    <input
+                                        type="text"
+                                        value={newMessage}
+                                        onChange={(e) => setNewMessage(e.target.value)}
+                                        onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                                        placeholder="Type a message..."
+                                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00A55F] focus:border-transparent"
+                                    />
+                                    <button
+                                        onClick={handleSendMessage}
+                                        disabled={!newMessage.trim() || isSending}
+                                        className="px-4 py-2 bg-[#00A55F] text-white rounded-lg hover:bg-[#008c4f] disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        {isSending ? (
+                                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                        ) : (
+                                            <FaPaperPlane className="h-4 w-4" />
+                                        )}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Desktop Chat Area */}
+                    <div className="flex-1 flex flex-col hidden lg:flex">
                         {selectedConversation ? (
                             <>
                                 {/* Chat Header */}

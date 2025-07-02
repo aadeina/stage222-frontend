@@ -1174,7 +1174,7 @@ const InternshipDetail = () => {
                     </motion.div>
 
                     {/* Content Sections */}
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
                         {/* Main Content */}
                         <div className="lg:col-span-2 space-y-6">
                             {/* About the Internship */}
@@ -1227,7 +1227,7 @@ const InternshipDetail = () => {
                                         <FaStar className="text-purple-600" />
                                         Ideal Skills & Preferences
                                     </h2>
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
                                         {internship.preferences.map((preference, index) => (
                                             <div key={index} className="flex items-center gap-3 p-3 bg-white/60 rounded-lg border border-purple-100">
                                                 <div className="w-6 h-6 bg-purple-100 rounded-full flex items-center justify-center">

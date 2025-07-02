@@ -265,7 +265,7 @@ const Home = () => {
             <section className="py-20 bg-white">
                 <div className="container mx-auto px-4">
                     <h2 className="text-3xl font-bold text-center text-gray-900 mb-16">Why Stage222?</h2>
-                    <div className="grid md:grid-cols-3 gap-8">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
                         <div className="bg-white p-8 rounded-xl shadow-md hover:shadow-lg transition-shadow border border-gray-100">
                             <div className="w-12 h-12 bg-[#00A55F]/10 rounded-lg flex items-center justify-center mb-6">
                                 <svg className="w-6 h-6 text-[#00A55F]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -327,7 +327,7 @@ const Home = () => {
             <section className="py-20 bg-white">
                 <div className="container mx-auto px-4">
                     <h2 className="text-3xl font-bold text-center text-gray-900 mb-16">Featured Internships</h2>
-                    <div className="grid md:grid-cols-3 gap-8">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
                         {internships.map(internship => (
                             <div key={internship.id} className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow border border-gray-100">
                                 <h3 className="text-xl font-semibold text-gray-900 mb-2">{internship.title}</h3>

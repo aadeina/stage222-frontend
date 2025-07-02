@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
     FaUsers,
     FaBuilding,
@@ -17,7 +17,9 @@ import {
     FaRocket,
     FaChartBar,
     FaUserShield,
-    FaClipboardCheck
+    FaClipboardCheck,
+    FaBars,
+    FaTimes
 } from 'react-icons/fa';
 import { fetchPlatformStats } from '../../../services/adminApi';
 import AnalyticsCards from '../components/AnalyticsCards';
@@ -45,6 +47,15 @@ const AdminDashboard = () => {
     const [analyticsLoading, setAnalyticsLoading] = useState(true);
     const [analyticsError, setAnalyticsError] = useState(null);
     const [avgDaysToFirstPost, setAvgDaysToFirstPost] = useState(0);
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+    // Navigation items for mobile menu
+    const navItems = [
+        { name: 'Dashboard', path: '/admin/dashboard', icon: <FaChartBar className="h-5 w-5" /> },
+        { name: 'User Management', path: '/admin/users', icon: <FaUserShield className="h-5 w-5" /> },
+        { name: 'Internship Moderation', path: '/admin/internships', icon: <FaClipboardCheck className="h-5 w-5" /> },
+        { name: 'Organization Moderation', path: '/admin/organizations', icon: <FaBuilding className="h-5 w-5" /> },
+    ];
 
     // Mock data for development/demo purposes
     const mockStats = {
@@ -237,14 +248,14 @@ const AdminDashboard = () => {
             <div className="flex-1 flex flex-col">
                 {/* Header Section */}
                 <div className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-10">
-                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-                        <div className="flex items-center justify-between">
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-0">
                             <div>
                                 <motion.h1
                                     initial={{ opacity: 0, x: -20 }}
                                     animate={{ opacity: 1, x: 0 }}
                                     transition={{ duration: 0.5 }}
-                                    className="text-3xl font-bold text-gray-900"
+                                    className="text-2xl sm:text-3xl font-bold text-gray-900"
                                 >
                                     Admin Dashboard
                                 </motion.h1>
@@ -252,19 +263,31 @@ const AdminDashboard = () => {
                                     initial={{ opacity: 0, x: -20 }}
                                     animate={{ opacity: 1, x: 0 }}
                                     transition={{ duration: 0.5, delay: 0.1 }}
-                                    className="text-gray-600 mt-1"
+                                    className="text-gray-600 mt-1 text-sm sm:text-base"
                                 >
                                     Platform overview and analytics
                                     {error && <span className="ml-2 text-yellow-600 text-sm">(Demo data)</span>}
                                 </motion.p>
                             </div>
-                            <div className="flex items-center gap-4">
+                            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
+                                {/* Mobile Menu Button */}
+                                <button
+                                    onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                                    className="lg:hidden p-2 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors"
+                                >
+                                    {mobileMenuOpen ? (
+                                        <FaTimes className="h-5 w-5" />
+                                    ) : (
+                                        <FaBars className="h-5 w-5" />
+                                    )}
+                                </button>
+
                                 <motion.button
                                     whileHover={{ scale: 1.05 }}
                                     whileTap={{ scale: 0.95 }}
                                     onClick={handleRefresh}
                                     disabled={isRefreshing}
-                                    className="flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-[#00A55F] to-[#008c4f] text-white rounded-xl hover:from-[#008c4f] hover:to-[#007a43] transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 font-medium"
+                                    className="flex items-center justify-center gap-3 px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-[#00A55F] to-[#008c4f] text-white rounded-xl hover:from-[#008c4f] hover:to-[#007a43] transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 font-medium text-sm sm:text-base"
                                 >
                                     <motion.div
                                         animate={{ rotate: isRefreshing ? 360 : 0 }}
@@ -281,6 +304,38 @@ const AdminDashboard = () => {
                         </div>
                     </div>
                 </div>
+
+                {/* Mobile Navigation Menu */}
+                <AnimatePresence>
+                    {mobileMenuOpen && (
+                        <motion.div
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: 'auto' }}
+                            exit={{ opacity: 0, height: 0 }}
+                            transition={{ duration: 0.2 }}
+                            className="lg:hidden border-t border-gray-200 bg-white"
+                        >
+                            <div className="py-4 space-y-2 px-4">
+                                {navItems.map((item) => (
+                                    <NavLink
+                                        key={item.path}
+                                        to={item.path}
+                                        onClick={() => setMobileMenuOpen(false)}
+                                        className={({ isActive }) =>
+                                            `flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${isActive
+                                                ? 'bg-[#00A55F] text-white'
+                                                : 'text-gray-700 hover:bg-gray-100'
+                                            }`
+                                        }
+                                    >
+                                        {item.icon}
+                                        <span>{item.name}</span>
+                                    </NavLink>
+                                ))}
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
 
                 {/* Main Content */}
                 <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1">
@@ -310,7 +365,7 @@ const AdminDashboard = () => {
                         className="mb-8"
                     >
                         <h2 className="text-xl font-semibold text-gray-900 mb-6">Platform Overview</h2>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
                             {/* Total Users Card */}
                             <motion.div
                                 initial={{ opacity: 0, y: 20 }}

@@ -248,8 +248,8 @@ const RecruiterBilling = () => {
                                     key={tab.id}
                                     onClick={() => setActiveTab(tab.id)}
                                     className={`flex items-center gap-2 py-4 px-1 border-b-2 font-medium text-sm transition-colors ${activeTab === tab.id
-                                            ? 'border-[#00A55F] text-[#00A55F]'
-                                            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                                        ? 'border-[#00A55F] text-[#00A55F]'
+                                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                                         }`}
                                 >
                                     <Icon className="h-4 w-4" />
@@ -282,7 +282,7 @@ const RecruiterBilling = () => {
                                     </div>
                                 </div>
 
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                                     <div className="bg-gradient-to-br from-[#00A55F]/5 to-emerald-50 rounded-xl p-4">
                                         <div className="flex items-center gap-3 mb-3">
                                             <FaCrown className="text-[#00A55F] text-xl" />
@@ -466,10 +466,10 @@ const RecruiterBilling = () => {
                                             disabled={plan.current || loading}
                                             onClick={() => handlePlanChange(plan.name)}
                                             className={`w-full py-3 px-6 rounded-lg font-semibold transition-colors ${plan.current
-                                                    ? 'bg-gray-100 text-gray-500 cursor-not-allowed'
-                                                    : plan.popular
-                                                        ? 'bg-[#00A55F] text-white hover:bg-[#008c4f] shadow-lg'
-                                                        : 'bg-gray-900 text-white hover:bg-gray-800'
+                                                ? 'bg-gray-100 text-gray-500 cursor-not-allowed'
+                                                : plan.popular
+                                                    ? 'bg-[#00A55F] text-white hover:bg-[#008c4f] shadow-lg'
+                                                    : 'bg-gray-900 text-white hover:bg-gray-800'
                                                 }`}
                                         >
                                             {loading ? (

@@ -118,21 +118,6 @@ const Navbar = () => {
                         >
                             For Recruiters
                         </Link>
-                        {/* Test Links */}
-                        <Link
-                            to="/verify-otp"
-                            className="block text-gray-700 hover:text-[#00A55F] font-medium transition-colors"
-                            onClick={() => setIsMenuOpen(false)}
-                        >
-                            Test OTP
-                        </Link>
-                        <Link
-                            to="/reset-password"
-                            className="block text-gray-700 hover:text-[#00A55F] font-medium transition-colors"
-                            onClick={() => setIsMenuOpen(false)}
-                        >
-                            Test Reset
-                        </Link>
                     </div>
                 )}
             </nav>
