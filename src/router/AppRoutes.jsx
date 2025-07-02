@@ -213,9 +213,11 @@ const AppRoutes = () => {
                     <Route
                         path="/candidate/dashboard"
                         element={
-                            <PageWrapper>
-                                <CandidateDashboard />
-                            </PageWrapper>
+                            <ProtectedRoute>
+                                <PageWrapper>
+                                    <CandidateDashboard />
+                                </PageWrapper>
+                            </ProtectedRoute>
                         }
                     />
                     <Route path="/recruiter/edit-opportunity/:id" element={<EditOpportunity />} />

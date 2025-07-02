@@ -8,7 +8,6 @@ const CandidateDashboard = () => {
     const navigate = useNavigate();
     const { user } = useAuth();
     const [isLoading, setIsLoading] = useState(true);
-    const [showWarning, setShowWarning] = useState(true);
     const [currentRecommendedSlide, setCurrentRecommendedSlide] = useState(0);
     const [currentTrendingSlide, setCurrentTrendingSlide] = useState(0);
 
@@ -246,34 +245,6 @@ const CandidateDashboard = () => {
 
     return (
         <div className="min-h-screen bg-gray-50">
-            {/* Development Warning Banner */}
-            {showWarning && (
-                <motion.div
-                    initial={{ opacity: 0, y: -50 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="bg-yellow-500 text-white px-4 py-3 relative z-50"
-                >
-                    <div className="max-w-7xl mx-auto flex items-center justify-between">
-                        <div className="flex items-center space-x-3">
-                            <FaExclamationTriangle className="h-5 w-5 flex-shrink-0" />
-                            <div>
-                                <p className="font-medium">🚨 DEVELOPMENT MODE</p>
-                                <p className="text-sm text-yellow-100">
-                                    This dashboard is temporarily public for UI development.
-                                    <strong className="text-white"> REMEMBER TO PROTECT THIS ROUTE!</strong>
-                                </p>
-                            </div>
-                        </div>
-                        <button
-                            onClick={() => setShowWarning(false)}
-                            className="p-1 hover:bg-yellow-600 rounded transition-colors"
-                        >
-                            <FaTimes className="h-4 w-4" />
-                        </button>
-                    </div>
-                </motion.div>
-            )}
-
             {/* Main Content */}
             <main className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 py-8">
                 {/* Welcome Section */}
