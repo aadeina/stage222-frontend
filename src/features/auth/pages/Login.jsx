@@ -80,7 +80,7 @@ const Login = () => {
                     navigate('/recruiter/dashboard');
                 }
             } else if (user.role === 'candidate') {
-                navigate('/dashboard/student');
+                navigate('/candidate/dashboard');
             } else {
                 toast.error('Invalid user role');
             }

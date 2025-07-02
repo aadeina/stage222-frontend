@@ -11,7 +11,7 @@ const ProtectedOnboardingRoute = ({ children }) => {
 
     // If user is not a recruiter, redirect to appropriate dashboard
     if (user.role !== 'recruiter') {
-        return <Navigate to="/dashboard/student" replace />;
+        return <Navigate to="/candidate/dashboard" replace />;
     }
 
     // If user's onboarding is complete, redirect to recruiter dashboard

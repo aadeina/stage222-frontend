@@ -2,15 +2,19 @@ import { motion } from 'framer-motion';
 import Navbar from './Navbar';
 import { useLocation } from 'react-router-dom';
 import RecruiterHeader from '@/features/recruiter/components/RecruiterHeader';
+import CandidateHeader from '@/features/candidate/components/CandidateHeader';
 
 const PageWrapper = ({ children, className = '' }) => {
     const location = useLocation();
     const isRecruiterRoute = location.pathname.startsWith('/recruiter');
+    const isCandidateRoute = location.pathname.startsWith('/candidate');
 
     return (
         <div className="min-h-screen bg-gray-50">
             {isRecruiterRoute ? (
-                <RecruiterHeader /> // TODO: Use minimal logo for recruiter if available
+                <RecruiterHeader />
+            ) : isCandidateRoute ? (
+                <CandidateHeader />
             ) : (
                 <Navbar />
             )}

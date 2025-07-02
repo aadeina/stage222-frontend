@@ -22,11 +22,16 @@ import RecruiterDashboard from '@/features/recruiter/pages/RecruiterDashboard';
 import EditOrganization from '@/features/recruiter/pages/EditOrganization';
 import RecruiterPricing from '@/features/recruiter/pages/RecruiterPricing';
 import RecruiterProfile from '@/features/recruiter/pages/RecruiterProfile';
-import ChangePassword from '@/features/recruiter/pages/ChangePassword';
+import ChangePassword from '../features/candidate/pages/ChangePassword';
 import RecruiterBilling from '@/features/recruiter/pages/RecruiterBilling';
-import StudentDashboard from '@/features/candidate/pages/StudentDashboard';
+import CandidateDashboard from '@/features/candidate/pages/CandidateDashboard';
 import EditOpportunity from '@/features/recruiter/pages/EditOpportunity';
 import Messages from '@/features/recruiter/pages/Messages';
+import CandidateMessages from '../features/candidate/pages/CandidateMessages';
+import CandidateApplications from '../features/candidate/pages/CandidateApplications';
+import CandidateBookmarks from '../features/candidate/pages/CandidateBookmarks';
+import CandidateResume from '../features/candidate/pages/CandidateResume';
+import CandidatePreferences from '../features/candidate/pages/CandidatePreferences';
 
 // Admin Pages
 import AdminDashboard from '@/features/admin/pages/AdminDashboard';
@@ -206,13 +211,11 @@ const AppRoutes = () => {
                         }
                     />
                     <Route
-                        path="/dashboard/student"
+                        path="/candidate/dashboard"
                         element={
-                            <ProtectedRoute>
-                                <PageWrapper>
-                                    <StudentDashboard />
-                                </PageWrapper>
-                            </ProtectedRoute>
+                            <PageWrapper>
+                                <CandidateDashboard />
+                            </PageWrapper>
                         }
                     />
                     <Route path="/recruiter/edit-opportunity/:id" element={<EditOpportunity />} />
@@ -244,6 +247,54 @@ const AppRoutes = () => {
                                     <RecruiterBilling />
                                 </PageWrapper>
                             </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/candidate/messages"
+                        element={
+                            <PageWrapper>
+                                <CandidateMessages />
+                            </PageWrapper>
+                        }
+                    />
+                    <Route
+                        path="/candidate/applications"
+                        element={
+                            <PageWrapper>
+                                <CandidateApplications />
+                            </PageWrapper>
+                        }
+                    />
+                    <Route
+                        path="/candidate/bookmarks"
+                        element={
+                            <PageWrapper>
+                                <CandidateBookmarks />
+                            </PageWrapper>
+                        }
+                    />
+                    <Route
+                        path="/candidate/resume"
+                        element={
+                            <PageWrapper>
+                                <CandidateResume />
+                            </PageWrapper>
+                        }
+                    />
+                    <Route
+                        path="/candidate/preferences"
+                        element={
+                            <PageWrapper>
+                                <CandidatePreferences />
+                            </PageWrapper>
+                        }
+                    />
+                    <Route
+                        path="/candidate/change-password"
+                        element={
+                            <PageWrapper>
+                                <ChangePassword />
+                            </PageWrapper>
                         }
                     />
 
