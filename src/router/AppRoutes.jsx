@@ -32,6 +32,7 @@ import CandidateApplications from '../features/candidate/pages/CandidateApplicat
 import CandidateBookmarks from '../features/candidate/pages/CandidateBookmarks';
 import CandidateResume from '../features/candidate/pages/CandidateResume';
 import CandidatePreferences from '../features/candidate/pages/CandidatePreferences';
+import RecruiterApplicants from '@/features/recruiter/pages/RecruiterApplicants';
 
 // Admin Pages
 import AdminDashboard from '@/features/admin/pages/AdminDashboard';
@@ -297,6 +298,16 @@ const AppRoutes = () => {
                             <PageWrapper>
                                 <ChangePassword />
                             </PageWrapper>
+                        }
+                    />
+                    <Route
+                        path="/recruiter/applicants"
+                        element={
+                            <ProtectedRoute>
+                                <PageWrapper>
+                                    <RecruiterApplicants />
+                                </PageWrapper>
+                            </ProtectedRoute>
                         }
                     />
 
