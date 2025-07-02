@@ -152,8 +152,8 @@ const InternshipDetailsModal = ({ isOpen, onClose, internship, onApprove, onReje
                                                 <p className="text-lg font-semibold text-gray-900 mt-1">{safeRenderField(fullInternshipData?.title || internship.title)}</p>
                                             </div>
                                             <div>
-                                                <label className="text-sm font-medium text-gray-600">Type</label>
-                                                <p className="text-gray-900 mt-1 capitalize">{safeRenderField(fullInternshipData?.opportunity_type || fullInternshipData?.type || internship.opportunity_type || 'Internship')}</p>
+                                                <label className="text-sm font-medium text-gray-600">Opportunity Type</label>
+                                                <p className="text-gray-900 mt-1 capitalize">{safeRenderField(fullInternshipData?.opportunity_type || internship.opportunity_type, 'Internship')}</p>
                                             </div>
                                             <div>
                                                 <label className="text-sm font-medium text-gray-600">Status</label>
@@ -194,7 +194,7 @@ const InternshipDetailsModal = ({ isOpen, onClose, internship, onApprove, onReje
                                             <div>
                                                 <label className="text-sm font-medium text-gray-600">Organization</label>
                                                 <p className="text-gray-900 mt-1">
-                                                    {safeRenderField(fullInternshipData?.organization || internship.organization)}
+                                                    {safeRenderField(fullInternshipData?.organization || internship.organization, 'Not specified')}
                                                 </p>
                                             </div>
                                             <div>
@@ -221,16 +221,20 @@ const InternshipDetailsModal = ({ isOpen, onClose, internship, onApprove, onReje
                                                 <p className="text-gray-900 mt-1">{safeRenderField(fullInternshipData?.location || internship.location, 'Remote/Not specified')}</p>
                                             </div>
                                             <div>
+                                                <label className="text-sm font-medium text-gray-600">Work Type</label>
+                                                <p className="text-gray-900 mt-1 capitalize">{safeRenderField(fullInternshipData?.type, 'Not specified')}</p>
+                                            </div>
+                                            <div>
                                                 <label className="text-sm font-medium text-gray-600">Job Type</label>
-                                                <p className="text-gray-900 mt-1 capitalize">{safeRenderField(fullInternshipData?.job_type)}</p>
+                                                <p className="text-gray-900 mt-1 capitalize">{safeRenderField(fullInternshipData?.job_type, 'Not specified')}</p>
                                             </div>
                                             <div>
                                                 <label className="text-sm font-medium text-gray-600">Openings</label>
                                                 <p className="text-gray-900 mt-1">{fullInternshipData?.openings || 'Not specified'}</p>
                                             </div>
                                             <div>
-                                                <label className="text-sm font-medium text-gray-600">Duration (months)</label>
-                                                <p className="text-gray-900 mt-1">{fullInternshipData?.duration_months || 'Not specified'}</p>
+                                                <label className="text-sm font-medium text-gray-600">Duration</label>
+                                                <p className="text-gray-900 mt-1">{fullInternshipData?.duration || 'Not specified'}</p>
                                             </div>
                                             <div>
                                                 <label className="text-sm font-medium text-gray-600">Duration (weeks)</label>
