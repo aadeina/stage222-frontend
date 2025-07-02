@@ -33,6 +33,7 @@ import CandidateBookmarks from '../features/candidate/pages/CandidateBookmarks';
 import CandidateResume from '../features/candidate/pages/CandidateResume';
 import CandidatePreferences from '../features/candidate/pages/CandidatePreferences';
 import RecruiterApplicants from '@/features/recruiter/pages/RecruiterApplicants';
+import RecruiterOpportunityApplicants from '@/features/recruiter/pages/RecruiterOpportunityApplicants';
 
 // Admin Pages
 import AdminDashboard from '@/features/admin/pages/AdminDashboard';
@@ -306,6 +307,16 @@ const AppRoutes = () => {
                             <ProtectedRoute>
                                 <PageWrapper>
                                     <RecruiterApplicants />
+                                </PageWrapper>
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/recruiter/opportunity/:opportunityId/applicants"
+                        element={
+                            <ProtectedRoute>
+                                <PageWrapper>
+                                    <RecruiterOpportunityApplicants />
                                 </PageWrapper>
                             </ProtectedRoute>
                         }

@@ -530,7 +530,7 @@ const RecruiterDashboard = () => {
                                                             <FaEdit className="h-4 w-4" />
                                                         </button>
                                                         <button
-                                                            onClick={() => navigate(`/recruiter/applicants/${opportunity.id}`)}
+                                                            onClick={() => navigate(`/recruiter/opportunity/${opportunity.id}/applicants`)}
                                                             className="text-purple-600 hover:text-purple-800 transition-colors"
                                                             title="View Applicants"
                                                         >
