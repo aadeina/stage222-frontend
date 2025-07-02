@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { FaArrowLeft, FaUser, FaEnvelope, FaClock, FaCheckCircle, FaTimesCircle, FaEye, FaFilePdf } from 'react-icons/fa';
+import { FaArrowLeft, FaUser, FaEnvelope, FaClock, FaCheckCircle, FaTimesCircle, FaEye, FaFilePdf, FaComments } from 'react-icons/fa';
 import api from '../../../services/api';
 import ResumeModal from '../components/ResumeModal';
+import AnswersModal from '../components/AnswersModal';
 
 // Professional, branded applicants page for Stage222 recruiters
 // Fetches applicants from backend and displays in a modern, responsive table
@@ -33,6 +34,7 @@ const RecruiterApplicants = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [resumeModal, setResumeModal] = useState({ isOpen: false, resumeUrl: '', candidateName: '' });
+    const [answersModal, setAnswersModal] = useState({ isOpen: false, candidate: null, answers: null });
     const navigate = useNavigate();
     const query = useQuery();
     const status = query.get('status');
@@ -66,6 +68,16 @@ const RecruiterApplicants = () => {
     // Handle resume modal close
     const closeResumeModal = () => {
         setResumeModal({ isOpen: false, resumeUrl: '', candidateName: '' });
+    };
+
+    // Handle answers modal open
+    const openAnswersModal = (candidate, answers) => {
+        setAnswersModal({ isOpen: true, candidate, answers });
+    };
+
+    // Handle answers modal close
+    const closeAnswersModal = () => {
+        setAnswersModal({ isOpen: false, candidate: null, answers: null });
     };
 
     return (
@@ -169,16 +181,32 @@ const RecruiterApplicants = () => {
                                                     <span className="text-gray-400 text-sm">No resume</span>
                                                 )}
                                             </td>
-                                            <td className="px-4 py-4 whitespace-pre-line text-gray-700 text-xs max-w-xs">
-                                                {app.answers ? Object.entries(app.answers).map(([q, a], i) => (
-                                                    <div key={i} className="mb-1">
-                                                        <span className="font-semibold">{q}:</span> {a}
-                                                    </div>
-                                                )) : app.screening_answers ? Object.entries(app.screening_answers).map(([q, a], i) => (
-                                                    <div key={i} className="mb-1">
-                                                        <span className="font-semibold">{q}:</span> {a}
-                                                    </div>
-                                                )) : '—'}
+                                            <td className="px-4 py-4 whitespace-nowrap">
+                                                {((app.screening_answers && Object.keys(app.screening_answers).length > 0) || (app.answers && Object.keys(app.answers).length > 0)) ? (
+                                                    <button
+                                                        onClick={() => openAnswersModal(
+                                                            {
+                                                                name: candidateName,
+                                                                email: candidateEmail,
+                                                                photo: candidatePhoto
+                                                            },
+                                                            {
+                                                                screeningAnswers: app.screening_answers,
+                                                                answers: app.answers
+                                                            }
+                                                        )}
+                                                        className="flex items-center gap-2 px-3 py-2 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors duration-200 text-sm"
+                                                    >
+                                                        <FaComments className="h-4 w-4" />
+                                                        View Answers
+                                                        <span className="bg-blue-200 text-blue-800 text-xs px-2 py-0.5 rounded-full">
+                                                            {(app.screening_answers ? Object.keys(app.screening_answers).length : 0) +
+                                                                (app.answers ? Object.keys(app.answers).length : 0)}
+                                                        </span>
+                                                    </button>
+                                                ) : (
+                                                    <span className="text-gray-400 text-sm">No answers</span>
+                                                )}
                                             </td>
                                         </tr>
                                     );
@@ -195,6 +223,14 @@ const RecruiterApplicants = () => {
                 onClose={closeResumeModal}
                 resumeUrl={resumeModal.resumeUrl}
                 candidateName={resumeModal.candidateName}
+            />
+
+            {/* Answers Modal */}
+            <AnswersModal
+                isOpen={answersModal.isOpen}
+                onClose={closeAnswersModal}
+                candidate={answersModal.candidate}
+                answers={answersModal.answers}
             />
         </div>
     );
