@@ -118,6 +118,29 @@ const AppRoutes = () => {
                             </PageWrapper>
                         }
                     />
+                    {/* Candidate Routes - Must come before general routes to avoid conflicts */}
+                    <Route
+                        path="/candidate/internships"
+                        element={
+                            <ProtectedRoute>
+                                <PageWrapper>
+                                    <InternshipList />
+                                </PageWrapper>
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/candidate/internships/:id"
+                        element={
+                            <ProtectedRoute>
+                                <PageWrapper>
+                                    <InternshipDetail />
+                                </PageWrapper>
+                            </ProtectedRoute>
+                        }
+                    />
+
+                    {/* General Public Routes */}
                     <Route
                         path="/internships"
                         element={
@@ -319,16 +342,6 @@ const AppRoutes = () => {
                             <ProtectedRoute>
                                 <PageWrapper>
                                     <RecruiterOpportunityApplicants />
-                                </PageWrapper>
-                            </ProtectedRoute>
-                        }
-                    />
-                    <Route
-                        path="/candidate/internships"
-                        element={
-                            <ProtectedRoute>
-                                <PageWrapper>
-                                    <InternshipList />
                                 </PageWrapper>
                             </ProtectedRoute>
                         }

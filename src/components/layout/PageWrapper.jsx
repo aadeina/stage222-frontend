@@ -9,6 +9,14 @@ const PageWrapper = ({ children, className = '' }) => {
     const isRecruiterRoute = location.pathname.startsWith('/recruiter');
     const isCandidateRoute = location.pathname.startsWith('/candidate');
 
+    // Debug logging to see which route is detected
+    console.log('PageWrapper Debug:', {
+        pathname: location.pathname,
+        isRecruiterRoute,
+        isCandidateRoute,
+        selectedHeader: isRecruiterRoute ? 'RecruiterHeader' : isCandidateRoute ? 'CandidateHeader' : 'Navbar'
+    });
+
     return (
         <div className="min-h-screen bg-gray-50">
             {isRecruiterRoute ? (

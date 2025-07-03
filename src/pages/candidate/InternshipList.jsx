@@ -3,11 +3,13 @@ import InternshipCard from '@/components/InternshipCard';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 import { fetchInternships } from '@/services/internshipApi';
+import { useNavigate } from 'react-router-dom';
 
 const InternshipList = () => {
     const [internships, setInternships] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const navigate = useNavigate();
 
     useEffect(() => {
         const loadInternships = async () => {
@@ -29,6 +31,11 @@ const InternshipList = () => {
         };
         loadInternships();
     }, []);
+
+    const handleInternshipClick = (internshipId) => {
+        // Navigate to candidate-specific internship detail route
+        navigate(`/candidate/internships/${internshipId}`);
+    };
 
     return (
         <div className="min-h-screen bg-gray-50 py-10 px-2 sm:px-6 lg:px-8">
@@ -58,7 +65,7 @@ const InternshipList = () => {
                             <motion.div key={internship.id} variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
                                 <InternshipCard
                                     internship={internship}
-                                    onClick={() => window.location.href = `/internships/${internship.id}`}
+                                    onClick={() => handleInternshipClick(internship.id)}
                                 />
                             </motion.div>
                         ))}

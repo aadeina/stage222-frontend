@@ -392,6 +392,8 @@ const CandidateEditProfile = () => {
 
             toast.success('Profile picture updated successfully!');
             setIsChanged(false);
+            // Update global user context to ensure changes are reflected everywhere
+            // This includes the candidate header and any other components using the auth context
             updateUser(updated);
         } catch (err) {
             console.error('Profile picture update error:', err);

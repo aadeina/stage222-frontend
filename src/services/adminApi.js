@@ -47,7 +47,12 @@ export const fetchTopUsersAnalytics = () => adminApi.get('/admin/analytics/top-u
 // =============================
 // User Management Endpoints
 // =============================
-export const fetchAdminUsers = () => adminApi.get('/admin/users/full/');
+export const fetchAdminUsers = () => adminApi.get('/admin/users/full/', {
+    params: {
+        _t: new Date().getTime() // Force fresh data
+    }
+});
+
 export const toggleVerifyUser = (id) => adminApi.post(`/admin/users/${id}/verify/`);
 export const toggleActiveUser = (id) => adminApi.post(`/admin/users/${id}/deactivate/`);
 export const deleteUser = (id) => adminApi.delete(`/admin/users/${id}/delete/`);

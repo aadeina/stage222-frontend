@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     FaMapMarkerAlt,
@@ -30,7 +30,13 @@ import {
     FaTelegram,
     FaLink,
     FaTimes,
-    FaSyncAlt
+    FaSyncAlt,
+    FaEye,
+    FaPhone,
+    FaEnvelope,
+    FaInstagram,
+    FaYoutube,
+    FaTiktok
 } from 'react-icons/fa';
 import { MdWorkOutline, MdLocationOn, MdAccessTime, MdBusiness } from 'react-icons/md';
 import { BsShare, BsBookmark, BsBookmarkFill } from 'react-icons/bs';
@@ -44,258 +50,13 @@ import AuthModal from '@/components/ui/AuthModal';
 import api from '@/services/api';
 import VerifiedBadge from '@/components/VerifiedBadge';
 import ApplyModal from '@/features/candidate/components/ApplyModal';
-
-const fallbackLogo = 'https://ui-avatars.com/api/?name=Stage222&background=00A55F&color=fff&rounded=true';
-
-// Share Menu Component
-const ShareMenu = ({ isOpen, onClose, url, title }) => {
-    const [copied, setCopied] = useState(false);
-    const menuRef = useRef(null);
-
-    useEffect(() => {
-        const handleClickOutside = (event) => {
-            if (menuRef.current && !menuRef.current.contains(event.target)) {
-                onClose();
-            }
-        };
-
-        if (isOpen) {
-            document.addEventListener('mousedown', handleClickOutside);
-        }
-
-        return () => {
-            document.removeEventListener('mousedown', handleClickOutside);
-        };
-    }, [isOpen, onClose]);
-
-    const shareData = {
-        url: url || window.location.href,
-        title: title || 'Check out this internship on Stage222'
-    };
-
-    const shareOptions = [
-        {
-            name: 'Facebook',
-            icon: FaFacebook,
-            color: 'from-blue-500 to-blue-600',
-            hoverColor: 'hover:from-blue-600 hover:to-blue-700',
-            shadowColor: 'shadow-blue-500/25',
-            description: 'Share with friends and family on Facebook',
-            action: () => {
-                const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareData.url)}`;
-                window.open(facebookUrl, '_blank', 'width=600,height=400');
-            }
-        },
-        {
-            name: 'WhatsApp',
-            icon: FaWhatsapp,
-            color: 'from-green-500 to-green-600',
-            hoverColor: 'hover:from-green-600 hover:to-green-700',
-            shadowColor: 'shadow-green-500/25',
-            description: 'Share via WhatsApp message or group',
-            action: () => {
-                const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(`${shareData.title} - ${shareData.url}`)}`;
-                window.open(whatsappUrl, '_blank');
-            }
-        },
-        {
-            name: 'Copy Link',
-            icon: FaLink,
-            color: 'from-gray-500 to-gray-600',
-            hoverColor: 'hover:from-gray-600 hover:to-gray-700',
-            shadowColor: 'shadow-gray-500/25',
-            description: 'Copy the link to your clipboard',
-            action: async () => {
-                try {
-                    await navigator.clipboard.writeText(shareData.url);
-                    setCopied(true);
-                    toast.success('Link copied to clipboard!');
-                    setTimeout(() => setCopied(false), 2000);
-                } catch (err) {
-                    toast.error('Failed to copy link');
-                }
-            }
-        }
-    ];
-
-    if (!isOpen) return null;
-
-    return (
-        <AnimatePresence>
-            <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-                onClick={onClose}
-            >
-                <motion.div
-                    ref={menuRef}
-                    initial={{ scale: 0.9, opacity: 0, y: 20 }}
-                    animate={{ scale: 1, opacity: 1, y: 0 }}
-                    exit={{ scale: 0.9, opacity: 0, y: 20 }}
-                    transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                    className="bg-white rounded-3xl shadow-2xl max-w-lg w-full overflow-hidden"
-                    onClick={(e) => e.stopPropagation()}
-                >
-                    {/* Header */}
-                    <div className="bg-gradient-to-r from-[#00A55F] to-emerald-600 p-6 text-white">
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
-                                    <FaShare className="text-xl" />
-                                </div>
-                                <div>
-                                    <h2 className="text-xl font-bold">Share Internship</h2>
-                                    <p className="text-white/80 text-sm">Choose your preferred sharing method</p>
-                                </div>
-                            </div>
-                            <motion.button
-                                whileHover={{ scale: 1.1, rotate: 90 }}
-                                whileTap={{ scale: 0.9 }}
-                                onClick={onClose}
-                                className="p-2 hover:bg-white/20 rounded-full transition-colors"
-                            >
-                                <FaTimes className="text-xl" />
-                            </motion.button>
-                        </div>
-                    </div>
-
-                    {/* Share Options */}
-                    <div className="p-6">
-                        <div className="space-y-4">
-                            {shareOptions.map((option, index) => (
-                                <motion.div
-                                    key={option.name}
-                                    initial={{ opacity: 0, x: -20 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    transition={{ delay: index * 0.1, type: "spring", damping: 20 }}
-                                >
-                                    <motion.button
-                                        whileHover={{
-                                            scale: 1.01,
-                                            y: -1,
-                                            boxShadow: "0 8px 25px rgba(0,0,0,0.15)"
-                                        }}
-                                        whileTap={{ scale: 0.99 }}
-                                        onClick={option.action}
-                                        className={`
-                                            w-full group relative overflow-hidden rounded-2xl p-5 text-left
-                                            bg-gradient-to-r ${option.color} ${option.hoverColor}
-                                            transition-all duration-300 ease-out
-                                            shadow-lg ${option.shadowColor}
-                                            border border-white/20
-                                            h-20
-                                        `}
-                                    >
-                                        {/* Background Pattern */}
-                                        <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-
-                                        {/* Content */}
-                                        <div className="relative flex items-center gap-4 h-full">
-                                            {/* Icon Container */}
-                                            <motion.div
-                                                whileHover={{ rotate: 360 }}
-                                                transition={{ duration: 0.6, ease: "easeInOut" }}
-                                                className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm flex-shrink-0"
-                                            >
-                                                <option.icon className="text-2xl text-white" />
-                                            </motion.div>
-
-                                            {/* Text Content */}
-                                            <div className="flex-1 min-w-0">
-                                                <div className="flex items-center gap-2 mb-1">
-                                                    <h3 className="font-bold text-white text-lg truncate">
-                                                        {option.name}
-                                                    </h3>
-                                                    {copied && option.name === 'Copy Link' && (
-                                                        <motion.div
-                                                            initial={{ scale: 0 }}
-                                                            animate={{ scale: 1 }}
-                                                            className="w-5 h-5 bg-white rounded-full flex items-center justify-center flex-shrink-0"
-                                                        >
-                                                            <FaCheckCircle className="text-green-600 text-xs" />
-                                                        </motion.div>
-                                                    )}
-                                                </div>
-                                                <p className="text-white/80 text-sm font-medium truncate">
-                                                    {copied && option.name === 'Copy Link' ? 'Link copied successfully!' : option.description}
-                                                </p>
-                                            </div>
-
-                                            {/* Arrow Icon */}
-                                            <motion.div
-                                                initial={{ x: 0 }}
-                                                whileHover={{ x: 5 }}
-                                                className="text-white/60 group-hover:text-white transition-colors flex-shrink-0"
-                                            >
-                                                <FaExternalLinkAlt className="text-lg" />
-                                            </motion.div>
-                                        </div>
-
-                                        {/* Hover Effect */}
-                                        <motion.div
-                                            className="absolute inset-0 bg-white/5 rounded-2xl"
-                                            initial={{ scale: 0 }}
-                                            whileHover={{ scale: 1 }}
-                                            transition={{ duration: 0.3 }}
-                                        />
-                                    </motion.button>
-                                </motion.div>
-                            ))}
-                        </div>
-
-                        {/* URL Display */}
-                        <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.4 }}
-                            className="mt-6 p-4 bg-gray-50 rounded-2xl border border-gray-200"
-                        >
-                            <div className="flex items-center gap-2 mb-2">
-                                <FaLink className="text-[#00A55F] text-sm" />
-                                <span className="text-sm font-semibold text-gray-700">Share this link:</span>
-                            </div>
-                            <div className="relative">
-                                <p className="text-sm text-gray-600 break-all font-mono bg-white p-2 rounded-lg border">
-                                    {shareData.url}
-                                </p>
-                                <motion.button
-                                    whileHover={{ scale: 1.05 }}
-                                    whileTap={{ scale: 0.95 }}
-                                    onClick={() => {
-                                        navigator.clipboard.writeText(shareData.url);
-                                        toast.success('URL copied!');
-                                    }}
-                                    className="absolute top-2 right-2 p-1 bg-[#00A55F] text-white rounded hover:bg-[#008c4f] transition-colors"
-                                    title="Copy URL"
-                                >
-                                    <FaLink className="text-xs" />
-                                </motion.button>
-                            </div>
-                        </motion.div>
-
-                        {/* Footer */}
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            transition={{ delay: 0.5 }}
-                            className="mt-4 text-center"
-                        >
-                            <p className="text-xs text-gray-500">
-                                Share this amazing opportunity with your network!
-                            </p>
-                        </motion.div>
-                    </div>
-                </motion.div>
-            </motion.div>
-        </AnimatePresence>
-    );
-};
+import ShareMenu from '@/components/ui/ShareMenu';
+import fallbackLogo from '@/assets/images/Stage222RecuiterLogo.png';
 
 const InternshipDetail = () => {
     const { id } = useParams();
     const navigate = useNavigate();
+    const location = useLocation();
     const { user, isAuthenticated } = useAuth();
     const [internship, setInternship] = useState(null);
     const [organization, setOrganization] = useState(null);
@@ -310,6 +71,42 @@ const InternshipDetail = () => {
     const [lastUpdated, setLastUpdated] = useState(null);
     const applyButtonRef = useRef(null);
     const [applyModalOpen, setApplyModalOpen] = useState(false);
+
+    // --- Candidate Redirect Logic ---
+    // If user is a candidate and on the public route, redirect to candidate route
+    useEffect(() => {
+        if (
+            user &&
+            user.role === 'candidate' &&
+            location.pathname === `/internships/${id}`
+        ) {
+            navigate(`/candidate/internships/${id}`, { replace: true });
+        }
+    }, [user, id, location.pathname, navigate]);
+
+    // Show a loading spinner if redirecting
+    if (
+        user &&
+        user.role === 'candidate' &&
+        location.pathname === `/internships/${id}`
+    ) {
+        return (
+            <div className="flex items-center justify-center min-h-[40vh]">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-[#00A55F]" />
+                <span className="ml-4 text-[#00A55F] font-semibold text-lg">Redirecting to candidate view...</span>
+            </div>
+        );
+    }
+
+    // Determine the correct back navigation path based on the current route
+    const getBackPath = () => {
+        // If we're on a candidate route, go back to candidate internships
+        if (location.pathname.startsWith('/candidate/')) {
+            return '/candidate/internships';
+        }
+        // Otherwise, go back to general internships
+        return '/internships';
+    };
 
     const fetchInternship = async () => {
         setLoading(true);
@@ -677,7 +474,7 @@ const InternshipDetail = () => {
                         <h2 className="text-xl font-semibold text-gray-900 mb-2">Internship Not Found</h2>
                         <p className="text-gray-600 mb-6">{error || 'The internship you are looking for does not exist.'}</p>
                         <button
-                            onClick={() => navigate('/internships')}
+                            onClick={() => navigate(getBackPath())}
                             className="inline-flex items-center gap-2 px-4 py-2 bg-[#00A55F] text-white rounded-lg hover:bg-[#008c4f] transition-colors"
                         >
                             <FaArrowLeft />
@@ -707,7 +504,7 @@ const InternshipDetail = () => {
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-4">
                             <button
-                                onClick={() => navigate('/internships')}
+                                onClick={() => navigate(getBackPath())}
                                 className="p-2 hover:bg-gray-100 rounded-full transition-colors"
                             >
                                 <FaArrowLeft className="text-gray-600" />
@@ -1803,8 +1600,6 @@ const InternshipDetail = () => {
                                 </div>
                             </div>
                         </motion.div>
-
-
 
                         {/* Call to Action */}
                         <motion.div
