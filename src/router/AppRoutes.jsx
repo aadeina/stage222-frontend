@@ -347,6 +347,16 @@ const AppRoutes = () => {
                         }
                     />
                     <Route
+                        path="/recruiter/internships/:id"
+                        element={
+                            <ProtectedRoute>
+                                <PageWrapper>
+                                    <InternshipDetail />
+                                </PageWrapper>
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
                         path="/candidate/onboarding"
                         element={
                             <ProtectedRoute>

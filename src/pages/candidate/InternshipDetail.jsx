@@ -72,30 +72,34 @@ const InternshipDetail = () => {
     const applyButtonRef = useRef(null);
     const [applyModalOpen, setApplyModalOpen] = useState(false);
 
-    // --- Candidate Redirect Logic ---
-    // If user is a candidate and on the public route, redirect to candidate route
+    // --- Role-based Redirect Logic ---
+    // If user is logged in and on the public route, redirect to their role-specific route
     useEffect(() => {
-        if (
-            user &&
-            user.role === 'candidate' &&
-            location.pathname === `/internships/${id}`
-        ) {
-            navigate(`/candidate/internships/${id}`, { replace: true });
+        if (user && location.pathname === `/internships/${id}`) {
+            if (user.role === 'candidate') {
+                navigate(`/candidate/internships/${id}`, { replace: true });
+            } else if (user.role === 'recruiter') {
+                navigate(`/recruiter/internships/${id}`, { replace: true });
+            }
         }
     }, [user, id, location.pathname, navigate]);
 
     // Show a loading spinner if redirecting
-    if (
-        user &&
-        user.role === 'candidate' &&
-        location.pathname === `/internships/${id}`
-    ) {
-        return (
-            <div className="flex items-center justify-center min-h-[40vh]">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-[#00A55F]" />
-                <span className="ml-4 text-[#00A55F] font-semibold text-lg">Redirecting to candidate view...</span>
-            </div>
-        );
+    if (user && location.pathname === `/internships/${id}`) {
+        const isRedirecting = user.role === 'candidate' || user.role === 'recruiter';
+        if (isRedirecting) {
+            const roleText = user.role === 'candidate' ? 'candidate' : 'recruiter';
+            const color = user.role === 'candidate' ? '[#00A55F]' : '[#3B82F6]';
+
+            return (
+                <div className="flex items-center justify-center min-h-[40vh]">
+                    <div className={`animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-${color}`} />
+                    <span className={`ml-4 text-${color} font-semibold text-lg`}>
+                        Redirecting to {roleText} view...
+                    </span>
+                </div>
+            );
+        }
     }
 
     // Determine the correct back navigation path based on the current route
@@ -103,6 +107,10 @@ const InternshipDetail = () => {
         // If we're on a candidate route, go back to candidate internships
         if (location.pathname.startsWith('/candidate/')) {
             return '/candidate/internships';
+        }
+        // If we're on a recruiter route, go back to recruiter dashboard
+        if (location.pathname.startsWith('/recruiter/')) {
+            return '/recruiter/dashboard';
         }
         // Otherwise, go back to general internships
         return '/internships';
