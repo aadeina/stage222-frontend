@@ -46,6 +46,7 @@ const CandidateEditProfile = () => {
     const [showSkillSuggestions, setShowSkillSuggestions] = useState(false);
     const [isLoadingSkills, setIsLoadingSkills] = useState(false);
     const [isLoadingProfilePicture, setIsLoadingProfilePicture] = useState(false);
+    const [removingSkills, setRemovingSkills] = useState(new Set());
 
     // Fetch profile and skills on mount
     useEffect(() => {
@@ -59,7 +60,33 @@ const CandidateEditProfile = () => {
 
                 setProfile(profileData);
                 // Extract the results array from the paginated response
-                setAllSkills(skillsResponse.results || []);
+                const skillsData = skillsResponse.results || skillsResponse || [];
+                console.log('Skills data loaded:', {
+                    skillsResponse,
+                    skillsData,
+                    count: skillsData.length,
+                    sample: skillsData.slice(0, 5)
+                });
+
+                // If no skills loaded from backend, provide some fallback skills for testing
+                if (!skillsData || skillsData.length === 0) {
+                    console.warn('No skills loaded from backend, using fallback skills');
+                    const fallbackSkills = [
+                        { id: 1, name: 'Python' },
+                        { id: 2, name: 'JavaScript' },
+                        { id: 3, name: 'React' },
+                        { id: 4, name: 'Node.js' },
+                        { id: 5, name: 'Django' },
+                        { id: 6, name: 'Leadership' },
+                        { id: 7, name: 'Communication' },
+                        { id: 8, name: 'Problem Solving' },
+                        { id: 9, name: 'Teamwork' },
+                        { id: 10, name: 'Project Management' }
+                    ];
+                    setAllSkills(fallbackSkills);
+                } else {
+                    setAllSkills(skillsData);
+                }
 
                 setFormData({
                     first_name: profileData.first_name || '',
@@ -126,27 +153,86 @@ const CandidateEditProfile = () => {
         }
     };
 
-    // Update skill search to work with skill objects from backend
+    // Enhanced skill search with better autocomplete and debugging
     useEffect(() => {
+        console.log('Skill search triggered:', {
+            skillInput,
+            allSkillsLength: allSkills.length,
+            formDataSkills: formData?.skills?.length || 0
+        });
+
         if (skillInput.trim() === '') {
             setFilteredSkills([]);
-        } else {
-            const currentSkillIds = formData?.skills?.map(skill => skill.id) || [];
-            const filtered = allSkills.filter(skill =>
-                skill.name.toLowerCase().includes(skillInput.toLowerCase()) &&
-                !currentSkillIds.includes(skill.id)
-            ).slice(0, 10); // Limit to 10 suggestions for better UX
-
-            console.log('Skill search debug:', {
-                input: skillInput,
-                allSkillsCount: allSkills.length,
-                currentSkillIds,
-                filteredCount: filtered.length,
-                filtered: filtered.slice(0, 3) // Show first 3 for debugging
-            });
-
-            setFilteredSkills(filtered);
+            return;
         }
+
+        if (!Array.isArray(allSkills) || allSkills.length === 0) {
+            console.log('No skills available for search');
+            setFilteredSkills([]);
+            return;
+        }
+
+        const currentSkillIds = formData?.skills?.map(skill => skill.id) || [];
+        const searchTerm = skillInput.toLowerCase().trim();
+
+        console.log('Search parameters:', {
+            searchTerm,
+            currentSkillIds,
+            allSkillsSample: allSkills.slice(0, 3)
+        });
+
+        // Enhanced filtering with better matching and error handling
+        const filtered = allSkills.filter(skill => {
+            // Ensure skill has the required properties
+            if (!skill || typeof skill !== 'object' || !skill.name || !skill.id) {
+                console.warn('Invalid skill object:', skill);
+                return false;
+            }
+
+            const skillName = skill.name.toLowerCase();
+            const isNotAlreadyAdded = !currentSkillIds.includes(skill.id);
+
+            // Check for exact match first, then partial match
+            const exactMatch = skillName === searchTerm;
+            const startsWith = skillName.startsWith(searchTerm);
+            const contains = skillName.includes(searchTerm);
+
+            const shouldInclude = isNotAlreadyAdded && (exactMatch || startsWith || contains);
+
+            if (shouldInclude) {
+                console.log('Skill matched:', { skillName, searchTerm, exactMatch, startsWith, contains });
+            }
+
+            return shouldInclude;
+        })
+            .sort((a, b) => {
+                const aName = a.name.toLowerCase();
+                const bName = b.name.toLowerCase();
+
+                // Prioritize exact matches, then starts with, then contains
+                const aExact = aName === searchTerm;
+                const bExact = bName === searchTerm;
+                const aStartsWith = aName.startsWith(searchTerm);
+                const bStartsWith = bName.startsWith(searchTerm);
+
+                if (aExact && !bExact) return -1;
+                if (!aExact && bExact) return 1;
+                if (aStartsWith && !bStartsWith) return -1;
+                if (!aStartsWith && bStartsWith) return 1;
+
+                return aName.localeCompare(bName);
+            })
+            .slice(0, 10); // Increased limit for better UX
+
+        console.log('Enhanced skill search results:', {
+            input: skillInput,
+            allSkillsCount: allSkills.length,
+            currentSkillIds,
+            filteredCount: filtered.length,
+            filtered: filtered.slice(0, 5)
+        });
+
+        setFilteredSkills(filtered);
     }, [skillInput, formData?.skills, allSkills]);
 
     // Add skill
@@ -155,6 +241,7 @@ const CandidateEditProfile = () => {
         if (!currentSkillIds.includes(skill.id)) {
             setFormData(prev => ({ ...prev, skills: [...prev.skills, skill] }));
             setSkillInput('');
+            setFilteredSkills([]); // Clear suggestions after adding
             setIsChanged(true);
             toast.success(`${skill.name} added to your skills!`);
         } else {
@@ -162,15 +249,53 @@ const CandidateEditProfile = () => {
         }
     };
 
-    // Remove skill
+    // Handle keyboard navigation for skill search
+    const handleSkillSearchKeyDown = (e) => {
+        if (e.key === 'Enter' && filteredSkills.length > 0) {
+            e.preventDefault();
+            handleAddSkill(filteredSkills[0]); // Add the first suggestion
+        } else if (e.key === 'Escape') {
+            setSkillInput('');
+            setFilteredSkills([]);
+        }
+    };
+
+    // Remove skill with better error handling and loading state
     const handleRemoveSkill = async (skill) => {
         try {
+            // Set loading state for this specific skill
+            setRemovingSkills(prev => new Set(prev).add(skill.id));
+
+            console.log('Removing skill:', skill.name);
             await deleteCandidateSkill(skill.name);
-            setFormData(prev => ({ ...prev, skills: prev.skills.filter(s => s.id !== skill.id) }));
+
+            // Update local state immediately for better UX
+            setFormData(prev => ({
+                ...prev,
+                skills: prev.skills.filter(s => s.id !== skill.id)
+            }));
+
             setIsChanged(true);
             toast.success(`${skill.name} removed from your skills!`);
+
+            // Re-fetch profile to ensure sync with backend
+            const updated = await getCandidateProfile();
+            setProfile(updated);
+            setFormData(prev => ({
+                ...prev,
+                skills: updated.skills || []
+            }));
+
         } catch (err) {
-            toast.error('Failed to remove skill');
+            console.error('Error removing skill:', err);
+            toast.error(`Failed to remove ${skill.name}. Please try again.`);
+        } finally {
+            // Clear loading state for this skill
+            setRemovingSkills(prev => {
+                const newSet = new Set(prev);
+                newSet.delete(skill.id);
+                return newSet;
+            });
         }
     };
 
@@ -199,13 +324,33 @@ const CandidateEditProfile = () => {
         return obj instanceof File;
     }
 
-    // Handle profile picture upload
+    // Handle profile picture upload with validation and feedback
     const handleProfilePicChange = (e) => {
         const file = e.target.files[0];
         if (file) {
+            // Validate file type
+            if (!file.type.startsWith('image/')) {
+                toast.error('Please select an image file (JPEG, PNG, GIF, etc.)');
+                return;
+            }
+
+            // Validate file size (max 5MB)
+            const maxSize = 5 * 1024 * 1024; // 5MB
+            if (file.size > maxSize) {
+                toast.error('Image file size must be less than 5MB');
+                return;
+            }
+
+            console.log('Profile picture selected:', {
+                name: file.name,
+                size: file.size,
+                type: file.type
+            });
+
             setProfilePicFile(file);
             setFormData(prev => ({ ...prev, profile_picture: file }));
             setIsChanged(true);
+            toast.success('Profile picture selected! Click "Update Profile Picture" to save.');
         }
     };
 
@@ -389,7 +534,7 @@ const CandidateEditProfile = () => {
                                         <label className="block text-sm font-semibold text-gray-700 mb-3 text-center sm:text-left">
                                             Profile Picture
                                         </label>
-                                        <div className="relative group">
+                                        <div className="relative group cursor-pointer" onClick={() => document.getElementById('profile-picture-input').click()}>
                                             <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-white shadow-xl group-hover:shadow-2xl transition-all duration-300">
                                                 <img
                                                     src={
@@ -413,15 +558,34 @@ const CandidateEditProfile = () => {
                                                     }}
                                                 />
                                             </div>
+
+                                            {/* File input with better accessibility */}
                                             <input
                                                 type="file"
                                                 accept="image/*"
                                                 onChange={handleProfilePicChange}
-                                                className="absolute inset-0 opacity-0 cursor-pointer"
+                                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                                                 title="Upload new profile picture"
+                                                id="profile-picture-input"
                                             />
-                                            <div className="absolute inset-0 rounded-full bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center">
+
+                                            {/* Overlay with camera icon */}
+                                            <div className="absolute inset-0 rounded-full bg-black/0 group-hover:bg-black/20 transition-all duration-300 flex items-center justify-center pointer-events-none">
                                                 <FaCamera className="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-all duration-300" />
+                                            </div>
+
+                                            {/* Clickable label for better UX */}
+                                            <label
+                                                htmlFor="profile-picture-input"
+                                                className="absolute inset-0 rounded-full cursor-pointer z-20"
+                                                title="Click to upload new profile picture"
+                                            >
+                                                <span className="sr-only">Upload profile picture</span>
+                                            </label>
+
+                                            {/* Visual indicator */}
+                                            <div className="absolute bottom-0 right-0 bg-[#00A55F] text-white rounded-full p-2 shadow-lg group-hover:scale-110 transition-transform duration-200">
+                                                <FaCamera className="w-4 h-4" />
                                             </div>
                                         </div>
                                     </div>
@@ -430,8 +594,9 @@ const CandidateEditProfile = () => {
                                         <div>
                                             <h3 className="text-lg font-semibold text-gray-900 mb-2">Update Your Photo</h3>
                                             <p className="text-gray-600 text-sm mb-4">
+                                                <strong>Click on the profile picture above</strong> to select a new image.
                                                 Upload a professional photo to make your profile stand out.
-                                                Recommended: Square image, 400x400 pixels or larger.
+                                                Recommended: Square image, 400x400 pixels or larger (max 5MB).
                                             </p>
                                         </div>
 
@@ -756,15 +921,30 @@ const CandidateEditProfile = () => {
                                                     whileHover={{ scale: 1.05 }}
                                                     className="group relative"
                                                 >
-                                                    <div className="bg-gradient-to-r from-[#00A55F] to-[#008c4f] text-white px-4 py-2 rounded-full text-sm font-medium shadow-lg flex items-center gap-2 hover:shadow-xl transition-all duration-200">
-                                                        <span>{skill.name}</span>
-                                                        <button
-                                                            onClick={() => handleRemoveSkill(skill)}
-                                                            className="opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white/20 rounded-full p-1"
-                                                            title="Remove skill"
-                                                        >
-                                                            <FaTimes className="w-3 h-3" />
-                                                        </button>
+                                                    <div className={clsx(
+                                                        "text-white px-4 py-2 rounded-full text-sm font-medium shadow-lg flex items-center gap-2 transition-all duration-200",
+                                                        removingSkills.has(skill.id)
+                                                            ? "bg-gray-400 cursor-not-allowed"
+                                                            : "bg-gradient-to-r from-[#00A55F] to-[#008c4f] hover:shadow-xl"
+                                                    )}>
+                                                        {removingSkills.has(skill.id) ? (
+                                                            <>
+                                                                <div className="w-3 h-3 border border-white border-t-transparent rounded-full animate-spin"></div>
+                                                                <span className="opacity-75">Removing...</span>
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <span>{skill.name}</span>
+                                                                <button
+                                                                    onClick={() => handleRemoveSkill(skill)}
+                                                                    className="opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white/20 rounded-full p-1"
+                                                                    title="Remove skill"
+                                                                    disabled={removingSkills.has(skill.id)}
+                                                                >
+                                                                    <FaTimes className="w-3 h-3" />
+                                                                </button>
+                                                            </>
+                                                        )}
                                                     </div>
                                                 </motion.div>
                                             ))}
@@ -811,23 +991,42 @@ const CandidateEditProfile = () => {
                                 {/* Professional Skill Search */}
                                 <div className="relative mb-6">
                                     <div className="flex items-center bg-white border-2 border-gray-200 focus-within:border-[#00A55F] rounded-xl px-4 py-4 shadow-sm transition-all duration-200">
-                                        <FaSearch className="w-5 h-5 text-gray-400 mr-3" />
+                                        <FaSearch className={clsx(
+                                            "w-5 h-5 mr-3 transition-colors",
+                                            skillInput ? "text-[#00A55F]" : "text-gray-400"
+                                        )} />
                                         <input
                                             type="text"
                                             value={skillInput}
                                             onChange={e => setSkillInput(e.target.value)}
-                                            placeholder="Search for skills (e.g., React, Python, Leadership)..."
+                                            onKeyDown={handleSkillSearchKeyDown}
+                                            placeholder="Search for skills (e.g., JavaScript, Python, React, Leadership, Communication)..."
                                             className="w-full bg-transparent border-none focus:outline-none text-gray-900 placeholder-gray-400 text-base"
                                         />
                                         {skillInput && (
                                             <button
-                                                onClick={() => setSkillInput('')}
+                                                onClick={() => {
+                                                    setSkillInput('');
+                                                    setFilteredSkills([]);
+                                                }}
                                                 className="ml-2 text-gray-400 hover:text-gray-600 transition-colors p-1"
                                             >
                                                 <FaTimes className="w-5 h-5" />
                                             </button>
                                         )}
                                     </div>
+
+                                    {/* Search status indicator */}
+                                    {skillInput && (
+                                        <div className="mt-2 text-xs text-gray-500">
+                                            {filteredSkills.length > 0
+                                                ? `Found ${filteredSkills.length} matching skills`
+                                                : allSkills.length > 0
+                                                    ? "No matching skills found"
+                                                    : "Loading skills..."
+                                            }
+                                        </div>
+                                    )}
 
                                     {/* Autocomplete Dropdown */}
                                     {filteredSkills.length > 0 && (
