@@ -157,7 +157,7 @@ const CandidateHeader = () => {
                                 className="flex items-center space-x-2 p-2 sm:p-2.5 text-gray-700 hover:text-[#00A55F] hover:bg-gray-50 rounded-lg transition-colors"
                             >
                                 {/* Profile Picture - Show actual image or fallback */}
-                                <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-white shadow-sm">
+                                <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-white shadow-sm relative">
                                     {currentUser?.profile_picture ? (
                                         <img
                                             src={getMediaUrl(currentUser.profile_picture)}
@@ -172,12 +172,14 @@ const CandidateHeader = () => {
                                                     constructedUrl: getMediaUrl(currentUser.profile_picture),
                                                     error: e
                                                 });
+                                                // Hide the image and show fallback
                                                 e.target.style.display = 'none';
-                                                e.target.nextSibling.style.display = 'flex';
+                                                const fallback = e.target.parentElement.querySelector('.profile-fallback');
+                                                if (fallback) fallback.style.display = 'flex';
                                             }}
                                         />
                                     ) : null}
-                                    <div className={`w-full h-full bg-gradient-to-br from-[#00A55F] to-[#008c4f] flex items-center justify-center ${currentUser?.profile_picture ? 'hidden' : 'flex'}`}>
+                                    <div className={`w-full h-full bg-gradient-to-br from-[#00A55F] to-[#008c4f] flex items-center justify-center profile-fallback ${currentUser?.profile_picture ? 'hidden' : 'flex'}`}>
                                         <FaUser className="h-4 w-4 text-white" />
                                     </div>
                                 </div>
@@ -202,7 +204,7 @@ const CandidateHeader = () => {
                                             <div className="flex items-center justify-between">
                                                 <div className="flex items-center space-x-3">
                                                     {/* Profile Picture in Dropdown */}
-                                                    <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-white/30 shadow-sm">
+                                                    <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-white/30 shadow-sm relative">
                                                         {currentUser?.profile_picture ? (
                                                             <img
                                                                 src={getMediaUrl(currentUser.profile_picture)}
@@ -217,12 +219,14 @@ const CandidateHeader = () => {
                                                                         constructedUrl: getMediaUrl(currentUser.profile_picture),
                                                                         error: e
                                                                     });
+                                                                    // Hide the image and show fallback
                                                                     e.target.style.display = 'none';
-                                                                    e.target.nextSibling.style.display = 'flex';
+                                                                    const fallback = e.target.parentElement.querySelector('.dropdown-profile-fallback');
+                                                                    if (fallback) fallback.style.display = 'flex';
                                                                 }}
                                                             />
                                                         ) : null}
-                                                        <div className={`w-full h-full bg-white/20 flex items-center justify-center ${currentUser?.profile_picture ? 'hidden' : 'flex'}`}>
+                                                        <div className={`w-full h-full bg-white/20 flex items-center justify-center dropdown-profile-fallback ${currentUser?.profile_picture ? 'hidden' : 'flex'}`}>
                                                             <FaUser className="h-6 w-6" />
                                                         </div>
                                                     </div>
