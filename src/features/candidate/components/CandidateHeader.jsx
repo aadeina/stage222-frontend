@@ -86,6 +86,9 @@ const CandidateHeader = () => {
             case 'account':
                 navigate('/candidate/account');
                 break;
+            case 'edit-profile':
+                navigate('/candidate/edit-profile');
+                break;
             default:
                 break;
         }
@@ -225,6 +228,14 @@ const CandidateHeader = () => {
                                             >
                                                 <FaEdit className="h-5 w-5 text-purple-600 flex-shrink-0" />
                                                 <span className="font-medium">Edit Resume</span>
+                                            </button>
+
+                                            <button
+                                                onClick={() => handleProfileAction('edit-profile')}
+                                                className="w-full flex items-center space-x-3 px-3 sm:px-4 py-3 text-left text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+                                            >
+                                                <FaUserCog className="h-5 w-5 text-green-600 flex-shrink-0" />
+                                                <span className="font-medium">Edit Profile</span>
                                             </button>
 
                                             <button

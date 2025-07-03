@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../../context/AuthContext';
 import { FaBriefcase, FaSearch, FaBookmark, FaUser, FaExclamationTriangle, FaTimes, FaFileAlt, FaChevronLeft, FaChevronRight, FaStar, FaMapMarkerAlt, FaClock, FaMoneyBillWave } from 'react-icons/fa';
+import { getCandidateProfile } from '../api/candidateApi';
 
 const CandidateDashboard = () => {
     const navigate = useNavigate();
@@ -10,6 +11,10 @@ const CandidateDashboard = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [currentRecommendedSlide, setCurrentRecommendedSlide] = useState(0);
     const [currentTrendingSlide, setCurrentTrendingSlide] = useState(0);
+    const [profile, setProfile] = useState(null);
+    const [profileCompletion, setProfileCompletion] = useState(0);
+    const [showProfilePopup, setShowProfilePopup] = useState(false);
+    const [animatedPercent, setAnimatedPercent] = useState(0);
 
     // Mock user data for development
     const mockUser = {
@@ -199,6 +204,40 @@ const CandidateDashboard = () => {
     ];
 
     useEffect(() => {
+        // Fetch candidate profile from API
+        const fetchProfile = async () => {
+            try {
+                const data = await getCandidateProfile();
+                setProfile(data);
+                setProfileCompletion(calculateProfileCompletion(data));
+            } catch (err) {
+                // Fallback to mock user if API fails
+                setProfile(currentUser);
+                setProfileCompletion(calculateProfileCompletion(currentUser));
+            }
+        };
+        fetchProfile();
+    }, []);
+
+    // Calculate profile completion percentage based on required fields
+    function calculateProfileCompletion(profile) {
+        if (!profile) return 0;
+        let completed = 0;
+        const total = 10; // Number of required fields
+        if (profile.first_name) completed++;
+        if (profile.last_name) completed++;
+        if (profile.phone) completed++;
+        if (profile.city) completed++;
+        if (profile.university) completed++;
+        if (profile.graduation_year) completed++;
+        if (profile.degree) completed++;
+        if (profile.profile_picture) completed++;
+        if (profile.resume) completed++;
+        if (Array.isArray(profile.skills) && profile.skills.length >= 3) completed++;
+        return Math.round((completed / total) * 100);
+    }
+
+    useEffect(() => {
         // Simulate loading
         setTimeout(() => {
             setIsLoading(false);
@@ -230,7 +269,26 @@ const CandidateDashboard = () => {
         );
     };
 
-
+    useEffect(() => {
+        // Animate the percentage from 0 to profileCompletion
+        let start = 0;
+        const duration = 800; // ms
+        const step = Math.max(1, Math.round(profileCompletion / 20));
+        if (profileCompletion > 0) {
+            const interval = setInterval(() => {
+                start += step;
+                if (start >= profileCompletion) {
+                    setAnimatedPercent(profileCompletion);
+                    clearInterval(interval);
+                } else {
+                    setAnimatedPercent(start);
+                }
+            }, duration / profileCompletion);
+            return () => clearInterval(interval);
+        } else {
+            setAnimatedPercent(0);
+        }
+    }, [profileCompletion]);
 
     if (isLoading) {
         return (
@@ -276,21 +334,52 @@ const CandidateDashboard = () => {
                         </div>
                     </motion.div>
 
+                    {/* Profile Completion Card - Pro UI */}
                     <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.2 }}
-                        className="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
+                        initial={{ opacity: 0, scale: 0.8, y: 30 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        whileHover={{ scale: 1.04, boxShadow: '0 8px 32px rgba(0,165,95,0.12)' }}
+                        transition={{ type: 'spring', stiffness: 300, damping: 20, delay: 0.2 }}
+                        className="relative bg-gradient-to-br from-green-100 via-white to-green-50 rounded-xl shadow-sm border border-green-200 p-6 overflow-hidden cursor-pointer"
+                        onMouseEnter={() => setShowProfilePopup(true)}
+                        onMouseLeave={() => setShowProfilePopup(false)}
                     >
-                        <div className="flex items-center justify-between">
+                        {/* Decorative background circle */}
+                        <div className="absolute -top-6 -right-6 w-20 h-20 bg-green-200 opacity-30 rounded-full z-0"></div>
+                        <div className="flex items-center justify-between relative z-10">
                             <div>
-                                <p className="text-sm font-medium text-gray-600">Interviews</p>
-                                <p className="text-2xl font-bold text-gray-900">{mockStats.interviews}</p>
+                                <p className="text-sm font-medium text-green-700">Profile Completion</p>
+                                <motion.p
+                                    initial={{ scale: 0.8 }}
+                                    animate={{ scale: 1 }}
+                                    transition={{ type: 'spring', stiffness: 300, damping: 15, delay: 0.3 }}
+                                    className="text-2xl font-bold text-green-900"
+                                >
+                                    {animatedPercent}%
+                                </motion.p>
                             </div>
-                            <div className="p-3 bg-green-100 rounded-lg">
-                                <FaUser className="h-6 w-6 text-green-600" />
+                            <div className="p-3 bg-green-200 rounded-lg">
+                                <FaStar className="h-6 w-6 text-green-700" />
                             </div>
                         </div>
+                        {/* Pro-style popup on hover */}
+                        <AnimatePresence>
+                            {showProfilePopup && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: 10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: 10 }}
+                                    transition={{ duration: 0.2 }}
+                                    className="absolute left-1/2 -translate-x-1/2 top-full mt-2 w-64 bg-white border border-green-200 shadow-lg rounded-lg p-4 z-20"
+                                >
+                                    <p className="text-green-800 font-semibold mb-1">Complete your profile to increase your chances of getting hired!</p>
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-green-700 font-bold text-lg">{profileCompletion}%</span>
+                                        <span className="text-xs text-gray-500">completed</span>
+                                    </div>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
                     </motion.div>
 
                     <motion.div
@@ -329,61 +418,7 @@ const CandidateDashboard = () => {
                 </div>
 
                 {/* Quick Actions - Responsive grid, stack on mobile */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.1 }}
-                        className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow cursor-pointer"
-                        onClick={() => navigate('/internships')}
-                    >
-                        <div className="flex items-center space-x-4">
-                            <div className="p-3 bg-blue-100 rounded-lg">
-                                <FaSearch className="h-6 w-6 text-blue-600" />
-                            </div>
-                            <div>
-                                <h3 className="text-lg font-semibold text-gray-900">Find Internships</h3>
-                                <p className="text-gray-600">Browse available opportunities</p>
-                            </div>
-                        </div>
-                    </motion.div>
-
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.2 }}
-                        className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow cursor-pointer"
-                        onClick={() => navigate('/jobs')}
-                    >
-                        <div className="flex items-center space-x-4">
-                            <div className="p-3 bg-green-100 rounded-lg">
-                                <FaBriefcase className="h-6 w-6 text-green-600" />
-                            </div>
-                            <div>
-                                <h3 className="text-lg font-semibold text-gray-900">Find Jobs</h3>
-                                <p className="text-gray-600">Explore job opportunities</p>
-                            </div>
-                        </div>
-                    </motion.div>
-
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.3 }}
-                        className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow cursor-pointer"
-                        onClick={() => navigate('/profile')}
-                    >
-                        <div className="flex items-center space-x-4">
-                            <div className="p-3 bg-purple-100 rounded-lg">
-                                <FaUser className="h-6 w-6 text-purple-600" />
-                            </div>
-                            <div>
-                                <h3 className="text-lg font-semibold text-gray-900">My Profile</h3>
-                                <p className="text-gray-600">Manage your profile</p>
-                            </div>
-                        </div>
-                    </motion.div>
-                </div>
+                {/* The quick action cards for 'Find Internships', 'Find Jobs', and 'My Profile' have been removed as requested. */}
 
                 {/* Recent Applications - Responsive, ensure no overflow */}
                 <motion.div

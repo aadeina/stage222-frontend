@@ -8,7 +8,7 @@ export const getCandidateProfile = async () => {
 
 // Update candidate profile
 export const updateCandidateProfile = async (profileData) => {
-    const response = await api.put('/candidates/me/', profileData);
+    const response = await api.put('/candidates/me/update/', profileData);
     return response.data;
 };
 
@@ -43,5 +43,31 @@ export const applyToInternship = async (internshipId, applicationData) => {
 // Bookmark/unbookmark internship
 export const toggleBookmark = async (internshipId) => {
     const response = await api.post(`/internships/${internshipId}/bookmark/`);
+    return response.data;
+};
+
+// Update candidate resume
+export const updateCandidateResume = async (resumeFile) => {
+    const formData = new FormData();
+    formData.append('resume', resumeFile);
+    const response = await api.post('/candidates/me/resume/', formData);
+    return response.data;
+};
+
+// Fetch all skills for autocomplete
+export const getAllSkills = async () => {
+    const response = await api.get('/candidates/skills/');
+    return response.data;
+};
+
+// Update candidate skills
+export const updateCandidateSkills = async (skillIds) => {
+    const response = await api.post('/candidates/me/skills/', { skills: skillIds });
+    return response.data;
+};
+
+// Delete a skill by name
+export const deleteCandidateSkill = async (skillName) => {
+    const response = await api.delete(`/candidates/me/skills/${encodeURIComponent(skillName)}/`);
     return response.data;
 };
