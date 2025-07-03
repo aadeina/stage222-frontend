@@ -25,6 +25,7 @@ import {
 import { useAuth } from '../../../context/AuthContext';
 import toast from 'react-hot-toast';
 import logo from '../../../assets/images/MainStage222Logo.png';
+import getMediaUrl from '../../../utils/mediaUrl';
 
 // CandidateHeader.jsx
 // Professional header component for candidate pages
@@ -155,11 +156,33 @@ const CandidateHeader = () => {
                                 onClick={() => setIsProfileOpen(!isProfileOpen)}
                                 className="flex items-center space-x-2 p-2 sm:p-2.5 text-gray-700 hover:text-[#00A55F] hover:bg-gray-50 rounded-lg transition-colors"
                             >
-                                <div className="w-8 h-8 bg-gradient-to-br from-[#00A55F] to-[#008c4f] rounded-full flex items-center justify-center">
-                                    <FaUser className="h-4 w-4 text-white" />
+                                {/* Profile Picture - Show actual image or fallback */}
+                                <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-white shadow-sm">
+                                    {currentUser?.profile_picture ? (
+                                        <img
+                                            src={getMediaUrl(currentUser.profile_picture)}
+                                            alt={`${currentUser?.first_name || 'User'} profile`}
+                                            className="w-full h-full object-cover"
+                                            onLoad={() => {
+                                                console.log('Profile picture loaded successfully:', currentUser.profile_picture);
+                                            }}
+                                            onError={(e) => {
+                                                console.log('Profile picture failed to load:', {
+                                                    originalPath: currentUser.profile_picture,
+                                                    constructedUrl: getMediaUrl(currentUser.profile_picture),
+                                                    error: e
+                                                });
+                                                e.target.style.display = 'none';
+                                                e.target.nextSibling.style.display = 'flex';
+                                            }}
+                                        />
+                                    ) : null}
+                                    <div className={`w-full h-full bg-gradient-to-br from-[#00A55F] to-[#008c4f] flex items-center justify-center ${currentUser?.profile_picture ? 'hidden' : 'flex'}`}>
+                                        <FaUser className="h-4 w-4 text-white" />
+                                    </div>
                                 </div>
                                 <span className="hidden sm:block text-sm font-medium">
-                                    {currentUser?.first_name || 'Candidate'}
+                                    {currentUser?.first_name ? `${currentUser.first_name} ${currentUser.last_name || ''}`.trim() : 'Candidate'}
                                 </span>
                                 <FaChevronDown className={`h-3 w-3 transition-transform ${isProfileOpen ? 'rotate-180' : ''}`} />
                             </motion.button>
@@ -178,11 +201,35 @@ const CandidateHeader = () => {
                                         <div className="bg-gradient-to-r from-[#00A55F] to-[#008c4f] p-4 sm:p-6 text-white">
                                             <div className="flex items-center justify-between">
                                                 <div className="flex items-center space-x-3">
-                                                    <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
-                                                        <FaUser className="h-6 w-6" />
+                                                    {/* Profile Picture in Dropdown */}
+                                                    <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-white/30 shadow-sm">
+                                                        {currentUser?.profile_picture ? (
+                                                            <img
+                                                                src={getMediaUrl(currentUser.profile_picture)}
+                                                                alt={`${currentUser?.first_name || 'User'} profile`}
+                                                                className="w-full h-full object-cover"
+                                                                onLoad={() => {
+                                                                    console.log('Dropdown profile picture loaded successfully:', currentUser.profile_picture);
+                                                                }}
+                                                                onError={(e) => {
+                                                                    console.log('Dropdown profile picture failed to load:', {
+                                                                        originalPath: currentUser.profile_picture,
+                                                                        constructedUrl: getMediaUrl(currentUser.profile_picture),
+                                                                        error: e
+                                                                    });
+                                                                    e.target.style.display = 'none';
+                                                                    e.target.nextSibling.style.display = 'flex';
+                                                                }}
+                                                            />
+                                                        ) : null}
+                                                        <div className={`w-full h-full bg-white/20 flex items-center justify-center ${currentUser?.profile_picture ? 'hidden' : 'flex'}`}>
+                                                            <FaUser className="h-6 w-6" />
+                                                        </div>
                                                     </div>
                                                     <div className="min-w-0">
-                                                        <h3 className="font-semibold text-lg truncate">{currentUser?.first_name || 'Candidate'} {currentUser?.last_name || ''}</h3>
+                                                        <h3 className="font-semibold text-lg truncate">
+                                                            {currentUser?.first_name ? `${currentUser.first_name} ${currentUser.last_name || ''}`.trim() : 'Candidate'}
+                                                        </h3>
                                                         <p className="text-white/80 text-sm truncate">{currentUser?.email || ''}</p>
                                                     </div>
                                                 </div>

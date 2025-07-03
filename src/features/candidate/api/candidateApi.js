@@ -66,6 +66,14 @@ export const updateCandidateSkills = async (skillIds) => {
     return response.data;
 };
 
+// Update candidate profile picture
+export const updateCandidateProfilePicture = async (profilePictureFile) => {
+    const formData = new FormData();
+    formData.append('profile_picture', profilePictureFile);
+    const response = await api.post('/candidates/me/profile-picture/', formData);
+    return response.data;
+};
+
 // Delete a skill by name
 export const deleteCandidateSkill = async (skillName) => {
     const response = await api.delete(`/candidates/me/skills/${encodeURIComponent(skillName)}/`);

@@ -2,12 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
-import { getCandidateProfile, updateCandidateProfile, updateCandidateResume, updateCandidateSkills, getAllSkills, deleteCandidateSkill } from '../api/candidateApi';
+import { getCandidateProfile, updateCandidateProfile, updateCandidateResume, updateCandidateSkills, getAllSkills, deleteCandidateSkill, updateCandidateProfilePicture } from '../api/candidateApi';
 import SkillBadge from '@/components/ui/SkillBadge';
 import { FaUser, FaGraduationCap, FaMapMarkerAlt, FaPhone, FaUniversity, FaCalendarAlt, FaFileAlt, FaCamera, FaCheck, FaPlus, FaTimes, FaStar, FaSearch } from 'react-icons/fa';
 import stage222Logo from '@/assets/images/MainStage222Logo.png';
 import clsx from 'clsx';
 import { useAuth } from '../../../context/AuthContext';
+import getMediaUrl from '../../../utils/mediaUrl';
 
 
 
@@ -44,6 +45,7 @@ const CandidateEditProfile = () => {
     const { updateUser } = useAuth();
     const [showSkillSuggestions, setShowSkillSuggestions] = useState(false);
     const [isLoadingSkills, setIsLoadingSkills] = useState(false);
+    const [isLoadingProfilePicture, setIsLoadingProfilePicture] = useState(false);
 
     // Fetch profile and skills on mount
     useEffect(() => {
@@ -207,6 +209,53 @@ const CandidateEditProfile = () => {
         }
     };
 
+    // Handle profile picture update
+    const handleProfilePictureUpdate = async () => {
+        if (!profilePicFile) {
+            toast.error('Please select a profile picture first');
+            return;
+        }
+
+        try {
+            setIsLoadingProfilePicture(true);
+
+            // Upload the profile picture
+            await updateCandidateProfilePicture(profilePicFile);
+
+            // Wait a moment for the backend to process the upload
+            await new Promise(resolve => setTimeout(resolve, 1000));
+
+            // Re-fetch profile to get updated data with new image URL
+            const updated = await getCandidateProfile();
+            console.log('Updated profile data:', updated);
+
+            setProfile(updated);
+
+            // Update form data with the URL from backend, not the file object
+            setFormData(prev => ({
+                ...prev,
+                profile_picture: updated.profile_picture
+            }));
+
+            // Clear the file state since we now have the URL
+            setProfilePicFile(null);
+
+            console.log('Profile picture updated:', {
+                profilePicture: updated.profile_picture,
+                userContext: updated
+            });
+
+            toast.success('Profile picture updated successfully!');
+            setIsChanged(false);
+            updateUser(updated);
+        } catch (err) {
+            console.error('Profile picture update error:', err);
+            toast.error('Failed to update profile picture');
+        } finally {
+            setIsLoadingProfilePicture(false);
+        }
+    };
+
     // Handle form submit
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -306,17 +355,58 @@ const CandidateEditProfile = () => {
                 <form onSubmit={handleSubmit} className="space-y-8">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
                         {/* Profile Picture upload */}
-                        <div className="col-span-1 flex flex-col items-center gap-2">
+                        <div className="col-span-1 flex flex-col items-center gap-4">
                             <label className="block text-sm font-medium mb-1">Profile Picture</label>
                             <div className="relative group">
                                 <img
-                                    src={profilePicFile ? URL.createObjectURL(profilePicFile) : (typeof formData.profile_picture === 'string' && formData.profile_picture ? formData.profile_picture : stage222Logo)}
+                                    src={
+                                        profilePicFile
+                                            ? URL.createObjectURL(profilePicFile)
+                                            : (formData.profile_picture && typeof formData.profile_picture === 'string'
+                                                ? getMediaUrl(formData.profile_picture)
+                                                : stage222Logo)
+                                    }
                                     alt="Profile"
                                     className="w-24 h-24 rounded-full object-cover border-4 border-white shadow-lg group-hover:opacity-80 transition"
+                                    onLoad={() => {
+                                        console.log('Edit profile image loaded successfully:', formData.profile_picture);
+                                    }}
+                                    onError={(e) => {
+                                        console.log('Edit profile image failed to load:', {
+                                            profilePicture: formData.profile_picture,
+                                            constructedUrl: getMediaUrl(formData.profile_picture)
+                                        });
+                                        e.target.src = stage222Logo;
+                                    }}
                                 />
                                 <input type="file" accept="image/*" onChange={handleProfilePicChange} className="absolute inset-0 opacity-0 cursor-pointer" title="Upload new profile picture" />
                                 <span className="absolute bottom-0 right-0 bg-[#00A55F] text-white rounded-full p-1 shadow -mb-2 -mr-2 text-xs group-hover:scale-110 transition">Edit</span>
                             </div>
+
+                            {/* Profile Picture Update Button */}
+                            {profilePicFile && (
+                                <motion.button
+                                    type="button"
+                                    onClick={handleProfilePictureUpdate}
+                                    disabled={isLoadingProfilePicture}
+                                    className="w-full py-2 px-4 bg-gradient-to-r from-purple-500 to-purple-600 text-white font-semibold rounded-xl shadow hover:from-purple-600 hover:to-purple-700 transition disabled:opacity-50 text-sm flex items-center justify-center gap-2"
+                                    whileHover={{ scale: 1.02 }}
+                                    whileTap={{ scale: 0.98 }}
+                                >
+                                    {isLoadingProfilePicture ? (
+                                        <>
+                                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                            Updating...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <FaCamera className="w-4 h-4" />
+                                            Update Profile Picture
+                                        </>
+                                    )}
+                                </motion.button>
+                            )}
+
                             {errors.profile_picture && <div className="text-xs text-red-600 mt-1">{errors.profile_picture}</div>}
                         </div>
                         <div className="col-span-1 grid grid-cols-1 gap-4">
