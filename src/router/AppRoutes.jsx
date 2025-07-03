@@ -25,6 +25,7 @@ import RecruiterProfile from '@/features/recruiter/pages/RecruiterProfile';
 import ChangePassword from '../features/candidate/pages/ChangePassword';
 import RecruiterBilling from '@/features/recruiter/pages/RecruiterBilling';
 import CandidateDashboard from '@/features/candidate/pages/CandidateDashboard';
+import CandidateOnboarding from '@/features/candidate/pages/CandidateOnboarding';
 import EditOpportunity from '@/features/recruiter/pages/EditOpportunity';
 import Messages from '@/features/recruiter/pages/Messages';
 import CandidateMessages from '../features/candidate/pages/CandidateMessages';
@@ -327,6 +328,16 @@ const AppRoutes = () => {
                             <ProtectedRoute>
                                 <PageWrapper>
                                     <InternshipList />
+                                </PageWrapper>
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route
+                        path="/candidate/onboarding"
+                        element={
+                            <ProtectedRoute>
+                                <PageWrapper>
+                                    <CandidateOnboarding />
                                 </PageWrapper>
                             </ProtectedRoute>
                         }
