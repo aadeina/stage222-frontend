@@ -5,138 +5,271 @@
 // Uses Mauritanian mock data for now; ready for API integration
 // RESPONSIVE: Horizontal scroll on mobile, responsive text sizing
 
-import React from 'react';
-import { FaUserTie, FaFileAlt, FaCheckCircle, FaTimesCircle, FaHourglassHalf, FaCertificate, FaChevronRight, FaRegStar } from 'react-icons/fa';
-import { motion } from 'framer-motion';
-
-// Mauritanian mock data for applications
-const mockApplications = [
-    {
-        id: 1,
-        company: 'MauriTech',
-        logo: null,
-        profile: 'Full Stack & Data Engineering Internship',
-        appliedOn: '2024-06-01',
-        applicants: 128,
-        status: 'Hired',
-        certificate: true,
-    },
-    {
-        id: 2,
-        company: 'Nouakchott Digital',
-        logo: null,
-        profile: 'Business Analytics Internship',
-        appliedOn: '2024-05-20',
-        applicants: 87,
-        status: 'In Review',
-        certificate: false,
-    },
-    {
-        id: 3,
-        company: 'Chinguetti Bank',
-        logo: null,
-        profile: 'Finance & Accounting Internship',
-        appliedOn: '2024-05-10',
-        applicants: 54,
-        status: 'Rejected',
-        certificate: false,
-    },
-    {
-        id: 4,
-        company: 'Sahara Solutions',
-        logo: null,
-        profile: 'Community Management Internship',
-        appliedOn: '2024-04-28',
-        applicants: 102,
-        status: 'In Review',
-        certificate: false,
-    },
-];
+import React, { useEffect, useState } from 'react';
+import { FaUserTie, FaFileAlt, FaCheckCircle, FaTimesCircle, FaHourglassHalf, FaCertificate, FaChevronRight, FaRegStar, FaTimes } from 'react-icons/fa';
+import { motion, AnimatePresence } from 'framer-motion';
+import api from '../../../services/api';
 
 const statusColors = {
-    'Hired': 'bg-green-100 text-green-800',
-    'In Review': 'bg-yellow-100 text-yellow-800',
-    'Rejected': 'bg-red-100 text-red-800',
+    'accepted': 'bg-green-100 text-green-800',
+    'pending': 'bg-yellow-100 text-yellow-800',
+    'rejected': 'bg-red-100 text-red-800',
+};
+
+const ApplicationModal = ({ isOpen, onClose, application }) => {
+    if (!isOpen || !application) return null;
+    return (
+        <AnimatePresence>
+            <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40"
+                onClick={onClose}
+            >
+                <motion.div
+                    initial={{ scale: 0.95, y: 40 }}
+                    animate={{ scale: 1, y: 0 }}
+                    exit={{ scale: 0.95, y: 40 }}
+                    transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+                    className="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-8 relative"
+                    onClick={e => e.stopPropagation()}
+                >
+                    <button
+                        onClick={onClose}
+                        className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+                    >
+                        <FaTimes className="h-5 w-5" />
+                    </button>
+                    <div className="flex items-center gap-4 mb-6">
+                        <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[#00A55F] to-[#008c4f] flex items-center justify-center text-white font-bold text-2xl">
+                            {application.candidate_photo ? (
+                                <img src={application.candidate_photo.startsWith('http') ? application.candidate_photo : `${import.meta.env.VITE_MEDIA_BASE_URL}${application.candidate_photo}`} alt={application.candidate_name} className="w-14 h-14 rounded-full object-cover" />
+                            ) : (
+                                application.candidate_name?.[0] || 'C'
+                            )}
+                        </div>
+                        <div>
+                            <h2 className="text-xl font-bold text-gray-900 mb-1">{application.candidate_name}</h2>
+                            <p className="text-gray-600 text-sm">{application.candidate_email}</p>
+                        </div>
+                    </div>
+                    <div className="mb-4">
+                        <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${statusColors[application.status] || 'bg-gray-100 text-gray-700'}`}>{application.status}</span>
+                        <span className="ml-3 text-xs text-gray-500">Applied on {new Date(application.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: '2-digit' })}</span>
+                    </div>
+                    {/* Opportunity Button */}
+                    {application.opportunity && (
+                        <div className="mb-4 flex flex-col gap-2">
+                            <button
+                                className="w-full inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-[#00A55F] to-[#008c4f] text-white font-semibold shadow hover:from-[#008c4f] hover:to-[#00A55F] transition"
+                                onClick={() => window.open(`/internships/${application.opportunity.id}`, '_blank')}
+                            >
+                                View Opportunity (General)
+                                <FaChevronRight className="h-4 w-4" />
+                            </button>
+                            <button
+                                className="w-full inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-[#008c4f] to-[#00A55F] text-white font-semibold shadow hover:from-[#00A55F] hover:to-[#008c4f] transition border border-[#00A55F]"
+                                onClick={() => window.open(`/candidate/internships/${application.opportunity.id}`, '_blank')}
+                            >
+                                <FaUserTie className="h-4 w-4" />
+                                Show Opportunity
+                            </button>
+                        </div>
+                    )}
+                    {/* Screening Answers */}
+                    {application.screening_answers && Object.keys(application.screening_answers).length > 0 && (
+                        <div className="mb-4">
+                            <h3 className="font-semibold text-gray-800 mb-2">Screening Answers</h3>
+                            <div className="space-y-2">
+                                {Object.entries(application.screening_answers).map(([question, answer], idx) => (
+                                    <div key={idx} className="bg-gray-50 rounded-lg p-3">
+                                        <div className="text-xs text-gray-500 mb-1">{question}</div>
+                                        <div className="text-gray-700 text-sm">{answer || <span className="text-gray-400">No answer</span>}</div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                    {/* Resume */}
+                    {application.candidate_resume && (
+                        <div className="mb-4">
+                            <h3 className="font-semibold text-gray-800 mb-2">Resume</h3>
+                            <a
+                                href={application.candidate_resume.startsWith('http') ? application.candidate_resume : `${import.meta.env.VITE_MEDIA_BASE_URL}${application.candidate_resume}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-2 text-[#00A55F] hover:text-[#008c4f] text-sm font-medium underline"
+                            >
+                                <FaFileAlt className="h-4 w-4" /> View Resume
+                            </a>
+                        </div>
+                    )}
+                </motion.div>
+            </motion.div>
+        </AnimatePresence>
+    );
 };
 
 const CandidateApplications = () => {
-    return (
-        <div className="max-w-7xl mx-auto py-8 px-2 sm:px-6 lg:px-8">
-            {/* Header - Responsive layout */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
-                <div>
-                    <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">My Applications</h1>
-                    <p className="text-gray-500 text-sm">Track your internship and job applications in Mauritania.</p>
-                </div>
-                <button className="text-[#00A55F] hover:text-[#008c4f] text-sm font-medium flex items-center gap-1">
-                    View old applications <FaChevronRight className="h-4 w-4" />
-                </button>
-            </div>
+    const [applications, setApplications] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [selectedApp, setSelectedApp] = useState(null);
+    const [modalOpen, setModalOpen] = useState(false);
 
-            {/* Applications Table - Horizontal scroll on mobile */}
-            <div className="bg-white border rounded-xl shadow overflow-hidden">
-                <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-gray-50">
-                            <tr>
-                                <th className="px-4 sm:px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Company</th>
-                                <th className="px-4 sm:px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Profile</th>
-                                <th className="px-4 sm:px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Applied On</th>
-                                <th className="px-4 sm:px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Applicants</th>
-                                <th className="px-4 sm:px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
-                                <th className="px-4 sm:px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody className="bg-white divide-y divide-gray-100">
-                            {mockApplications.length === 0 ? (
+    useEffect(() => {
+        const fetchApplications = async () => {
+            try {
+                setLoading(true);
+                const response = await api.get('/applications/candidate/');
+                setApplications(response.data);
+            } catch (err) {
+                setError('Failed to load applications');
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchApplications();
+    }, []);
+
+    const openModal = (app) => {
+        setSelectedApp(app);
+        setModalOpen(true);
+    };
+    const closeModal = () => {
+        setModalOpen(false);
+        setSelectedApp(null);
+    };
+
+    return (
+        <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
+            <ApplicationModal isOpen={modalOpen} onClose={closeModal} application={selectedApp} />
+            <div className="max-w-7xl mx-auto py-8 px-2 sm:px-6 lg:px-8">
+                {/* Header - Responsive layout */}
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
+                    <div>
+                        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">My Applications</h1>
+                        <p className="text-gray-500 text-sm">Track your internship and job applications in Mauritania.</p>
+                    </div>
+                    <button className="text-[#00A55F] hover:text-[#008c4f] text-sm font-medium flex items-center gap-1">
+                        View old applications <FaChevronRight className="h-4 w-4" />
+                    </button>
+                </div>
+
+                {/* Applications Table - Horizontal scroll on mobile */}
+                <div className="bg-white border rounded-2xl shadow-xl overflow-hidden">
+                    <div className="overflow-x-auto">
+                        <table className="min-w-full divide-y divide-gray-200">
+                            <thead className="bg-gray-50">
                                 <tr>
-                                    <td colSpan={6} className="py-16 text-center text-gray-400">
-                                        <FaFileAlt className="mx-auto mb-2 text-4xl" />
-                                        <div>No applications found</div>
-                                    </td>
+                                    <th className="px-4 sm:px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Candidate</th>
+                                    <th className="px-4 sm:px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Email</th>
+                                    <th className="px-4 sm:px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Opportunity</th>
+                                    <th className="px-4 sm:px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Organization</th>
+                                    <th className="px-4 sm:px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Applied On</th>
+                                    <th className="px-4 sm:px-6 py-3 text-center text-xs font-bold text-gray-700 uppercase tracking-wider">Status</th>
+                                    <th className="px-4 sm:px-6 py-3 text-center text-xs font-bold text-gray-700 uppercase tracking-wider">Actions</th>
                                 </tr>
-                            ) : (
-                                mockApplications.map(app => (
-                                    <tr key={app.id} className="hover:bg-gray-50 transition">
-                                        <td className="px-4 sm:px-6 py-4 whitespace-nowrap flex items-center gap-3">
-                                            <div className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg bg-gradient-to-br from-[#00A55F] to-[#008c4f] text-white">
-                                                {app.logo ? <img src={app.logo} alt={app.company} className="w-10 h-10 rounded-full object-cover" /> : app.company[0]}
-                                            </div>
-                                            <span className="font-medium text-gray-900 truncate">{app.company}</span>
-                                        </td>
-                                        <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-gray-700">
-                                            <div className="max-w-xs truncate">{app.profile}</div>
-                                        </td>
-                                        <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-gray-600 text-sm">
-                                            {new Date(app.appliedOn).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: '2-digit' })}
-                                        </td>
-                                        <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-center text-gray-700">{app.applicants}</td>
-                                        <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-center">
-                                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColors[app.status]}`}>
-                                                {app.status === 'Hired' && <FaCheckCircle className="mr-1 h-4 w-4" />}
-                                                {app.status === 'Rejected' && <FaTimesCircle className="mr-1 h-4 w-4" />}
-                                                {app.status === 'In Review' && <FaHourglassHalf className="mr-1 h-4 w-4" />}
-                                                {app.status}
-                                            </span>
-                                        </td>
-                                        <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-center">
-                                            <div className="flex flex-col sm:flex-row items-center gap-2">
-                                                <button className="text-[#00A55F] hover:text-[#008c4f] text-xs font-medium">Review Application</button>
-                                                {app.status === 'Hired' && app.certificate && (
-                                                    <button className="inline-flex items-center text-xs text-blue-700 hover:underline font-medium">
-                                                        <FaCertificate className="mr-1 h-4 w-4" /> View certificate
-                                                    </button>
-                                                )}
-                                                <button className="inline-flex items-center text-xs text-yellow-700 hover:underline font-medium">
-                                                    <FaRegStar className="mr-1 h-4 w-4" /> Ace this internship
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))
-                            )}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody className="bg-white divide-y divide-gray-100">
+                                <AnimatePresence>
+                                    {applications.map((app, idx) => (
+                                        <motion.tr
+                                            key={app.id}
+                                            initial={{ opacity: 0, y: 20 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            exit={{ opacity: 0, y: 20 }}
+                                            transition={{ delay: idx * 0.05, type: 'spring', stiffness: 80, damping: 18 }}
+                                            className={`transition-all duration-200 ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50'} hover:bg-[#f3fdf7] group`}
+                                            whileHover={{ scale: 1.01, boxShadow: '0 4px 24px 0 rgba(0, 165, 95, 0.08)' }}
+                                        >
+                                            <td className="px-4 sm:px-6 py-4 whitespace-nowrap flex items-center gap-3">
+                                                <motion.div
+                                                    whileHover={{ scale: 1.08 }}
+                                                    className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg bg-gradient-to-br from-[#00A55F] to-[#008c4f] text-white shadow-md group-hover:scale-105 transition-transform"
+                                                >
+                                                    {app.candidate_photo ? (
+                                                        <img src={app.candidate_photo.startsWith('http') ? app.candidate_photo : `${import.meta.env.VITE_MEDIA_BASE_URL}${app.candidate_photo}`} alt={app.candidate_name} className="w-10 h-10 rounded-full object-cover" />
+                                                    ) : (
+                                                        app.candidate_name?.[0] || 'C'
+                                                    )}
+                                                </motion.div>
+                                                <span className="font-semibold text-gray-900 truncate" title={app.candidate_name}>{app.candidate_name}</span>
+                                            </td>
+                                            <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-gray-700">
+                                                <div className="max-w-xs truncate" title={app.candidate_email}>{app.candidate_email}</div>
+                                            </td>
+                                            {/* Opportunity Name */}
+                                            <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
+                                                <motion.span
+                                                    whileHover={{ scale: 1.05 }}
+                                                    className="inline-block max-w-[160px] font-semibold text-[#00A55F] bg-[#e6f9f0] rounded-lg px-3 py-1 truncate shadow-sm"
+                                                    title={app.internship_title}
+                                                >
+                                                    {app.internship_title || 'N/A'}
+                                                </motion.span>
+                                            </td>
+                                            {/* Organization Name */}
+                                            <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
+                                                <motion.span
+                                                    whileHover={{ scale: 1.05 }}
+                                                    className="inline-block max-w-[140px] font-medium text-[#008c4f] bg-[#f0fdf6] rounded-lg px-3 py-1 truncate shadow-sm"
+                                                    title={app.organization_name}
+                                                >
+                                                    {app.organization_name || 'N/A'}
+                                                </motion.span>
+                                            </td>
+                                            <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-gray-600 text-sm">
+                                                {new Date(app.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: '2-digit' })}
+                                            </td>
+                                            <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-center">
+                                                <motion.span
+                                                    whileHover={{ scale: 1.08 }}
+                                                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold shadow-sm ${statusColors[app.status] || 'bg-gray-100 text-gray-700'}`}
+                                                >
+                                                    {app.status === 'accepted' && <FaCheckCircle className="mr-1 h-4 w-4 text-green-500" />}
+                                                    {app.status === 'rejected' && <FaTimesCircle className="mr-1 h-4 w-4 text-red-500" />}
+                                                    {app.status === 'pending' && <FaHourglassHalf className="mr-1 h-4 w-4 text-yellow-500" />}
+                                                    {app.status}
+                                                </motion.span>
+                                            </td>
+                                            <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-center">
+                                                <div className="flex flex-col sm:flex-row items-center gap-2">
+                                                    <motion.button
+                                                        whileTap={{ scale: 0.95 }}
+                                                        className="text-[#00A55F] hover:text-[#008c4f] text-xs font-bold underline"
+                                                        onClick={() => openModal(app)}
+                                                    >
+                                                        Review Application
+                                                    </motion.button>
+                                                    {app.status === 'accepted' && app.certificate && (
+                                                        <motion.button
+                                                            whileTap={{ scale: 0.95 }}
+                                                            className="inline-flex items-center text-xs text-blue-700 hover:underline font-bold"
+                                                        >
+                                                            <FaCertificate className="mr-1 h-4 w-4" /> View certificate
+                                                        </motion.button>
+                                                    )}
+                                                    {/* Show Opportunity Button */}
+                                                    {app.internship_id && (
+                                                        <motion.button
+                                                            whileTap={{ scale: 0.95 }}
+                                                            className="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-gradient-to-r from-[#008c4f] to-[#00A55F] text-white text-xs font-bold shadow-md hover:from-[#00A55F] hover:to-[#008c4f] transition border border-[#00A55F]"
+                                                            onClick={() => window.open(`/candidate/internships/${app.internship_id}`, '_blank')}
+                                                        >
+                                                            <FaUserTie className="h-4 w-4" />
+                                                            Show Opportunity
+                                                        </motion.button>
+                                                    )}
+                                                </div>
+                                            </td>
+                                        </motion.tr>
+                                    ))}
+                                </AnimatePresence>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>

@@ -17,192 +17,11 @@ const CandidateDashboard = () => {
     const [showProfilePopup, setShowProfilePopup] = useState(false);
     const [animatedPercent, setAnimatedPercent] = useState(0);
     const [bookmarksCount, setBookmarksCount] = useState(0);
+    const [applicationsCount, setApplicationsCount] = useState(0);
+    const [recentApplications, setRecentApplications] = useState([]);
 
-    // Mock user data for development
-    const mockUser = {
-        first_name: 'Amar Med',
-        last_name: 'Moctar',
-        email: 'amarmed4500@gmail.com',
-        role: 'candidate'
-    };
-
-    // Use mock user for development
-    const currentUser = user || mockUser;
-
-    // Mock data for development
-    const mockStats = {
-        applications: 12,
-        interviews: 3,
-        savedJobs: bookmarksCount
-    };
-
-    const mockRecentApplications = [
-        {
-            id: 1,
-            title: "Software Development Intern",
-            company: "Tech Solutions MR",
-            status: "Under Review",
-            appliedDate: "2024-01-15",
-            logo: "https://via.placeholder.com/40x40/00A55F/FFFFFF?text=TS"
-        },
-        {
-            id: 2,
-            title: "Marketing Assistant",
-            company: "Digital Marketing Agency",
-            status: "Interview Scheduled",
-            appliedDate: "2024-01-12",
-            logo: "https://via.placeholder.com/40x40/3B82F6/FFFFFF?text=DM"
-        },
-        {
-            id: 3,
-            title: "Business Development Intern",
-            company: "Growth Partners",
-            status: "Application Submitted",
-            appliedDate: "2024-01-10",
-            logo: "https://via.placeholder.com/40x40/8B5CF6/FFFFFF?text=GP"
-        }
-    ];
-
-    // Mock data for recommended opportunities
-    const mockRecommendedOpportunities = [
-        {
-            id: 1,
-            title: "Full Stack Development Course",
-            company: "Stage222 Academy",
-            type: "Course",
-            location: "Online",
-            salary: "3-10 LPA guaranteed placement",
-            duration: "6 Months",
-            logo: "https://via.placeholder.com/60x60/00A55F/FFFFFF?text=SA",
-            isCourse: true,
-            features: ["Guaranteed placement", "Top companies hiring", "Live projects"]
-        },
-        {
-            id: 2,
-            title: "Business Development (Sales)",
-            company: "Mulberry Solutions LLP",
-            type: "Internship",
-            location: "Work From Home",
-            salary: "55,000 - 2,50,000 /month",
-            duration: "1 Month",
-            logo: "https://via.placeholder.com/60x60/3B82F6/FFFFFF?text=MS",
-            isCourse: false
-        },
-        {
-            id: 3,
-            title: "Software Development",
-            company: "DiligenceVault",
-            type: "Internship",
-            location: "Work From Home",
-            salary: "25,000 - 40,000 /month",
-            duration: "6 Months",
-            logo: "https://via.placeholder.com/60x60/8B5CF6/FFFFFF?text=DV",
-            isCourse: false
-        },
-        {
-            id: 4,
-            title: "Digital Marketing",
-            company: "B Anu Designs",
-            type: "Internship",
-            location: "Work From Home",
-            salary: "10,000 - 25,000 /month",
-            duration: "6 Months",
-            logo: "https://via.placeholder.com/60x60/F59E0B/FFFFFF?text=BA",
-            isCourse: false
-        },
-        {
-            id: 5,
-            title: "React Native Development",
-            company: "Digiretail Software",
-            type: "Internship",
-            location: "Work From Home",
-            salary: "20,000 - 25,000 /month",
-            duration: "6 Months",
-            logo: "https://via.placeholder.com/60x60/EF4444/FFFFFF?text=DS",
-            isCourse: false
-        },
-        {
-            id: 6,
-            title: "Content Writing",
-            company: "ComplyJet",
-            type: "Internship",
-            location: "Work From Home",
-            salary: "25,000 - 35,000 /month",
-            duration: "3 Months",
-            logo: "https://via.placeholder.com/60x60/10B981/FFFFFF?text=CJ",
-            isCourse: false
-        }
-    ];
-
-    // Mock data for trending opportunities
-    const mockTrendingOpportunities = [
-        {
-            id: 1,
-            title: "International Business Development",
-            company: "Yogaamie",
-            type: "Internship",
-            location: "Work From Home",
-            salary: "15,000 - 30,000 /month",
-            duration: "2 Months",
-            logo: "https://via.placeholder.com/60x60/00A55F/FFFFFF?text=YG",
-            trending: true
-        },
-        {
-            id: 2,
-            title: "Community Engagement Specialist",
-            company: "Get Structured Consulting",
-            type: "Internship",
-            location: "Work From Home",
-            salary: "20,000 - 25,000 /month",
-            duration: "6 Months",
-            logo: "https://via.placeholder.com/60x60/3B82F6/FFFFFF?text=GS",
-            trending: true
-        },
-        {
-            id: 3,
-            title: "Full Stack Development",
-            company: "Vyaasa",
-            type: "Internship",
-            location: "Work From Home",
-            salary: "15,000 - 20,000 /month",
-            duration: "3 Months",
-            logo: "https://via.placeholder.com/60x60/8B5CF6/FFFFFF?text=VY",
-            trending: true
-        },
-        {
-            id: 4,
-            title: "Content Creation",
-            company: "CollegeTips Ed Tech",
-            type: "Internship",
-            location: "Work From Home",
-            salary: "10,000 - 25,000 /month",
-            duration: "1 Month",
-            logo: "https://via.placeholder.com/60x60/F59E0B/FFFFFF?text=CT",
-            trending: true
-        },
-        {
-            id: 5,
-            title: "Marketing",
-            company: "Sumeet Singh",
-            type: "Internship",
-            location: "Work From Home",
-            salary: "15,000 - 20,000 /month",
-            duration: "3 Months",
-            logo: "https://via.placeholder.com/60x60/EF4444/FFFFFF?text=SS",
-            trending: true
-        },
-        {
-            id: 6,
-            title: "Business Development (Sales)",
-            company: "Social Amplifiers",
-            type: "Internship",
-            location: "Work From Home",
-            salary: "55,000 - 1,05,000 /month",
-            duration: "6 Months",
-            logo: "https://via.placeholder.com/60x60/10B981/FFFFFF?text=SA",
-            trending: true
-        }
-    ];
+    // Use real user
+    const currentUser = user;
 
     useEffect(() => {
         // Fetch candidate profile from API
@@ -212,7 +31,6 @@ const CandidateDashboard = () => {
                 setProfile(data);
                 setProfileCompletion(calculateProfileCompletion(data));
             } catch (err) {
-                // Fallback to mock user if API fails
                 setProfile(currentUser);
                 setProfileCompletion(calculateProfileCompletion(currentUser));
             }
@@ -221,18 +39,37 @@ const CandidateDashboard = () => {
         // Fetch bookmarks count from API
         const fetchBookmarksCount = async () => {
             try {
-                console.log('Fetching bookmarks count...');
                 const response = await api.get('/bookmarks/count/');
-                console.log('Bookmarks count response:', response.data);
                 setBookmarksCount(response.data.count);
             } catch (error) {
-                console.error('Error fetching bookmarks count:', error);
                 setBookmarksCount(0);
+            }
+        };
+
+        // Fetch applications count from API
+        const fetchApplicationsCount = async () => {
+            try {
+                const response = await api.get('/applications/candidate/count/');
+                setApplicationsCount(response.data.count);
+            } catch (error) {
+                setApplicationsCount(0);
+            }
+        };
+
+        // Fetch recent applications from API
+        const fetchRecentApplications = async () => {
+            try {
+                const response = await api.get('/applications/candidate/recent/');
+                setRecentApplications(response.data);
+            } catch (error) {
+                setRecentApplications([]);
             }
         };
 
         fetchProfile();
         fetchBookmarksCount();
+        fetchApplicationsCount();
+        fetchRecentApplications();
     }, []);
 
     // Listen for bookmark changes and refresh count
@@ -240,16 +77,14 @@ const CandidateDashboard = () => {
         const handleBookmarkChange = () => {
             fetchBookmarksCount();
         };
-
         window.addEventListener('bookmarkChanged', handleBookmarkChange);
         return () => window.removeEventListener('bookmarkChanged', handleBookmarkChange);
     }, []);
 
-    // Calculate profile completion percentage based on required fields
     function calculateProfileCompletion(profile) {
         if (!profile) return 0;
         let completed = 0;
-        const total = 10; // Number of required fields
+        const total = 10;
         if (profile.first_name) completed++;
         if (profile.last_name) completed++;
         if (profile.phone) completed++;
@@ -264,62 +99,10 @@ const CandidateDashboard = () => {
     }
 
     useEffect(() => {
-        // Simulate loading
         setTimeout(() => {
             setIsLoading(false);
         }, 1000);
     }, []);
-
-    // Carousel navigation functions
-    const nextRecommendedSlide = () => {
-        setCurrentRecommendedSlide((prev) =>
-            prev === Math.ceil(mockRecommendedOpportunities.length / 3) - 1 ? 0 : prev + 1
-        );
-    };
-
-    const prevRecommendedSlide = () => {
-        setCurrentRecommendedSlide((prev) =>
-            prev === 0 ? Math.ceil(mockRecommendedOpportunities.length / 3) - 1 : prev - 1
-        );
-    };
-
-    const nextTrendingSlide = () => {
-        setCurrentTrendingSlide((prev) =>
-            prev === Math.ceil(mockTrendingOpportunities.length / 3) - 1 ? 0 : prev + 1
-        );
-    };
-
-    const prevTrendingSlide = () => {
-        setCurrentTrendingSlide((prev) =>
-            prev === 0 ? Math.ceil(mockTrendingOpportunities.length / 3) - 1 : prev - 1
-        );
-    };
-
-    useEffect(() => {
-        // Animate the percentage from 0 to profileCompletion
-        let start = 0;
-        const duration = 800; // ms
-        const step = Math.max(1, Math.round(profileCompletion / 20));
-        if (profileCompletion > 0) {
-            const interval = setInterval(() => {
-                start += step;
-                if (start >= profileCompletion) {
-                    setAnimatedPercent(profileCompletion);
-                    clearInterval(interval);
-                } else {
-                    setAnimatedPercent(start);
-                }
-            }, duration / profileCompletion);
-            return () => clearInterval(interval);
-        } else {
-            setAnimatedPercent(0);
-        }
-    }, [profileCompletion]);
-
-    // Function to refresh bookmarks count (can be called from other components)
-    const refreshBookmarksCount = () => {
-        fetchBookmarksCount();
-    };
 
     if (isLoading) {
         return (
@@ -332,9 +115,18 @@ const CandidateDashboard = () => {
         );
     }
 
+    // Helper for status badge color
+    const statusColor = (status) => {
+        switch (status) {
+            case 'accepted': return 'bg-green-100 text-green-800';
+            case 'pending': return 'bg-yellow-100 text-yellow-800';
+            case 'rejected': return 'bg-red-100 text-red-800';
+            default: return 'bg-gray-100 text-gray-700';
+        }
+    };
+
     return (
         <div className="min-h-screen bg-gray-50">
-            {/* Main Content */}
             <main className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 py-8">
                 {/* Welcome Section */}
                 <motion.div
@@ -357,7 +149,7 @@ const CandidateDashboard = () => {
                         <div className="flex items-center justify-between">
                             <div className="flex-1 min-w-0">
                                 <p className="text-xs sm:text-sm font-medium text-gray-600">Applications</p>
-                                <p className="text-xl sm:text-2xl font-bold text-gray-900">{mockStats.applications}</p>
+                                <p className="text-xl sm:text-2xl font-bold text-gray-900">{applicationsCount}</p>
                             </div>
                             <div className="p-2 sm:p-3 bg-blue-100 rounded-lg flex-shrink-0 ml-3">
                                 <FaFileAlt className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600" />
@@ -422,7 +214,7 @@ const CandidateDashboard = () => {
                         <div className="flex items-center justify-between">
                             <div className="flex-1 min-w-0">
                                 <p className="text-xs sm:text-sm font-medium text-gray-600">Saved Jobs</p>
-                                <p className="text-xl sm:text-2xl font-bold text-gray-900">{mockStats.savedJobs}</p>
+                                <p className="text-xl sm:text-2xl font-bold text-gray-900">{bookmarksCount}</p>
                             </div>
                             <div className="p-2 sm:p-3 bg-yellow-100 rounded-lg flex-shrink-0 ml-3">
                                 <FaBookmark className="h-5 w-5 sm:h-6 sm:w-6 text-yellow-600" />
@@ -445,12 +237,12 @@ const CandidateDashboard = () => {
                 >
                     <div className="px-4 sm:px-6 py-4 border-b border-gray-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
                         <h2 className="text-lg font-semibold text-gray-900">Recent Applications</h2>
-                        <button className="text-sm text-[#00A55F] hover:text-[#008c4f] font-medium">View All</button>
+                        <button onClick={() => navigate('/candidate/applications')} className="text-sm text-[#00A55F] hover:text-[#008c4f] font-medium">View All</button>
                     </div>
                     <div className="p-4 sm:p-6">
-                        {mockRecentApplications.length > 0 ? (
+                        {recentApplications.length > 0 ? (
                             <div className="space-y-4">
-                                {mockRecentApplications.map((application, index) => (
+                                {recentApplications.map((application, index) => (
                                     <motion.div
                                         key={application.id}
                                         initial={{ opacity: 0, x: -20 }}
@@ -459,22 +251,17 @@ const CandidateDashboard = () => {
                                         className="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4 p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
                                     >
                                         <img
-                                            src={application.logo}
-                                            alt={application.company}
+                                            src={application.candidate_photo ? (application.candidate_photo.startsWith('http') ? application.candidate_photo : `${import.meta.env.VITE_MEDIA_BASE_URL}${application.candidate_photo}`) : '/default-logo.png'}
+                                            alt={application.candidate_name}
                                             className="w-10 h-10 rounded-lg object-cover mb-2 sm:mb-0"
                                         />
                                         <div className="flex-1 min-w-0">
-                                            <h3 className="font-medium text-gray-900 truncate">{application.title}</h3>
-                                            <p className="text-sm text-gray-600 truncate">{application.company}</p>
-                                            <p className="text-xs text-gray-500">Applied on {application.appliedDate}</p>
+                                            <h3 className="font-medium text-gray-900 truncate">{application.candidate_name}</h3>
+                                            <p className="text-sm text-gray-600 truncate">{application.candidate_email}</p>
+                                            <p className="text-xs text-gray-500">Applied on {new Date(application.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: '2-digit' })}</p>
                                         </div>
                                         <div className="text-right">
-                                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${application.status === 'Interview Scheduled'
-                                                ? 'bg-green-100 text-green-800'
-                                                : application.status === 'Under Review'
-                                                    ? 'bg-yellow-100 text-yellow-800'
-                                                    : 'bg-blue-100 text-blue-800'
-                                                }`}>
+                                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColor(application.status)}`}>
                                                 {application.status}
                                             </span>
                                         </div>
