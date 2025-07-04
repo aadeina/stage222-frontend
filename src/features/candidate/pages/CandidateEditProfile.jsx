@@ -42,7 +42,7 @@ const CandidateEditProfile = () => {
     const [profileCompletion, setProfileCompletion] = useState(0);
     const [errors, setErrors] = useState({});
     const [profilePicFile, setProfilePicFile] = useState(null);
-    const { updateUser } = useAuth();
+    const { user, updateUser, signupData, clearSignupData } = useAuth();
     const [showSkillSuggestions, setShowSkillSuggestions] = useState(false);
     const [isLoadingSkills, setIsLoadingSkills] = useState(false);
     const [isLoadingProfilePicture, setIsLoadingProfilePicture] = useState(false);
@@ -50,6 +50,10 @@ const CandidateEditProfile = () => {
 
     // Fetch profile and skills on mount
     useEffect(() => {
+        console.log('CandidateEditProfile useEffect triggered');
+        console.log('Current signupData:', signupData);
+        console.log('Current user from useAuth:', user);
+
         const fetchData = async () => {
             try {
                 // Fetch profile and skills in parallel
@@ -88,9 +92,16 @@ const CandidateEditProfile = () => {
                     setAllSkills(skillsData);
                 }
 
-                setFormData({
-                    first_name: profileData.first_name || '',
-                    last_name: profileData.last_name || '',
+                // Debug: Log signup data and profile data
+                console.log('Debug - Signup Data:', signupData);
+                console.log('Debug - Profile Data:', profileData);
+                console.log('Debug - User Data:', user);
+
+                // Prefill form with signup data if available, otherwise use profile data
+                const prefilledData = {
+                    first_name: signupData?.first_name || profileData.first_name || '',
+                    last_name: signupData?.last_name || profileData.last_name || '',
+                    email: signupData?.email || profileData.email || '',
                     phone: profileData.phone || '',
                     city: profileData.city || '',
                     university: profileData.university || '',
@@ -99,10 +110,22 @@ const CandidateEditProfile = () => {
                     resume: profileData.resume || null,
                     profile_picture: profileData.profile_picture || null,
                     skills: profileData.skills || [] // Backend returns array of {id, name} objects
-                });
+                };
+
+                console.log('Debug - Prefilled Data:', prefilledData);
+                setFormData(prefilledData);
+
+                // Show success message if signup data was used for prefilling
+                if (signupData) {
+                    toast.success('Welcome! Your profile has been prefilled with your signup information.', {
+                        duration: 4000,
+                        icon: '👋'
+                    });
+                    console.log('Profile prefilled with signup data:', signupData);
+                }
 
                 setIsLoading(false);
-                setProfileCompletion(calculateProfileCompletion(profileData));
+                setProfileCompletion(calculateProfileCompletion(prefilledData));
             } catch (err) {
                 console.error('Error fetching data:', err);
                 toast.error('Failed to load profile data');
@@ -110,7 +133,7 @@ const CandidateEditProfile = () => {
             }
         };
         fetchData();
-    }, []);
+    }, [signupData]);
 
     // Calculate profile completion
     function calculateProfileCompletion(profile) {
@@ -458,7 +481,14 @@ const CandidateEditProfile = () => {
             });
             setProfileCompletion(calculateProfileCompletion(updated));
             setIsChanged(false);
-            toast.success('Profile updated!');
+
+            // Clear signup data after successful profile update
+            if (signupData) {
+                clearSignupData();
+                console.log('Signup data cleared after successful profile update');
+            }
+
+            toast.success('Profile updated successfully!');
             updateUser(updated);
         } catch (err) {
             toast.error('Failed to update profile');
@@ -494,6 +524,29 @@ const CandidateEditProfile = () => {
                         Update your information to keep your profile up to date and improve your chances of landing great opportunities.
                     </p>
                 </motion.div>
+
+                {/* Signup Data Indicator */}
+                {signupData && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.6, delay: 0.2 }}
+                        className="mb-6 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-2xl p-4"
+                    >
+                        <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center">
+                                <FaCheck className="w-4 h-4 text-white" />
+                            </div>
+                            <div>
+                                <h4 className="font-semibold text-green-800">Welcome! Your profile has been prefilled</h4>
+                                <p className="text-sm text-green-700">
+                                    We've automatically filled in your name and email from your signup information.
+                                    Please complete the remaining fields to finish your profile.
+                                </p>
+                            </div>
+                        </div>
+                    </motion.div>
+                )}
 
                 {/* Main Content Card */}
                 <motion.div

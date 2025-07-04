@@ -27,11 +27,15 @@ export const AuthProvider = ({ children }) => {
 
         if (storedSignupData) {
             try {
-                setSignupData(JSON.parse(storedSignupData));
+                const parsedData = JSON.parse(storedSignupData);
+                console.log('AuthContext: Loading stored signup data:', parsedData);
+                setSignupData(parsedData);
             } catch (error) {
                 console.error('Error parsing stored signup data:', error);
                 localStorage.removeItem('signupData');
             }
+        } else {
+            console.log('AuthContext: No stored signup data found');
         }
 
         setLoading(false);
@@ -43,13 +47,17 @@ export const AuthProvider = ({ children }) => {
     };
 
     const storeSignupData = (data) => {
+        console.log('AuthContext: Storing signup data:', data);
         setSignupData(data);
         localStorage.setItem('signupData', JSON.stringify(data));
+        console.log('AuthContext: Signup data stored in localStorage');
     };
 
     const clearSignupData = () => {
+        console.log('AuthContext: Clearing signup data');
         setSignupData(null);
         localStorage.removeItem('signupData');
+        console.log('AuthContext: Signup data cleared from localStorage');
     };
 
     const handleLogin = async (credentials) => {

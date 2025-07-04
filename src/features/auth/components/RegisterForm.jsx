@@ -79,14 +79,12 @@ const RegisterForm = ({ role, title, description, features }) => {
                 role // Automatically determined by the parent component
             });
 
-            // Store signup data for recruiters to pre-fill onboarding
-            if (role === 'recruiter') {
-                storeSignupData({
-                    first_name: formData.firstName,
-                    last_name: formData.lastName,
-                    email: formData.email
-                });
-            }
+            // Store signup data for both candidates and recruiters to pre-fill their profiles
+            storeSignupData({
+                first_name: formData.firstName,
+                last_name: formData.lastName,
+                email: formData.email
+            });
 
             toast.success('OTP sent to your email!');
             navigate('/verify-otp', { state: { email: formData.email } });
