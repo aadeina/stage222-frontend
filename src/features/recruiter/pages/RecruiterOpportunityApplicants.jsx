@@ -38,7 +38,7 @@ const RecruiterOpportunityApplicants = () => {
     useEffect(() => {
         setLoading(true);
         setError('');
-        api.get(`/applications/recruiter/internships/${opportunityId}/applicants/`)
+        api.get(`/applications/internships/${opportunityId}/applicants/`)
             .then(res => {
                 const data = res.data;
                 setApplicants(data.results || data.applications || []);
@@ -54,7 +54,7 @@ const RecruiterOpportunityApplicants = () => {
         setUpdatingId(app.id);
         setFeedback('');
         try {
-            await api.patch(`/applications/recruiter/applications/${app.id}/update/`, { status: newStatus });
+            await api.patch(`/applications/${app.id}/update/`, { status: newStatus });
             setApplicants(prev => prev.map(a => a.id === app.id ? { ...a, status: newStatus } : a));
             setFeedback('Status updated successfully!');
             setTimeout(() => setFeedback(''), 2000);

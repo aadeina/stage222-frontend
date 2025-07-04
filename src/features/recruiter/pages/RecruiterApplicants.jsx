@@ -8,7 +8,7 @@ import AnswersModal from '../components/AnswersModal';
 // Professional, branded applicants page for Stage222 recruiters
 // Fetches applicants from backend and displays in a modern, responsive table
 
-const API_URL = '/applications/recruiter/applications/';
+const API_URL = '/applications/recruiter/';
 
 const statusColors = {
     pending: 'bg-yellow-100 text-yellow-800',
@@ -43,7 +43,7 @@ const RecruiterApplicants = () => {
     useEffect(() => {
         setLoading(true);
         setError('');
-        let url = '/applications/recruiter/applications/';
+        let url = '/applications/recruiter/';
         const params = [];
         if (status) params.push(`status=${status}`);
         if (shortlisted) params.push(`shortlisted=${shortlisted}`);

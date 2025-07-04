@@ -40,11 +40,11 @@ const RecruiterDashboard = () => {
         fetchDashboardData();
         fetchRecruiterData();
         // Fetch counts for each status
-        api.get('/applications/recruiter/applications/?shortlisted=true')
+        api.get('/applications/recruiter/?shortlisted=true')
             .then(res => setShortlistedCount(res.data.count || 0));
-        api.get('/applications/recruiter/applications/?status=rejected')
+        api.get('/applications/recruiter/?status=rejected')
             .then(res => setRejectedCount(res.data.count || 0));
-        api.get('/applications/recruiter/applications/?status=pending&shortlisted=false')
+        api.get('/applications/recruiter/?status=pending&shortlisted=false')
             .then(res => setPendingCount(res.data.count || 0));
     }, [user, navigate]);
 
