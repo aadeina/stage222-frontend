@@ -4,6 +4,7 @@ import { FaArrowLeft, FaUser, FaEnvelope, FaClock, FaCheckCircle, FaTimesCircle,
 import api from '../../../services/api';
 import ResumeModal from '../components/ResumeModal';
 import AnswersModal from '../components/AnswersModal';
+import CandidateProfileModal from '../components/CandidateProfileModal';
 
 // Professional, branded applicants page for a specific opportunity
 // Fetches applicants from backend and displays in a modern, responsive table
@@ -31,6 +32,7 @@ const RecruiterOpportunityApplicants = () => {
     const [feedback, setFeedback] = useState('');
     const [resumeModal, setResumeModal] = useState({ isOpen: false, resumeUrl: '', candidateName: '' });
     const [answersModal, setAnswersModal] = useState({ isOpen: false, candidate: null, answers: null });
+    const [profileModal, setProfileModal] = useState({ isOpen: false, candidateId: null, candidateName: '', candidateEmail: '' });
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -130,6 +132,12 @@ const RecruiterOpportunityApplicants = () => {
                                     const candidateEmail = app.candidate_email || app.candidate?.email || 'N/A';
                                     const candidatePhoto = app.candidate?.photo || app.candidate_photo;
                                     const resumeUrl = app.candidate?.resume || app.candidate_resume;
+                                    // Since we don't have candidate_id, we'll use the candidate email as identifier
+                                    const candidateId = app.candidate_email || app.candidate?.email;
+
+                                    // Debug: Log the application data to see what's available
+                                    console.log('Application data:', app);
+                                    console.log('Extracted candidateId:', candidateId);
 
                                     return (
                                         <tr key={idx} className="hover:bg-gray-50 transition">
@@ -153,7 +161,15 @@ const RecruiterOpportunityApplicants = () => {
                                                         <FaUser className="h-4 w-4" />
                                                     </div>
                                                     <div>
-                                                        <div className="font-medium text-gray-900">{candidateName}</div>
+                                                        <span
+                                                            className="font-bold text-[#00A55F] cursor-pointer hover:underline text-base"
+                                                            onClick={() => {
+                                                                console.log('Opening profile modal with:', { candidateId, candidateName, candidateEmail });
+                                                                setProfileModal({ isOpen: true, candidateId, candidateName, candidateEmail });
+                                                            }}
+                                                        >
+                                                            {candidateName}
+                                                        </span>
                                                         <div className="text-sm text-gray-500">{candidateEmail}</div>
                                                     </div>
                                                 </div>
@@ -248,6 +264,14 @@ const RecruiterOpportunityApplicants = () => {
                 onClose={closeAnswersModal}
                 candidate={answersModal.candidate}
                 answers={answersModal.answers}
+            />
+
+            <CandidateProfileModal
+                isOpen={profileModal.isOpen}
+                onClose={() => setProfileModal({ ...profileModal, isOpen: false })}
+                candidateId={profileModal.candidateId}
+                candidateName={profileModal.candidateName}
+                candidateEmail={profileModal.candidateEmail}
             />
         </div>
     );
