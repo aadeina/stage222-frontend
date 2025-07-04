@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { FaArrowLeft, FaUser, FaEnvelope, FaClock, FaCheckCircle, FaTimesCircle, FaEye, FaFilePdf, FaComments } from 'react-icons/fa';
 import api from '../../../services/api';
+import messagingApi from '../../../services/messagingApi';
 import ResumeModal from '../components/ResumeModal';
 import AnswersModal from '../components/AnswersModal';
 import CandidateProfileModal from '../components/CandidateProfileModal';
@@ -54,8 +55,35 @@ const RecruiterOpportunityApplicants = () => {
         setUpdatingId(app.id);
         setFeedback('');
         try {
+            // Update the application status
             await api.patch(`/applications/${app.id}/update/`, { status: newStatus });
             setApplicants(prev => prev.map(a => a.id === app.id ? { ...a, status: newStatus } : a));
+
+            // If status is changed to 'accepted', automatically send a congratulatory message
+            if (newStatus === 'accepted') {
+                try {
+                    const candidateEmail = app.candidate_email || app.candidate?.email;
+                    const candidateId = app.candidate?.id || app.candidate_id;
+                    const internshipId = app.internship?.id || app.opportunity?.id || opportunityId;
+
+                    if (candidateEmail && candidateId) {
+                        const messageData = {
+                            receiver: candidateId,
+                            receiver_email: candidateEmail,
+                            internship: internshipId,
+                            body: `🎉 Congratulations! Your application has been accepted! We're excited to move forward with your application. Let's discuss the next steps and answer any questions you might have. Welcome to the team! 🚀`
+                        };
+
+                        // Send the automatic message
+                        await messagingApi.sendMessage(messageData);
+                        console.log('Automatic acceptance message sent successfully');
+                    }
+                } catch (messageError) {
+                    console.error('Failed to send automatic acceptance message:', messageError);
+                    // Don't show error to user as the main status update was successful
+                }
+            }
+
             setFeedback('Status updated successfully!');
             setTimeout(() => setFeedback(''), 2000);
         } catch (err) {

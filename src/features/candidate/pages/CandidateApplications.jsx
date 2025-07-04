@@ -230,24 +230,24 @@ const CandidateApplications = () => {
                     </div>
                 </div>
             )}
-            <div className="max-w-7xl mx-auto py-8 px-2 sm:px-6 lg:px-8">
-                {/* Header - Responsive layout */}
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
-                    <div>
-                        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">My Applications</h1>
-                        <p className="text-gray-500 text-sm">Track your internship and job applications in Mauritania.</p>
-                    </div>
-                    <button className="text-[#00A55F] hover:text-[#008c4f] text-sm font-medium flex items-center gap-1">
-                        View old applications <FaChevronRight className="h-4 w-4" />
-                    </button>
+        <div className="max-w-7xl mx-auto py-8 px-2 sm:px-6 lg:px-8">
+            {/* Header - Responsive layout */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
+                <div>
+                    <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">My Applications</h1>
+                    <p className="text-gray-500 text-sm">Track your internship and job applications in Mauritania.</p>
                 </div>
+                <button className="text-[#00A55F] hover:text-[#008c4f] text-sm font-medium flex items-center gap-1">
+                    View old applications <FaChevronRight className="h-4 w-4" />
+                </button>
+            </div>
 
-                {/* Applications Table - Horizontal scroll on mobile */}
+            {/* Applications Table - Horizontal scroll on mobile */}
                 <div className="bg-white border rounded-2xl shadow-xl overflow-hidden">
-                    <div className="overflow-x-auto">
-                        <table className="min-w-full divide-y divide-gray-200">
-                            <thead className="bg-gray-50">
-                                <tr>
+                <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-gray-50">
+                            <tr>
                                     <th className="px-4 sm:px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Candidate</th>
                                     <th className="px-4 sm:px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Email</th>
                                     <th className="px-4 sm:px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Opportunity</th>
@@ -255,9 +255,9 @@ const CandidateApplications = () => {
                                     <th className="px-4 sm:px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Applied On</th>
                                     <th className="px-4 sm:px-6 py-3 text-center text-xs font-bold text-gray-700 uppercase tracking-wider">Status</th>
                                     <th className="px-4 sm:px-6 py-3 text-center text-xs font-bold text-gray-700 uppercase tracking-wider">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody className="bg-white divide-y divide-gray-100">
+                            </tr>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-100">
                                 <AnimatePresence>
                                     {applications.map((app, idx) => (
                                         <motion.tr
@@ -281,8 +281,8 @@ const CandidateApplications = () => {
                                                     )}
                                                 </motion.div>
                                                 <span className="font-semibold text-gray-900 truncate" title={app.candidate_name}>{app.candidate_name}</span>
-                                            </td>
-                                            <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-gray-700">
+                                        </td>
+                                        <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-gray-700">
                                                 <div className="max-w-xs truncate" title={app.candidate_email}>{app.candidate_email}</div>
                                             </td>
                                             {/* Opportunity Name */}
@@ -304,11 +304,11 @@ const CandidateApplications = () => {
                                                 >
                                                     {app.organization_name || 'N/A'}
                                                 </motion.span>
-                                            </td>
-                                            <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-gray-600 text-sm">
+                                        </td>
+                                        <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-gray-600 text-sm">
                                                 {new Date(app.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: '2-digit' })}
-                                            </td>
-                                            <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-center">
+                                        </td>
+                                        <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-center">
                                                 <motion.span
                                                     whileHover={{ scale: 1.08 }}
                                                     className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold shadow-sm ${statusColors[app.status] || 'bg-gray-100 text-gray-700'}`}
@@ -316,11 +316,11 @@ const CandidateApplications = () => {
                                                     {app.status === 'accepted' && <FaCheckCircle className="mr-1 h-4 w-4 text-green-500" />}
                                                     {app.status === 'rejected' && <FaTimesCircle className="mr-1 h-4 w-4 text-red-500" />}
                                                     {app.status === 'pending' && <FaHourglassHalf className="mr-1 h-4 w-4 text-yellow-500" />}
-                                                    {app.status}
+                                                {app.status}
                                                 </motion.span>
-                                            </td>
-                                            <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-center">
-                                                <div className="flex flex-col sm:flex-row items-center gap-2">
+                                        </td>
+                                        <td className="px-4 sm:px-6 py-4 whitespace-nowrap text-center">
+                                            <div className="flex flex-col sm:flex-row items-center gap-2">
                                                     <motion.button
                                                         whileTap={{ scale: 0.95 }}
                                                         className="text-[#00A55F] hover:text-[#008c4f] text-xs font-bold underline"
@@ -333,7 +333,7 @@ const CandidateApplications = () => {
                                                             whileTap={{ scale: 0.95 }}
                                                             className="inline-flex items-center text-xs text-blue-700 hover:underline font-bold"
                                                         >
-                                                            <FaCertificate className="mr-1 h-4 w-4" /> View certificate
+                                                        <FaCertificate className="mr-1 h-4 w-4" /> View certificate
                                                         </motion.button>
                                                     )}
                                                     {/* Show Opportunity Button */}
@@ -367,13 +367,13 @@ const CandidateApplications = () => {
                                                             Message
                                                         </motion.button>
                                                     )}
-                                                </div>
-                                            </td>
+                                            </div>
+                                        </td>
                                         </motion.tr>
                                     ))}
                                 </AnimatePresence>
-                            </tbody>
-                        </table>
+                        </tbody>
+                    </table>
                     </div>
                 </div>
             </div>

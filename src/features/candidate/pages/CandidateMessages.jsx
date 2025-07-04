@@ -5,7 +5,7 @@
 // RESPONSIVE: Stacks vertically on mobile, horizontal scroll on desktop
 
 import React, { useState, useEffect } from 'react';
-import { FaSearch, FaEnvelope, FaUser, FaPaperPlane, FaCheckCircle, FaBriefcase, FaRegStar, FaRegSmile } from 'react-icons/fa';
+import { FaSearch, FaEnvelope, FaUser, FaPaperPlane, FaCheckCircle, FaBriefcase, FaRegStar, FaRegSmile, FaCheckDouble } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import messagingApi from '../../../services/messagingApi';
@@ -32,6 +32,8 @@ const CandidateMessages = () => {
         try {
             setIsLoading(true);
             console.log('Fetching inbox from API...');
+            console.log('Current user:', currentUser);
+            console.log('Token present:', !!localStorage.getItem('token'));
 
             const response = await messagingApi.getInbox();
             const inboxData = response.data;
@@ -92,8 +94,20 @@ const CandidateMessages = () => {
                 console.log('Setting first conversation as selected:', transformedConversations[0]);
                 setSelectedId(transformedConversations[0].id);
             }
+
+            // Show success message if conversations were loaded
+            if (transformedConversations.length > 0) {
+                console.log(`Successfully loaded ${transformedConversations.length} conversations`);
+            } else {
+                console.log('No conversations found in the response');
+            }
         } catch (error) {
             console.error('Failed to load inbox:', error);
+            console.error('Error details:', {
+                message: error.message,
+                status: error.response?.status,
+                data: error.response?.data
+            });
 
             // Handle specific error types
             if (error.response?.status === 403) {
@@ -143,6 +157,7 @@ const CandidateMessages = () => {
             // Transform API messages to match our UI structure
             const transformedMessages = messagesArray.map((msg) => {
                 const senderEmail = msg.sender_email || msg.email || 'unknown@email.com';
+                const senderId = msg.sender || msg.sender_id;
                 const isCurrentUser = senderEmail === currentUserEmail;
 
                 // Create a readable sender name
@@ -161,10 +176,13 @@ const CandidateMessages = () => {
 
                 return {
                     sender: isCurrentUser ? 'You' : senderName,
+                    senderId: senderId,
+                    senderEmail: senderEmail,
                     text: msg.body || msg.message || 'No message content',
                     time: formatTime(msg.timestamp),
                     date: formatDate(msg.timestamp),
-                    is_read: msg.is_read
+                    is_read: msg.is_read,
+                    timestamp: msg.timestamp
                 };
             });
 
@@ -282,11 +300,16 @@ const CandidateMessages = () => {
 
     // ✅ Load inbox on component mount
     useEffect(() => {
+        console.log('useEffect triggered - isAuthenticated:', isAuthenticated, 'inboxLoaded:', inboxLoaded, 'currentUser:', currentUser.email);
         if (isAuthenticated && !inboxLoaded) {
             console.log('Loading inbox for authenticated user:', currentUser.email);
             loadInbox();
+        } else if (isAuthenticated && inboxLoaded && conversations.length === 0) {
+            console.log('User authenticated but no conversations loaded, retrying...');
+            setInboxLoaded(false);
+            loadInbox();
         }
-    }, [isAuthenticated, inboxLoaded]);
+    }, [isAuthenticated, inboxLoaded, conversations.length]);
 
     // ✅ Load messages when conversation is selected
     useEffect(() => {
@@ -298,6 +321,16 @@ const CandidateMessages = () => {
             }
         }
     }, [selectedId]); // Only depend on selectedId, not conversations
+
+    // ✅ Fallback: Load inbox on component mount regardless of auth state
+    useEffect(() => {
+        console.log('Component mounted, attempting to load inbox...');
+        const token = localStorage.getItem('token');
+        if (token && !inboxLoaded) {
+            console.log('Token found, loading inbox...');
+            loadInbox();
+        }
+    }, []); // Only run once on mount
 
     // Filter and search logic
     const filteredConversations = conversations.filter(conv => {
@@ -346,7 +379,11 @@ const CandidateMessages = () => {
                 <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
                     <p className="text-sm text-yellow-800">
                         <strong>Debug:</strong> User: {currentUser.email || 'Not logged in'} |
-                        Token: {localStorage.getItem('token') ? 'Present' : 'Missing'}
+                        Token: {localStorage.getItem('token') ? 'Present' : 'Missing'} |
+                        Authenticated: {isAuthenticated ? 'Yes' : 'No'} |
+                        Inbox Loaded: {inboxLoaded ? 'Yes' : 'No'} |
+                        Conversations: {conversations.length} |
+                        Selected ID: {selectedId || 'None'}
                     </p>
                 </div>
             )}
@@ -360,7 +397,9 @@ const CandidateMessages = () => {
                 <div className="flex gap-2">
                     <button
                         onClick={() => {
+                            console.log('Manual refresh triggered');
                             setInboxLoaded(false);
+                            setConversations([]);
                             loadInbox();
                         }}
                         disabled={isLoading}
@@ -368,12 +407,12 @@ const CandidateMessages = () => {
                     >
                         {isLoading ? 'Loading...' : '🔄 Refresh'}
                     </button>
-                    <button
-                        onClick={() => navigate('/candidate/dashboard')}
-                        className="bg-[#00A55F] text-white px-4 py-2 rounded-lg font-medium shadow hover:bg-[#008c4f] transition"
-                    >
-                        ← Back to Dashboard
-                    </button>
+                <button
+                    onClick={() => navigate('/candidate/dashboard')}
+                    className="bg-[#00A55F] text-white px-4 py-2 rounded-lg font-medium shadow hover:bg-[#008c4f] transition"
+                >
+                    ← Back to Dashboard
+                </button>
                 </div>
             </div>
 
@@ -479,7 +518,7 @@ const CandidateMessages = () => {
                                 {loadingMessages ? (
                                     <div className="flex items-center justify-center h-full">
                                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#00A55F]"></div>
-                                    </div>
+                                        </div>
                                 ) : selectedConversation.messages.length === 0 ? (
                                     <div className="flex flex-col items-center justify-center h-full text-gray-500">
                                         <FaEnvelope className="h-12 w-12 mb-4" />
@@ -487,40 +526,71 @@ const CandidateMessages = () => {
                                         <p className="text-sm">Start the conversation!</p>
                                     </div>
                                 ) : (
-                                    selectedConversation.messages.map((message, index) => (
-                                        <div key={index} className={`flex ${message.sender === 'You' ? 'justify-end' : 'justify-start'}`}>
-                                            <div className={`max-w-xs sm:max-w-md lg:max-w-lg px-4 py-2 rounded-lg ${message.sender === 'You' ? 'bg-[#00A55F] text-white' : 'bg-gray-100 text-gray-900'}`}>
-                                                <p className="text-sm">{message.text}</p>
-                                                <p className={`text-xs mt-1 ${message.sender === 'You' ? 'text-white/70' : 'text-gray-500'}`}>
-                                                    {message.time} • {message.date}
-                                                </p>
+                                    selectedConversation.messages.map((message, index) => {
+                                        // Check if sender is current user using ID comparison
+                                        const isCurrentUser = message.senderId === currentUser.id || message.sender === 'You';
+
+                                        return (
+                                            <div key={index} className={`flex ${isCurrentUser ? 'justify-end' : 'justify-start'} mb-4`}>
+                                                <div className={`flex items-start space-x-2 max-w-xs sm:max-w-md lg:max-w-lg ${isCurrentUser ? 'flex-row-reverse space-x-reverse' : ''}`}>
+                                                    {/* Avatar/Initials */}
+                                                    <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${isCurrentUser
+                                                        ? 'bg-[#00A55F] text-white'
+                                                        : 'bg-gray-300 text-gray-700'
+                                                        }`}>
+                                                        {isCurrentUser
+                                                            ? (currentUser.name ? currentUser.name[0] : 'Y')
+                                                            : (message.sender !== 'You' ? message.sender[0] : 'R')
+                                                        }
+                                                    </div>
+
+                                                    {/* Message Bubble */}
+                                                    <div className={`px-4 py-3 rounded-xl shadow-sm ${isCurrentUser
+                                                        ? 'bg-[#00A55F] text-white'
+                                                        : 'bg-[#F1F5F9] text-black'
+                                                        }`}>
+                                                        <p className="text-sm leading-relaxed">{message.text}</p>
+                                                        <div className={`flex items-center justify-between mt-2 text-xs ${isCurrentUser ? 'text-white/80' : 'text-gray-500'
+                                                            }`}>
+                                                            <span>{message.time}</span>
+                                                            {isCurrentUser && (
+                                                                <span className="ml-2">
+                                                                    <FaCheckDouble className="h-3 w-3" />
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </div>
                                             </div>
-                                        </div>
-                                    ))
+                                        );
+                                    })
                                 )}
                             </div>
 
                             {/* Message Input - Responsive padding */}
                             <div className="p-4 border-t bg-white">
-                                <div className="flex items-center space-x-2">
-                                    <input
-                                        type="text"
-                                        value={newMessage}
-                                        onChange={(e) => setNewMessage(e.target.value)}
-                                        onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                                <div className="flex items-end space-x-2">
+                                    <div className="flex-1 bg-gray-50 rounded-2xl px-3 py-2 border border-gray-200 focus-within:border-[#00A55F] focus-within:ring-2 focus-within:ring-[#00A55F]/20 transition-all">
+                                        <textarea
+                                            value={newMessage}
+                                            onChange={(e) => setNewMessage(e.target.value)}
+                                            onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && handleSendMessage()}
                                         placeholder="Type your message..."
-                                        className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#00A55F]"
-                                        disabled={isSending}
-                                    />
+                                            className="w-full bg-transparent border-none outline-none resize-none text-sm leading-relaxed"
+                                            rows="1"
+                                            disabled={isSending}
+                                            style={{ minHeight: '20px', maxHeight: '120px' }}
+                                        />
+                                    </div>
                                     <button
                                         onClick={handleSendMessage}
                                         disabled={!newMessage.trim() || isSending}
-                                        className="p-2 bg-[#00A55F] text-white rounded-lg hover:bg-[#008c4f] transition disabled:opacity-50 disabled:cursor-not-allowed"
+                                        className="p-2 bg-gradient-to-r from-[#00A55F] to-[#008c4f] text-white rounded-full hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-105"
                                     >
                                         {isSending ? (
                                             <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
                                         ) : (
-                                            <FaPaperPlane className="h-4 w-4" />
+                                        <FaPaperPlane className="h-4 w-4" />
                                         )}
                                     </button>
                                 </div>

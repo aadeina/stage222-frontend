@@ -32,12 +32,12 @@ const Messages = () => {
             const transformedConversations = inboxArray.map((item, index) => ({
                 id: index + 1, // Use index as ID since we don't have conversation ID
                 user_id: item.user_id,
-                candidate: {
+            candidate: {
                     name: item.user_email.split('@')[0], // Use email prefix as name
-                    avatar: null,
+                avatar: null,
                     email: item.user_email
-                },
-                opportunity: {
+            },
+            opportunity: {
                     title: item.internship_title || 'General Inquiry',
                     company: 'Stage222'
                 },
@@ -83,14 +83,36 @@ const Messages = () => {
             const currentUserEmail = currentUser.email;
 
             // Transform API messages to match our UI structure
-            const transformedMessages = messagesArray.length > 0 ? messagesArray.map((msg, index) => ({
-                id: index + 1,
-                sender: msg.sender_email === currentUserEmail ? 'recruiter' : 'candidate',
-                content: msg.body,
-                timestamp: msg.timestamp,
-                status: msg.is_read ? 'read' : 'delivered',
-                is_read: msg.is_read
-            })) : [];
+            const transformedMessages = messagesArray.length > 0 ? messagesArray.map((msg, index) => {
+                const senderEmail = msg.sender_email || msg.email || 'unknown@email.com';
+                const senderId = msg.sender || msg.sender_id;
+                const isCurrentUser = senderEmail === currentUserEmail;
+
+                // Create a readable sender name
+                let senderName = 'You';
+                if (!isCurrentUser) {
+                    const emailParts = senderEmail.split('@');
+                    if (emailParts.length > 1) {
+                        const domain = emailParts[1];
+                        if (domain.includes('gmail')) {
+                            senderName = emailParts[0].charAt(0).toUpperCase() + emailParts[0].slice(1);
+                        } else {
+                            senderName = domain.split('.')[0].charAt(0).toUpperCase() + domain.split('.')[0].slice(1);
+                        }
+                    }
+                }
+
+                return {
+                    id: index + 1,
+                    sender: isCurrentUser ? 'You' : senderName,
+                    senderId: senderId,
+                    senderEmail: senderEmail,
+                    content: msg.body || msg.message || 'No message content',
+                    timestamp: msg.timestamp,
+                    status: msg.is_read ? 'read' : 'delivered',
+                    is_read: msg.is_read
+                };
+            }) : [];
 
             setMessages(transformedMessages);
 
@@ -336,42 +358,74 @@ const Messages = () => {
                                         <p>No messages yet</p>
                                     </div>
                                 ) : (
-                                    messages.map((message) => (
+                                    messages.map((message) => {
+                                        // Check if sender is current user using ID comparison
+                                        const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+                                        const isCurrentUser = message.senderId === currentUser.id || message.sender === 'You';
+
+                                        return (
                                         <motion.div
                                             key={message.id}
                                             initial={{ opacity: 0, y: 10 }}
                                             animate={{ opacity: 1, y: 0 }}
-                                            className={`flex ${message.sender === 'recruiter' ? 'justify-end' : 'justify-start'}`}
-                                        >
-                                            <div className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${message.sender === 'recruiter'
+                                                className={`flex ${isCurrentUser ? 'justify-end' : 'justify-start'} mb-4`}
+                                            >
+                                                <div className={`flex items-start space-x-2 max-w-xs lg:max-w-md ${isCurrentUser ? 'flex-row-reverse space-x-reverse' : ''}`}>
+                                                    {/* Avatar/Initials */}
+                                                    <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${isCurrentUser
+                                                        ? 'bg-[#00A55F] text-white'
+                                                        : 'bg-gray-300 text-gray-700'
+                                                        }`}>
+                                                        {isCurrentUser
+                                                            ? (currentUser.name ? currentUser.name[0] : 'Y')
+                                                            : (message.sender !== 'You' ? message.sender[0] : 'C')
+                                                        }
+                                                    </div>
+
+                                                    {/* Message Bubble */}
+                                                    <div className={`px-4 py-3 rounded-xl shadow-sm ${isCurrentUser
                                                 ? 'bg-[#00A55F] text-white'
-                                                : 'bg-gray-100 text-gray-900'
-                                                }`}>
-                                                <p className="text-sm">{message.content}</p>
-                                                <p className={`text-xs mt-1 ${message.sender === 'recruiter' ? 'text-white/70' : 'text-gray-500'}`}>
-                                                    {formatTime(message.timestamp)}
-                                                </p>
+                                                        : 'bg-[#F1F5F9] text-black'
+                                                        }`}>
+                                                        <p className="text-sm leading-relaxed">{message.content}</p>
+                                                        <div className={`flex items-center justify-between mt-2 text-xs ${isCurrentUser ? 'text-white/80' : 'text-gray-500'
+                                                            }`}>
+                                                            <span>{formatTime(message.timestamp)}</span>
+                                                            {isCurrentUser && (
+                                                                <span className="ml-2">
+                                                                    {message.status === 'sending' && <FaClock className="h-3 w-3" />}
+                                                                    {message.status === 'delivered' && <FaCheck className="h-3 w-3" />}
+                                                                    {message.status === 'read' && <FaCheckDouble className="h-3 w-3" />}
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                    </div>
                                             </div>
                                         </motion.div>
-                                    ))
+                                        );
+                                    })
                                 )}
                             </div>
 
                             {/* Mobile Message Input */}
-                            <div className="p-4 border-t border-gray-200">
-                                <div className="flex space-x-2">
-                                    <input
-                                        type="text"
+                            <div className="p-4 border-t border-gray-200 bg-white">
+                                <div className="flex items-end space-x-2">
+                                    <div className="flex-1 bg-gray-50 rounded-2xl px-3 py-2 border border-gray-200 focus-within:border-[#00A55F] focus-within:ring-2 focus-within:ring-[#00A55F]/20 transition-all">
+                                        <textarea
                                         value={newMessage}
                                         onChange={(e) => setNewMessage(e.target.value)}
-                                        onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                                            onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && handleSendMessage()}
                                         placeholder="Type a message..."
-                                        className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00A55F] focus:border-transparent"
+                                            className="w-full bg-transparent border-none outline-none resize-none text-sm leading-relaxed"
+                                            rows="1"
+                                            disabled={isSending}
+                                            style={{ minHeight: '20px', maxHeight: '100px' }}
                                     />
+                                    </div>
                                     <button
                                         onClick={handleSendMessage}
                                         disabled={!newMessage.trim() || isSending}
-                                        className="px-4 py-2 bg-[#00A55F] text-white rounded-lg hover:bg-[#008c4f] disabled:opacity-50 disabled:cursor-not-allowed"
+                                        className="p-2 bg-gradient-to-r from-[#00A55F] to-[#008c4f] text-white rounded-full hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-105"
                                     >
                                         {isSending ? (
                                             <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
@@ -421,51 +475,74 @@ const Messages = () => {
                                             <p className="text-sm">Start the conversation!</p>
                                         </div>
                                     ) : (
-                                        messages.map((message) => (
+                                        messages.map((message) => {
+                                            // Check if sender is current user using ID comparison
+                                            const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+                                            const isCurrentUser = message.senderId === currentUser.id || message.sender === 'You';
+
+                                            return (
                                             <motion.div
                                                 key={message.id}
                                                 initial={{ opacity: 0, y: 10 }}
                                                 animate={{ opacity: 1, y: 0 }}
-                                                className={`flex ${message.sender === 'recruiter' ? 'justify-end' : 'justify-start'}`}
-                                            >
-                                                <div className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${message.sender === 'recruiter'
+                                                    className={`flex ${isCurrentUser ? 'justify-end' : 'justify-start'} mb-4`}
+                                                >
+                                                    <div className={`flex items-start space-x-2 max-w-xs lg:max-w-md ${isCurrentUser ? 'flex-row-reverse space-x-reverse' : ''}`}>
+                                                        {/* Avatar/Initials */}
+                                                        <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${isCurrentUser
+                                                            ? 'bg-[#00A55F] text-white'
+                                                            : 'bg-gray-300 text-gray-700'
+                                                            }`}>
+                                                            {isCurrentUser
+                                                                ? (currentUser.name ? currentUser.name[0] : 'Y')
+                                                                : (message.sender !== 'You' ? message.sender[0] : 'C')
+                                                            }
+                                                        </div>
+
+                                                        {/* Message Bubble */}
+                                                        <div className={`px-4 py-3 rounded-xl shadow-sm ${isCurrentUser
                                                     ? 'bg-[#00A55F] text-white'
-                                                    : 'bg-gray-100 text-gray-900'
+                                                            : 'bg-[#F1F5F9] text-black'
                                                     }`}>
-                                                    <p className="text-sm">{message.content}</p>
-                                                    <div className={`flex items-center justify-between mt-1 text-xs ${message.sender === 'recruiter' ? 'text-white text-opacity-80' : 'text-gray-500'
+                                                            <p className="text-sm leading-relaxed">{message.content}</p>
+                                                            <div className={`flex items-center justify-between mt-2 text-xs ${isCurrentUser ? 'text-white/80' : 'text-gray-500'
                                                         }`}>
                                                         <span>{formatTime(message.timestamp)}</span>
-                                                        {message.sender === 'recruiter' && (
+                                                                {isCurrentUser && (
                                                             <span className="ml-2">
                                                                 {message.status === 'sending' && <FaClock className="h-3 w-3" />}
                                                                 {message.status === 'delivered' && <FaCheck className="h-3 w-3" />}
                                                                 {message.status === 'read' && <FaCheckDouble className="h-3 w-3" />}
                                                             </span>
                                                         )}
+                                                            </div>
                                                     </div>
                                                 </div>
                                             </motion.div>
-                                        ))
+                                            );
+                                        })
                                     )}
                                 </div>
 
                                 {/* Message Input */}
-                                <div className="p-4 border-t border-gray-200">
-                                    <div className="flex space-x-3">
-                                        <input
-                                            type="text"
+                                <div className="p-4 border-t border-gray-200 bg-white">
+                                    <div className="flex items-end space-x-3">
+                                        <div className="flex-1 bg-gray-50 rounded-2xl px-4 py-3 border border-gray-200 focus-within:border-[#00A55F] focus-within:ring-2 focus-within:ring-[#00A55F]/20 transition-all">
+                                            <textarea
                                             value={newMessage}
                                             onChange={(e) => setNewMessage(e.target.value)}
-                                            onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                                                onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && handleSendMessage()}
                                             placeholder="Type your message..."
-                                            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00A55F] focus:border-transparent"
+                                                className="w-full bg-transparent border-none outline-none resize-none text-sm leading-relaxed"
+                                                rows="1"
                                             disabled={isSending}
+                                                style={{ minHeight: '20px', maxHeight: '120px' }}
                                         />
+                                        </div>
                                         <button
                                             onClick={handleSendMessage}
                                             disabled={!newMessage.trim() || isSending}
-                                            className="px-4 py-2 bg-[#00A55F] text-white rounded-lg hover:bg-[#008c4f] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                            className="p-3 bg-gradient-to-r from-[#00A55F] to-[#008c4f] text-white rounded-full hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-105"
                                         >
                                             {isSending ? (
                                                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
