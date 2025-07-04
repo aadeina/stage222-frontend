@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../../context/AuthContext';
 import { FaBriefcase, FaSearch, FaBookmark, FaUser, FaExclamationTriangle, FaTimes, FaFileAlt, FaChevronLeft, FaChevronRight, FaStar, FaMapMarkerAlt, FaClock, FaMoneyBillWave } from 'react-icons/fa';
 import { getCandidateProfile } from '../api/candidateApi';
+import api from '../../../services/api';
 
 const CandidateDashboard = () => {
     const navigate = useNavigate();
@@ -15,6 +16,7 @@ const CandidateDashboard = () => {
     const [profileCompletion, setProfileCompletion] = useState(0);
     const [showProfilePopup, setShowProfilePopup] = useState(false);
     const [animatedPercent, setAnimatedPercent] = useState(0);
+    const [bookmarksCount, setBookmarksCount] = useState(0);
 
     // Mock user data for development
     const mockUser = {
@@ -31,8 +33,7 @@ const CandidateDashboard = () => {
     const mockStats = {
         applications: 12,
         interviews: 3,
-        savedJobs: 8,
-        profileViews: 24
+        savedJobs: bookmarksCount
     };
 
     const mockRecentApplications = [
@@ -216,7 +217,32 @@ const CandidateDashboard = () => {
                 setProfileCompletion(calculateProfileCompletion(currentUser));
             }
         };
+
+        // Fetch bookmarks count from API
+        const fetchBookmarksCount = async () => {
+            try {
+                console.log('Fetching bookmarks count...');
+                const response = await api.get('/bookmarks/count/');
+                console.log('Bookmarks count response:', response.data);
+                setBookmarksCount(response.data.count);
+            } catch (error) {
+                console.error('Error fetching bookmarks count:', error);
+                setBookmarksCount(0);
+            }
+        };
+
         fetchProfile();
+        fetchBookmarksCount();
+    }, []);
+
+    // Listen for bookmark changes and refresh count
+    useEffect(() => {
+        const handleBookmarkChange = () => {
+            fetchBookmarksCount();
+        };
+
+        window.addEventListener('bookmarkChanged', handleBookmarkChange);
+        return () => window.removeEventListener('bookmarkChanged', handleBookmarkChange);
     }, []);
 
     // Calculate profile completion percentage based on required fields
@@ -290,6 +316,11 @@ const CandidateDashboard = () => {
         }
     }, [profileCompletion]);
 
+    // Function to refresh bookmarks count (can be called from other components)
+    const refreshBookmarksCount = () => {
+        fetchBookmarksCount();
+    };
+
     if (isLoading) {
         return (
             <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -316,20 +347,20 @@ const CandidateDashboard = () => {
                 </motion.div>
 
                 {/* Statistics Cards - Responsive grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.1 }}
-                        className="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
+                        className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 hover:shadow-md transition-shadow"
                     >
                         <div className="flex items-center justify-between">
-                            <div>
-                                <p className="text-sm font-medium text-gray-600">Applications</p>
-                                <p className="text-2xl font-bold text-gray-900">{mockStats.applications}</p>
+                            <div className="flex-1 min-w-0">
+                                <p className="text-xs sm:text-sm font-medium text-gray-600">Applications</p>
+                                <p className="text-xl sm:text-2xl font-bold text-gray-900">{mockStats.applications}</p>
                             </div>
-                            <div className="p-3 bg-blue-100 rounded-lg">
-                                <FaFileAlt className="h-6 w-6 text-blue-600" />
+                            <div className="p-2 sm:p-3 bg-blue-100 rounded-lg flex-shrink-0 ml-3">
+                                <FaFileAlt className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600" />
                             </div>
                         </div>
                     </motion.div>
@@ -340,26 +371,26 @@ const CandidateDashboard = () => {
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         whileHover={{ scale: 1.04, boxShadow: '0 8px 32px rgba(0,165,95,0.12)' }}
                         transition={{ type: 'spring', stiffness: 300, damping: 20, delay: 0.2 }}
-                        className="relative bg-gradient-to-br from-green-100 via-white to-green-50 rounded-xl shadow-sm border border-green-200 p-6 overflow-hidden cursor-pointer"
+                        className="relative bg-gradient-to-br from-green-100 via-white to-green-50 rounded-xl shadow-sm border border-green-200 p-4 sm:p-6 overflow-hidden cursor-pointer"
                         onMouseEnter={() => setShowProfilePopup(true)}
                         onMouseLeave={() => setShowProfilePopup(false)}
                     >
                         {/* Decorative background circle */}
-                        <div className="absolute -top-6 -right-6 w-20 h-20 bg-green-200 opacity-30 rounded-full z-0"></div>
+                        <div className="absolute -top-6 -right-6 w-16 h-16 sm:w-20 sm:h-20 bg-green-200 opacity-30 rounded-full z-0"></div>
                         <div className="flex items-center justify-between relative z-10">
-                            <div>
-                                <p className="text-sm font-medium text-green-700">Profile Completion</p>
+                            <div className="flex-1 min-w-0">
+                                <p className="text-xs sm:text-sm font-medium text-green-700">Profile Completion</p>
                                 <motion.p
                                     initial={{ scale: 0.8 }}
                                     animate={{ scale: 1 }}
                                     transition={{ type: 'spring', stiffness: 300, damping: 15, delay: 0.3 }}
-                                    className="text-2xl font-bold text-green-900"
+                                    className="text-xl sm:text-2xl font-bold text-green-900"
                                 >
                                     {animatedPercent}%
                                 </motion.p>
                             </div>
-                            <div className="p-3 bg-green-200 rounded-lg">
-                                <FaStar className="h-6 w-6 text-green-700" />
+                            <div className="p-2 sm:p-3 bg-green-200 rounded-lg flex-shrink-0 ml-3">
+                                <FaStar className="h-5 w-5 sm:h-6 sm:w-6 text-green-700" />
                             </div>
                         </div>
                         {/* Pro-style popup on hover */}
@@ -386,35 +417,20 @@ const CandidateDashboard = () => {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.3 }}
-                        className="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
+                        className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 hover:shadow-md transition-shadow"
                     >
                         <div className="flex items-center justify-between">
-                            <div>
-                                <p className="text-sm font-medium text-gray-600">Saved Jobs</p>
-                                <p className="text-2xl font-bold text-gray-900">{mockStats.savedJobs}</p>
+                            <div className="flex-1 min-w-0">
+                                <p className="text-xs sm:text-sm font-medium text-gray-600">Saved Jobs</p>
+                                <p className="text-xl sm:text-2xl font-bold text-gray-900">{mockStats.savedJobs}</p>
                             </div>
-                            <div className="p-3 bg-yellow-100 rounded-lg">
-                                <FaBookmark className="h-6 w-6 text-yellow-600" />
+                            <div className="p-2 sm:p-3 bg-yellow-100 rounded-lg flex-shrink-0 ml-3">
+                                <FaBookmark className="h-5 w-5 sm:h-6 sm:w-6 text-yellow-600" />
                             </div>
                         </div>
                     </motion.div>
 
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.4 }}
-                        className="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
-                    >
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <p className="text-sm font-medium text-gray-600">Profile Views</p>
-                                <p className="text-2xl font-bold text-gray-900">{mockStats.profileViews}</p>
-                            </div>
-                            <div className="p-3 bg-purple-100 rounded-lg">
-                                <FaUser className="h-6 w-6 text-purple-600" />
-                            </div>
-                        </div>
-                    </motion.div>
+
                 </div>
 
                 {/* Quick Actions - Responsive grid, stack on mobile */}

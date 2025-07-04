@@ -116,6 +116,17 @@ const InternshipDetail = () => {
         return '/internships';
     };
 
+    const checkIfBookmarked = async (internshipId) => {
+        try {
+            const response = await api.get('/bookmarks/');
+            const bookmarkedInternships = response.data.results || [];
+            return bookmarkedInternships.some(bookmark => bookmark.internship === internshipId);
+        } catch (error) {
+            console.error('Error checking bookmark status:', error);
+            return false;
+        }
+    };
+
     const fetchInternship = async () => {
         setLoading(true);
         setError(null);
@@ -217,9 +228,13 @@ const InternshipDetail = () => {
                 setOrganization(response.data.organization || {});
             }
 
-            // Check if internship is saved (from localStorage for now)
-            const savedInternships = JSON.parse(localStorage.getItem('savedInternships') || '[]');
-            setIsSaved(savedInternships.includes(id));
+            // Check if internship is bookmarked using the API
+            if (isAuthenticated) {
+                const bookmarked = await checkIfBookmarked(id);
+                setIsSaved(bookmarked);
+            } else {
+                setIsSaved(false);
+            }
 
             // Show notification for auto-refresh updates
             if (isUpdate && !isRefreshing) {
@@ -402,24 +417,29 @@ const InternshipDetail = () => {
         setShowShareMenu(true);
     };
 
-    const handleSave = () => {
+    const handleSave = async () => {
         if (!isAuthenticated) {
             setShowAuthModal(true);
             return;
         }
 
-        const savedInternships = JSON.parse(localStorage.getItem('savedInternships') || '[]');
+        try {
+            // Toggle bookmark using the API
+            const response = await api.post(`/bookmarks/${internship.id}/`);
 
-        if (isSaved) {
-            const updated = savedInternships.filter(id => id !== internship.id);
-            localStorage.setItem('savedInternships', JSON.stringify(updated));
-            setIsSaved(false);
-            toast.success('Removed from saved internships');
-        } else {
-            savedInternships.push(internship.id);
-            localStorage.setItem('savedInternships', JSON.stringify(savedInternships));
-            setIsSaved(true);
-            toast.success('Saved to your internships');
+            if (response.data.bookmarked) {
+                setIsSaved(true);
+                toast.success('Internship saved to bookmarks!');
+            } else {
+                setIsSaved(false);
+                toast.success('Removed from bookmarks');
+            }
+
+            // Notify other components about the bookmark change
+            window.dispatchEvent(new Event('bookmarkChanged'));
+        } catch (error) {
+            console.error('Error toggling bookmark:', error);
+            toast.error('Failed to update bookmark');
         }
     };
 

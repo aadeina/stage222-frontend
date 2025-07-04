@@ -72,21 +72,6 @@ const CandidateHeader = () => {
             case 'bookmarks':
                 navigate('/candidate/bookmarks');
                 break;
-            case 'resume':
-                navigate('/candidate/resume');
-                break;
-            case 'preferences':
-                navigate('/candidate/preferences');
-                break;
-            case 'safety':
-                navigate('/candidate/safety-tips');
-                break;
-            case 'help':
-                navigate('/candidate/help');
-                break;
-            case 'account':
-                navigate('/candidate/account');
-                break;
             case 'edit-profile':
                 navigate('/candidate/edit-profile');
                 break;
@@ -274,27 +259,11 @@ const CandidateHeader = () => {
                                             </button>
 
                                             <button
-                                                onClick={() => handleProfileAction('resume')}
-                                                className="w-full flex items-center space-x-3 px-3 sm:px-4 py-3 text-left text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
-                                            >
-                                                <FaEdit className="h-5 w-5 text-purple-600 flex-shrink-0" />
-                                                <span className="font-medium">Edit Resume</span>
-                                            </button>
-
-                                            <button
                                                 onClick={() => handleProfileAction('edit-profile')}
                                                 className="w-full flex items-center space-x-3 px-3 sm:px-4 py-3 text-left text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
                                             >
                                                 <FaUserCog className="h-5 w-5 text-green-600 flex-shrink-0" />
                                                 <span className="font-medium">Edit Profile</span>
-                                            </button>
-
-                                            <button
-                                                onClick={() => handleProfileAction('preferences')}
-                                                className="w-full flex items-center space-x-3 px-3 sm:px-4 py-3 text-left text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
-                                            >
-                                                <FaCog className="h-5 w-5 text-gray-600 flex-shrink-0" />
-                                                <span className="font-medium">Edit Preferences</span>
                                             </button>
 
                                             {/* Divider */}
