@@ -6,9 +6,11 @@
 // RESPONSIVE: Horizontal scroll on mobile, responsive text sizing
 
 import React, { useEffect, useState } from 'react';
-import { FaUserTie, FaFileAlt, FaCheckCircle, FaTimesCircle, FaHourglassHalf, FaCertificate, FaChevronRight, FaRegStar, FaTimes } from 'react-icons/fa';
+import { FaUserTie, FaFileAlt, FaCheckCircle, FaTimesCircle, FaHourglassHalf, FaCertificate, FaChevronRight, FaRegStar, FaTimes, FaPaperPlane } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '../../../services/api';
+import messagingApi from '../../../services/messagingApi';
+import toast from 'react-hot-toast';
 
 const statusColors = {
     'accepted': 'bg-green-100 text-green-800',
@@ -117,6 +119,7 @@ const CandidateApplications = () => {
     const [error, setError] = useState(null);
     const [selectedApp, setSelectedApp] = useState(null);
     const [modalOpen, setModalOpen] = useState(false);
+    const [messagingModal, setMessagingModal] = useState({ isOpen: false, recruiter: null, internship: null });
 
     useEffect(() => {
         const fetchApplications = async () => {
@@ -142,9 +145,91 @@ const CandidateApplications = () => {
         setSelectedApp(null);
     };
 
+    // Handle messaging modal
+    const openMessagingModal = (recruiter, internship) => {
+        setMessagingModal({ isOpen: true, recruiter, internship });
+    };
+
+    const closeMessagingModal = () => {
+        setMessagingModal({ isOpen: false, recruiter: null, internship: null });
+    };
+
+    // Send message to recruiter
+    const sendMessageToRecruiter = async (message, recruiterId, internshipId) => {
+        try {
+            const messageData = {
+                receiver: recruiterId,
+                internship: internshipId,
+                body: message
+            };
+            await messagingApi.sendMessage(messageData);
+            toast.success('Message sent successfully!');
+            closeMessagingModal();
+        } catch (error) {
+            console.error('Failed to send message:', error);
+            toast.error('Failed to send message. Please try again.');
+        }
+    };
+
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
             <ApplicationModal isOpen={modalOpen} onClose={closeModal} application={selectedApp} />
+
+            {/* Messaging Modal */}
+            {messagingModal.isOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+                    <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-8 relative">
+                        <button
+                            onClick={closeMessagingModal}
+                            className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
+                        >
+                            <FaTimes className="h-5 w-5" />
+                        </button>
+                        <div className="flex items-center gap-4 mb-6">
+                            <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[#00A55F] to-[#008c4f] flex items-center justify-center text-white font-bold text-2xl">
+                                <FaPaperPlane className="h-6 w-6" />
+                            </div>
+                            <div>
+                                <h2 className="text-xl font-bold text-gray-900 mb-1">Message Recruiter</h2>
+                                <p className="text-gray-600 text-sm">{messagingModal.recruiter?.name || 'Recruiter'}</p>
+                            </div>
+                        </div>
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Message</label>
+                                <textarea
+                                    id="message"
+                                    rows={4}
+                                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00A55F] focus:border-transparent resize-none"
+                                    placeholder="Type your message here..."
+                                />
+                            </div>
+                            <div className="flex justify-end space-x-3">
+                                <button
+                                    onClick={closeMessagingModal}
+                                    className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        const message = document.getElementById('message').value;
+                                        if (message.trim()) {
+                                            sendMessageToRecruiter(message, messagingModal.recruiter?.id, messagingModal.internship?.id);
+                                        } else {
+                                            toast.error('Please enter a message');
+                                        }
+                                    }}
+                                    className="px-4 py-2 bg-[#00A55F] text-white rounded-lg hover:bg-[#008c4f] transition-colors flex items-center gap-2"
+                                >
+                                    <FaPaperPlane className="h-4 w-4" />
+                                    Send Message
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
             <div className="max-w-7xl mx-auto py-8 px-2 sm:px-6 lg:px-8">
                 {/* Header - Responsive layout */}
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
@@ -260,6 +345,26 @@ const CandidateApplications = () => {
                                                         >
                                                             <FaUserTie className="h-4 w-4" />
                                                             Show Opportunity
+                                                        </motion.button>
+                                                    )}
+                                                    {/* Message Recruiter Button */}
+                                                    {app.recruiter_id && (
+                                                        <motion.button
+                                                            whileTap={{ scale: 0.95 }}
+                                                            className="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-purple-50 text-purple-700 text-xs font-bold shadow-md hover:bg-purple-100 transition border border-purple-200"
+                                                            onClick={() => openMessagingModal(
+                                                                {
+                                                                    id: app.recruiter_id,
+                                                                    name: app.recruiter_name || app.organization_name || 'Recruiter'
+                                                                },
+                                                                {
+                                                                    id: app.internship_id,
+                                                                    title: app.internship_title
+                                                                }
+                                                            )}
+                                                        >
+                                                            <FaPaperPlane className="h-4 w-4" />
+                                                            Message
                                                         </motion.button>
                                                     )}
                                                 </div>

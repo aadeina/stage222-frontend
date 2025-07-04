@@ -1,141 +1,380 @@
 // CandidateMessages.jsx
 // World-class, professional candidate messages page for Stage222
-// Inspired by Internshala, tailored for Mauritanian students and Stage222 branding
+// Integrated with real Django backend messaging API
 // Two-column layout: left for conversation list, right for selected thread
-// Uses Mauritanian mock data in English for now; ready for API integration
 // RESPONSIVE: Stacks vertically on mobile, horizontal scroll on desktop
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaSearch, FaEnvelope, FaUser, FaPaperPlane, FaCheckCircle, FaBriefcase, FaRegStar, FaRegSmile } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-
-// Mauritanian mock data for conversations (English)
-const mockConversations = [
-    {
-        id: 1,
-        company: 'MauriTech',
-        logo: null,
-        jobTitle: 'Full Stack & Data Engineering Internship | Chatting with Mohamed Ould Ahmed',
-        jobType: 'Internship',
-        lastMessage: 'Thank you for your application. Please complete this form to proceed.',
-        date: '2024-06-12',
-        unread: true,
-        status: 'In Progress',
-        messages: [
-            {
-                sender: 'MauriTech',
-                text: 'Thank you for applying to MauriTech. Please complete this form: https://mauritech.mr/form. Salary: 8,000 MRU/month.',
-                time: '09:15',
-                date: '12 June 2024',
-            },
-            {
-                sender: 'You',
-                text: "Thank you! I will fill it out today.",
-                time: '09:20',
-                date: '12 June 2024',
-            },
-            {
-                sender: 'MauriTech',
-                text: 'Perfect! Let us know if you have any questions.',
-                time: '09:22',
-                date: '12 June 2024',
-            },
-        ],
-    },
-    {
-        id: 2,
-        company: 'Nouakchott Digital',
-        logo: null,
-        jobTitle: 'Business Analytics Internship | Chatting with Aissata Mint Sidi',
-        jobType: 'Internship',
-        lastMessage: 'Your interview is scheduled for tomorrow at 10am. Good luck!',
-        date: '2024-06-10',
-        unread: false,
-        status: 'Interview',
-        messages: [
-            {
-                sender: 'Nouakchott Digital',
-                text: 'Your interview is scheduled for tomorrow at 10am at our Tevragh Zeina office.',
-                time: '16:00',
-                date: '10 June 2024',
-            },
-            {
-                sender: 'You',
-                text: 'Thank you for the opportunity. I will be there.',
-                time: '16:05',
-                date: '10 June 2024',
-            },
-        ],
-    },
-    {
-        id: 3,
-        company: 'Chinguetti Bank',
-        logo: null,
-        jobTitle: 'Finance & Accounting Internship | Chatting with Sidi El Mokhtar',
-        jobType: 'Internship',
-        lastMessage: 'Thank you for your response. We will get back to you soon.',
-        date: '2024-06-08',
-        unread: false,
-        status: 'Pending',
-        messages: [
-            {
-                sender: 'Chinguetti Bank',
-                text: 'Thank you for your response. We will get back to you soon.',
-                time: '11:30',
-                date: '8 June 2024',
-            },
-        ],
-    },
-    {
-        id: 4,
-        company: 'Sahara Solutions',
-        logo: null,
-        jobTitle: 'Community Management Internship | Chatting with Zeinabou Mint Abdallahi',
-        jobType: 'Internship',
-        lastMessage: 'We are interested in your profile. Are you available for a call?',
-        date: '2024-06-05',
-        unread: true,
-        status: 'New',
-        messages: [
-            {
-                sender: 'Sahara Solutions',
-                text: 'We are interested in your profile. Are you available for a call this week?',
-                time: '14:00',
-                date: '5 June 2024',
-            },
-        ],
-    },
-];
+import messagingApi from '../../../services/messagingApi';
+import toast from 'react-hot-toast';
 
 const CandidateMessages = () => {
-    const [selectedId, setSelectedId] = useState(mockConversations[0]?.id || null);
+    // Check if user is authenticated - moved to top to avoid initialization error
+    const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+    const isAuthenticated = !!currentUser.email;
+
+    const [conversations, setConversations] = useState([]);
+    const [selectedId, setSelectedId] = useState(null);
     const [search, setSearch] = useState('');
     const [filter, setFilter] = useState('all');
+    const [isLoading, setIsLoading] = useState(true);
+    const [loadingMessages, setLoadingMessages] = useState(false);
+    const [newMessage, setNewMessage] = useState('');
+    const [isSending, setIsSending] = useState(false);
+    const [inboxLoaded, setInboxLoaded] = useState(false);
     const navigate = useNavigate();
 
+    // ✅ Load inbox conversations from API
+    const loadInbox = async () => {
+        try {
+            setIsLoading(true);
+            console.log('Fetching inbox from API...');
+
+            const response = await messagingApi.getInbox();
+            const inboxData = response.data;
+
+            console.log('Candidate Inbox API Response:', inboxData);
+
+            // Handle different response structures
+            const inboxArray = Array.isArray(inboxData) ? inboxData :
+                inboxData.results ? inboxData.results :
+                    inboxData.conversations ? inboxData.conversations : [];
+
+            console.log('Processed inbox array:', inboxArray);
+
+            // Transform API data to match our UI structure
+            const transformedConversations = inboxArray.map((item, index) => {
+                // Extract user info - handle different possible structures
+                const userEmail = item.user_email || item.email || item.sender_email || 'unknown@email.com';
+                const userId = item.user_id || item.id || `user_${index}`;
+                const internshipTitle = item.internship_title || item.title || 'General Inquiry';
+
+                // Create a more readable company name
+                let companyName = 'Recruiter';
+                if (userEmail && userEmail !== 'unknown@email.com') {
+                    const emailParts = userEmail.split('@');
+                    if (emailParts.length > 1) {
+                        const domain = emailParts[1];
+                        // Extract company name from domain
+                        if (domain.includes('gmail')) {
+                            companyName = emailParts[0].charAt(0).toUpperCase() + emailParts[0].slice(1);
+                        } else {
+                            companyName = domain.split('.')[0].charAt(0).toUpperCase() + domain.split('.')[0].slice(1);
+                        }
+                    }
+                }
+
+                return {
+                    id: index + 1,
+                    user_id: userId,
+                    company: companyName,
+                    logo: null,
+                    jobTitle: `${internshipTitle} | Chatting with ${companyName}`,
+                    jobType: 'Internship',
+                    lastMessage: item.message || item.body || 'No message content',
+                    date: formatDate(item.timestamp),
+                    unread: !item.is_read,
+                    status: getStatusFromMessage(item.message || item.body || ''),
+                    messages: [], // Will be loaded when conversation is selected
+                    timestamp: item.timestamp
+                };
+            });
+
+            console.log('Transformed conversations:', transformedConversations);
+            setConversations(transformedConversations);
+            setInboxLoaded(true); // Mark inbox as loaded
+
+            // Only set selected conversation if we have conversations and none is selected
+            if (transformedConversations.length > 0 && !selectedId) {
+                console.log('Setting first conversation as selected:', transformedConversations[0]);
+                setSelectedId(transformedConversations[0].id);
+            }
+        } catch (error) {
+            console.error('Failed to load inbox:', error);
+
+            // Handle specific error types
+            if (error.response?.status === 403) {
+                toast.error('Authentication required. Please log in again.');
+                // Redirect to login if authentication fails
+                setTimeout(() => navigate('/login'), 2000);
+            } else if (error.response?.status === 404) {
+                toast.error('No conversations found.');
+                setConversations([]);
+            } else {
+                toast.error('Failed to load conversations. Please try again.');
+                setConversations([]);
+            }
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    // ✅ Load messages for a specific conversation
+    const loadMessages = async (userId) => {
+        // Validate userId before making API call
+        if (!userId || userId === 'undefined' || userId.includes('user_')) {
+            console.log('Invalid userId, skipping message load:', userId);
+            return;
+        }
+
+        try {
+            setLoadingMessages(true);
+            console.log('Loading messages for userId:', userId);
+
+            const response = await messagingApi.getMessagesWithUser(userId);
+            const messagesData = response.data;
+
+            console.log('Messages API Response:', messagesData);
+
+            // Handle different response structures
+            const messagesArray = Array.isArray(messagesData) ? messagesData :
+                messagesData.results ? messagesData.results :
+                    messagesData.messages ? messagesData.messages : [];
+
+            console.log('Processed messages array:', messagesArray);
+
+            // Get current user email from localStorage
+            const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+            const currentUserEmail = currentUser.email;
+
+            // Transform API messages to match our UI structure
+            const transformedMessages = messagesArray.map((msg) => {
+                const senderEmail = msg.sender_email || msg.email || 'unknown@email.com';
+                const isCurrentUser = senderEmail === currentUserEmail;
+
+                // Create a readable sender name
+                let senderName = 'You';
+                if (!isCurrentUser) {
+                    const emailParts = senderEmail.split('@');
+                    if (emailParts.length > 1) {
+                        const domain = emailParts[1];
+                        if (domain.includes('gmail')) {
+                            senderName = emailParts[0].charAt(0).toUpperCase() + emailParts[0].slice(1);
+                        } else {
+                            senderName = domain.split('.')[0].charAt(0).toUpperCase() + domain.split('.')[0].slice(1);
+                        }
+                    }
+                }
+
+                return {
+                    sender: isCurrentUser ? 'You' : senderName,
+                    text: msg.body || msg.message || 'No message content',
+                    time: formatTime(msg.timestamp),
+                    date: formatDate(msg.timestamp),
+                    is_read: msg.is_read
+                };
+            });
+
+            // Update the selected conversation with messages
+            setConversations(prev => prev.map(conv =>
+                conv.user_id === userId
+                    ? { ...conv, messages: transformedMessages }
+                    : conv
+            ));
+
+            // Mark unread messages as read
+            const unreadMessages = messagesArray.filter(msg => !msg.is_read && msg.sender_email !== currentUserEmail);
+            for (const msg of unreadMessages) {
+                try {
+                    await messagingApi.markMessageAsRead(msg.id);
+                } catch (error) {
+                    console.error('Failed to mark message as read:', error);
+                }
+            }
+        } catch (error) {
+            console.error('Failed to load messages:', error);
+
+            // Handle specific error types
+            if (error.response?.status === 403) {
+                toast.error('Authentication required. Please log in again.');
+                setTimeout(() => navigate('/login'), 2000);
+            } else if (error.response?.status === 404) {
+                toast.error('No messages found for this conversation.');
+            } else {
+                toast.error('Failed to load messages. Please try again.');
+            }
+        } finally {
+            setLoadingMessages(false);
+        }
+    };
+
+    // ✅ Send a new message
+    const handleSendMessage = async () => {
+        if (!newMessage.trim() || !selectedConversation) return;
+
+        setIsSending(true);
+
+        try {
+            const messageData = {
+                receiver: selectedConversation.user_id,
+                internship: null, // Candidates don't send internship-specific messages
+                body: newMessage.trim()
+            };
+
+            const response = await messagingApi.sendMessage(messageData);
+            const sentMessage = response.data;
+
+            // Add the new message to the conversation
+            const newMessageObj = {
+                sender: 'You',
+                text: newMessage.trim(),
+                time: formatTime(new Date().toISOString()),
+                date: formatDate(new Date().toISOString()),
+                is_read: false
+            };
+
+            // Update conversation with new message
+            setConversations(prev => prev.map(conv =>
+                conv.id === selectedId
+                    ? {
+                        ...conv,
+                        messages: [...conv.messages, newMessageObj],
+                        lastMessage: newMessage.trim(),
+                        date: 'Just now',
+                        unread: false
+                    }
+                    : conv
+            ));
+
+            setNewMessage('');
+            toast.success('Message sent successfully!');
+        } catch (error) {
+            console.error('Failed to send message:', error);
+            toast.error('Failed to send message');
+        } finally {
+            setIsSending(false);
+        }
+    };
+
+    // ✅ Format timestamp for display
+    const formatTime = (timestamp) => {
+        const date = new Date(timestamp);
+        return date.toLocaleTimeString('en-US', {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false
+        });
+    };
+
+    // ✅ Format date for display
+    const formatDate = (timestamp) => {
+        const date = new Date(timestamp);
+        const now = new Date();
+        const diffInHours = (now - date) / (1000 * 60 * 60);
+
+        if (diffInHours < 1) return 'Just now';
+        if (diffInHours < 24) return `${Math.floor(diffInHours)}h ago`;
+        if (diffInHours < 48) return 'Yesterday';
+        return date.toLocaleDateString();
+    };
+
+    // ✅ Get status from message content
+    const getStatusFromMessage = (message) => {
+        const lowerMessage = message.toLowerCase();
+        if (lowerMessage.includes('interview') || lowerMessage.includes('meeting')) return 'Interview';
+        if (lowerMessage.includes('accepted') || lowerMessage.includes('congratulations')) return 'In Progress';
+        if (lowerMessage.includes('rejected') || lowerMessage.includes('unfortunately')) return 'Rejected';
+        return 'New';
+    };
+
+    // ✅ Load inbox on component mount
+    useEffect(() => {
+        if (isAuthenticated && !inboxLoaded) {
+            console.log('Loading inbox for authenticated user:', currentUser.email);
+            loadInbox();
+        }
+    }, [isAuthenticated, inboxLoaded]);
+
+    // ✅ Load messages when conversation is selected
+    useEffect(() => {
+        if (selectedId && conversations.length > 0) {
+            const selectedConv = conversations.find(c => c.id === selectedId);
+            if (selectedConv && selectedConv.user_id) {
+                console.log('Loading messages for conversation:', selectedConv);
+                loadMessages(selectedConv.user_id);
+            }
+        }
+    }, [selectedId]); // Only depend on selectedId, not conversations
+
     // Filter and search logic
-    const filteredConversations = mockConversations.filter(conv => {
+    const filteredConversations = conversations.filter(conv => {
         const matchesSearch = conv.company.toLowerCase().includes(search.toLowerCase()) || conv.jobTitle.toLowerCase().includes(search.toLowerCase());
         const matchesFilter = filter === 'all' || (filter === 'unread' && conv.unread) || (filter === 'archived' && conv.status === 'Archived');
         return matchesSearch && matchesFilter;
     });
-    const selectedConversation = mockConversations.find(c => c.id === selectedId);
+
+    const selectedConversation = conversations.find(c => c.id === selectedId);
+
+
+
+    if (!isAuthenticated) {
+        return (
+            <div className="max-w-7xl mx-auto py-8 px-2 sm:px-6 lg:px-8">
+                <div className="flex flex-col items-center justify-center h-64">
+                    <div className="text-center">
+                        <h3 className="text-lg font-medium text-gray-900 mb-2">Authentication Required</h3>
+                        <p className="text-gray-600 mb-4">Please log in to view your messages.</p>
+                        <button
+                            onClick={() => navigate('/login')}
+                            className="bg-[#00A55F] text-white px-4 py-2 rounded-lg hover:bg-[#008c4f] transition-colors"
+                        >
+                            Go to Login
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    if (isLoading) {
+        return (
+            <div className="max-w-7xl mx-auto py-8 px-2 sm:px-6 lg:px-8">
+                <div className="flex items-center justify-center h-64">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#00A55F]"></div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="max-w-7xl mx-auto py-8 px-2 sm:px-6 lg:px-8">
+            {/* Debug Info - Remove in production */}
+            {process.env.NODE_ENV === 'development' && (
+                <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                    <p className="text-sm text-yellow-800">
+                        <strong>Debug:</strong> User: {currentUser.email || 'Not logged in'} |
+                        Token: {localStorage.getItem('token') ? 'Present' : 'Missing'}
+                    </p>
+                </div>
+            )}
+
             {/* Section Header - Responsive layout */}
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
                 <div>
                     <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">Messages</h1>
                     <p className="text-gray-500 text-sm">Manage your conversations with Mauritanian employers.</p>
                 </div>
-                <button
-                    onClick={() => navigate('/candidate/dashboard')}
-                    className="bg-[#00A55F] text-white px-4 py-2 rounded-lg font-medium shadow hover:bg-[#008c4f] transition"
-                >
-                    ← Back to Dashboard
-                </button>
+                <div className="flex gap-2">
+                    <button
+                        onClick={() => {
+                            setInboxLoaded(false);
+                            loadInbox();
+                        }}
+                        disabled={isLoading}
+                        className="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg font-medium shadow hover:bg-gray-200 transition disabled:opacity-50"
+                    >
+                        {isLoading ? 'Loading...' : '🔄 Refresh'}
+                    </button>
+                    <button
+                        onClick={() => navigate('/candidate/dashboard')}
+                        className="bg-[#00A55F] text-white px-4 py-2 rounded-lg font-medium shadow hover:bg-[#008c4f] transition"
+                    >
+                        ← Back to Dashboard
+                    </button>
+                </div>
             </div>
 
             {/* Main Card - Responsive two-column layout */}
@@ -174,7 +413,10 @@ const CandidateMessages = () => {
                         {filteredConversations.length === 0 ? (
                             <div className="flex flex-col items-center justify-center h-full py-16 text-gray-400">
                                 <FaRegSmile className="text-5xl mb-2" />
-                                <div>No conversations found</div>
+                                <div className="text-center">
+                                    <p className="mb-2">No conversations found</p>
+                                    <p className="text-sm text-gray-500">Start applying to internships to receive messages from recruiters!</p>
+                                </div>
                             </div>
                         ) : (
                             filteredConversations.map(conv => (
@@ -234,16 +476,28 @@ const CandidateMessages = () => {
 
                             {/* Messages Area - Scrollable */}
                             <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                                {selectedConversation.messages.map((message, index) => (
-                                    <div key={index} className={`flex ${message.sender === 'You' ? 'justify-end' : 'justify-start'}`}>
-                                        <div className={`max-w-xs sm:max-w-md lg:max-w-lg px-4 py-2 rounded-lg ${message.sender === 'You' ? 'bg-[#00A55F] text-white' : 'bg-gray-100 text-gray-900'}`}>
-                                            <p className="text-sm">{message.text}</p>
-                                            <p className={`text-xs mt-1 ${message.sender === 'You' ? 'text-white/70' : 'text-gray-500'}`}>
-                                                {message.time} • {message.date}
-                                            </p>
-                                        </div>
+                                {loadingMessages ? (
+                                    <div className="flex items-center justify-center h-full">
+                                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#00A55F]"></div>
                                     </div>
-                                ))}
+                                ) : selectedConversation.messages.length === 0 ? (
+                                    <div className="flex flex-col items-center justify-center h-full text-gray-500">
+                                        <FaEnvelope className="h-12 w-12 mb-4" />
+                                        <p>No messages yet</p>
+                                        <p className="text-sm">Start the conversation!</p>
+                                    </div>
+                                ) : (
+                                    selectedConversation.messages.map((message, index) => (
+                                        <div key={index} className={`flex ${message.sender === 'You' ? 'justify-end' : 'justify-start'}`}>
+                                            <div className={`max-w-xs sm:max-w-md lg:max-w-lg px-4 py-2 rounded-lg ${message.sender === 'You' ? 'bg-[#00A55F] text-white' : 'bg-gray-100 text-gray-900'}`}>
+                                                <p className="text-sm">{message.text}</p>
+                                                <p className={`text-xs mt-1 ${message.sender === 'You' ? 'text-white/70' : 'text-gray-500'}`}>
+                                                    {message.time} • {message.date}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    ))
+                                )}
                             </div>
 
                             {/* Message Input - Responsive padding */}
@@ -251,11 +505,23 @@ const CandidateMessages = () => {
                                 <div className="flex items-center space-x-2">
                                     <input
                                         type="text"
+                                        value={newMessage}
+                                        onChange={(e) => setNewMessage(e.target.value)}
+                                        onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
                                         placeholder="Type your message..."
                                         className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#00A55F]"
+                                        disabled={isSending}
                                     />
-                                    <button className="p-2 bg-[#00A55F] text-white rounded-lg hover:bg-[#008c4f] transition">
-                                        <FaPaperPlane className="h-4 w-4" />
+                                    <button
+                                        onClick={handleSendMessage}
+                                        disabled={!newMessage.trim() || isSending}
+                                        className="p-2 bg-[#00A55F] text-white rounded-lg hover:bg-[#008c4f] transition disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        {isSending ? (
+                                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                                        ) : (
+                                            <FaPaperPlane className="h-4 w-4" />
+                                        )}
                                     </button>
                                 </div>
                             </div>

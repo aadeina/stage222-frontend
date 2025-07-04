@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { FaInbox, FaSearch, FaPaperPlane, FaUser, FaClock, FaCheck, FaCheckDouble } from 'react-icons/fa';
-import api from '../../../services/api';
+import { FaInbox, FaSearch, FaPaperPlane, FaUser, FaClock, FaCheck, FaCheckDouble, FaArrowLeft } from 'react-icons/fa';
+import messagingApi from '../../../services/messagingApi';
 import toast from 'react-hot-toast';
 
 const Messages = () => {
@@ -12,116 +12,123 @@ const Messages = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [isSending, setIsSending] = useState(false);
+    const [loadingMessages, setLoadingMessages] = useState(false);
 
-    // Mock data for demonstration - replace with actual API calls
-    const mockConversations = [
-        {
-            id: 1,
-            candidate: {
-                name: 'Sarah Johnson',
-                avatar: null,
-                email: 'sarah.johnson@email.com'
-            },
-            opportunity: {
-                title: 'Frontend Developer Internship',
-                company: 'TechCorp'
-            },
-            lastMessage: "Thank you for the opportunity! I'm excited to discuss this further.",
-            lastMessageTime: '2 hours ago',
-            unreadCount: 2,
-            status: 'active'
-        },
-        {
-            id: 2,
-            candidate: {
-                name: 'Michael Chen',
-                avatar: null,
-                email: 'michael.chen@email.com'
-            },
-            opportunity: {
-                title: 'Data Science Internship',
-                company: 'TechCorp'
-            },
-            lastMessage: 'When can we schedule the technical interview?',
-            lastMessageTime: '1 day ago',
-            unreadCount: 0,
-            status: 'pending'
-        },
-        {
-            id: 3,
-            candidate: {
-                name: 'Emily Rodriguez',
-                avatar: null,
-                email: 'emily.rodriguez@email.com'
-            },
-            opportunity: {
-                title: 'Marketing Internship',
-                company: 'TechCorp'
-            },
-            lastMessage: "I've completed the assignment you sent.",
-            lastMessageTime: '3 days ago',
-            unreadCount: 1,
-            status: 'completed'
+    // ✅ Load inbox conversations from API
+    const loadInbox = async () => {
+        try {
+            setIsLoading(true);
+            const response = await messagingApi.getInbox();
+            const inboxData = response.data;
+
+            console.log('Inbox API Response:', inboxData);
+
+            // Handle different response structures
+            const inboxArray = Array.isArray(inboxData) ? inboxData :
+                inboxData.results ? inboxData.results :
+                    inboxData.conversations ? inboxData.conversations : [];
+
+            // Transform API data to match our UI structure
+            const transformedConversations = inboxArray.map((item, index) => ({
+                id: index + 1, // Use index as ID since we don't have conversation ID
+                user_id: item.user_id,
+                candidate: {
+                    name: item.user_email.split('@')[0], // Use email prefix as name
+                    avatar: null,
+                    email: item.user_email
+                },
+                opportunity: {
+                    title: item.internship_title || 'General Inquiry',
+                    company: 'Stage222'
+                },
+                lastMessage: item.message,
+                lastMessageTime: formatTime(item.timestamp),
+                unreadCount: item.is_read ? 0 : 1,
+                status: 'active',
+                timestamp: item.timestamp
+            }));
+
+            setConversations(transformedConversations);
+        } catch (error) {
+            console.error('Failed to load inbox:', error);
+            toast.error('Failed to load conversations');
+            // Set empty conversations array on error
+            setConversations([]);
+        } finally {
+            setIsLoading(false);
         }
-    ];
-
-    const mockMessages = {
-        1: [
-            {
-                id: 1,
-                sender: 'candidate',
-                content: "Hi! I'm very interested in the Frontend Developer Internship position.",
-                timestamp: '2024-01-15T10:00:00Z',
-                status: 'read'
-            },
-            {
-                id: 2,
-                sender: 'recruiter',
-                content: 'Hello Sarah! Thank you for your interest. Can you tell me about your experience with React?',
-                timestamp: '2024-01-15T10:05:00Z',
-                status: 'read'
-            },
-            {
-                id: 3,
-                sender: 'candidate',
-                content: 'I have 2 years of experience with React, including building responsive web applications and working with state management libraries like Redux.',
-                timestamp: '2024-01-15T10:10:00Z',
-                status: 'read'
-            },
-            {
-                id: 4,
-                sender: 'candidate',
-                content: "Thank you for the opportunity! I'm excited to discuss this further.",
-                timestamp: '2024-01-15T12:00:00Z',
-                status: 'delivered'
-            }
-        ]
     };
 
-    useEffect(() => {
-        // Simulate API call
-        setTimeout(() => {
-            setConversations(mockConversations);
-            setIsLoading(false);
-        }, 1000);
-    }, []);
+    // ✅ Load messages for a specific conversation
+    const loadMessages = async (userId) => {
+        try {
+            setLoadingMessages(true);
+            const response = await messagingApi.getMessagesWithUser(userId);
+            const messagesData = response.data;
 
-    useEffect(() => {
-        if (selectedConversation) {
-            setMessages(mockMessages[selectedConversation.id] || []);
+            // Debug: Log the response structure
+            console.log('Messages API Response:', messagesData);
+            console.log('Response type:', typeof messagesData);
+            console.log('Is Array:', Array.isArray(messagesData));
+
+            // Handle different response structures
+            const messagesArray = Array.isArray(messagesData) ? messagesData :
+                messagesData.results ? messagesData.results :
+                    messagesData.messages ? messagesData.messages : [];
+
+            console.log('Processed messages array:', messagesArray);
+
+            // Get current user email from localStorage
+            const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+            const currentUserEmail = currentUser.email;
+
+            // Transform API messages to match our UI structure
+            const transformedMessages = messagesArray.length > 0 ? messagesArray.map((msg, index) => ({
+                id: index + 1,
+                sender: msg.sender_email === currentUserEmail ? 'recruiter' : 'candidate',
+                content: msg.body,
+                timestamp: msg.timestamp,
+                status: msg.is_read ? 'read' : 'delivered',
+                is_read: msg.is_read
+            })) : [];
+
+            setMessages(transformedMessages);
+
+            // Mark unread messages as read
+            const unreadMessages = messagesArray.filter(msg => !msg.is_read && msg.sender_email !== currentUserEmail);
+            for (const msg of unreadMessages) {
+                try {
+                    await messagingApi.markMessageAsRead(msg.id);
+                } catch (error) {
+                    console.error('Failed to mark message as read:', error);
+                }
+            }
+        } catch (error) {
+            console.error('Failed to load messages:', error);
+            toast.error('Failed to load messages');
+        } finally {
+            setLoadingMessages(false);
         }
-    }, [selectedConversation]);
+    };
 
+    // ✅ Send a new message
     const handleSendMessage = async () => {
         if (!newMessage.trim() || !selectedConversation) return;
 
         setIsSending(true);
 
         try {
-            // Simulate API call
-            await new Promise(resolve => setTimeout(resolve, 500));
+            const messageData = {
+                receiver: selectedConversation.user_id,
+                internship: selectedConversation.opportunity.internship_id || null,
+                body: newMessage.trim()
+            };
 
-            const message = {
+            const response = await messagingApi.sendMessage(messageData);
+            const sentMessage = response.data;
+
+            // Add the new message to the conversation
+            const newMessageObj = {
                 id: Date.now(),
                 sender: 'recruiter',
                 content: newMessage.trim(),
@@ -129,24 +136,55 @@ const Messages = () => {
                 status: 'sending'
             };
 
-            setMessages(prev => [...prev, message]);
+            setMessages(prev => [...prev, newMessageObj]);
             setNewMessage('');
 
             // Update conversation last message
             setConversations(prev => prev.map(conv =>
                 conv.id === selectedConversation.id
-                    ? { ...conv, lastMessage: newMessage.trim(), lastMessageTime: 'Just now' }
+                    ? {
+                        ...conv,
+                        lastMessage: newMessage.trim(),
+                        lastMessageTime: 'Just now',
+                        unreadCount: 0
+                    }
                     : conv
             ));
 
             toast.success('Message sent successfully!');
         } catch (error) {
+            console.error('Failed to send message:', error);
             toast.error('Failed to send message');
         } finally {
             setIsSending(false);
         }
     };
 
+    // ✅ Format timestamp for display
+    const formatTime = (timestamp) => {
+        const date = new Date(timestamp);
+        const now = new Date();
+        const diffInHours = (now - date) / (1000 * 60 * 60);
+
+        if (diffInHours < 1) return 'Just now';
+        if (diffInHours < 24) return `${Math.floor(diffInHours)}h ago`;
+        if (diffInHours < 48) return 'Yesterday';
+        return date.toLocaleDateString();
+    };
+
+    // ✅ Load inbox on component mount
+    useEffect(() => {
+        loadInbox();
+    }, []);
+
+    // ✅ Load messages when conversation is selected
+    useEffect(() => {
+        if (selectedConversation) {
+            loadMessages(selectedConversation.user_id);
+        }
+    }, [selectedConversation]);
+
+    // ✅ Filter conversations based on search
     const filteredConversations = conversations.filter(conv =>
         conv.candidate.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         conv.opportunity.title.toLowerCase().includes(searchTerm.toLowerCase())
@@ -168,17 +206,6 @@ const Messages = () => {
             case 'completed': return 'Completed';
             default: return 'Unknown';
         }
-    };
-
-    const formatTime = (timestamp) => {
-        const date = new Date(timestamp);
-        const now = new Date();
-        const diffInHours = (now - date) / (1000 * 60 * 60);
-
-        if (diffInHours < 1) return 'Just now';
-        if (diffInHours < 24) return `${Math.floor(diffInHours)}h ago`;
-        if (diffInHours < 48) return 'Yesterday';
-        return date.toLocaleDateString();
     };
 
     if (isLoading) {
@@ -299,7 +326,11 @@ const Messages = () => {
 
                             {/* Mobile Messages */}
                             <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                                {messages.length === 0 ? (
+                                {loadingMessages ? (
+                                    <div className="flex items-center justify-center h-full">
+                                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#00A55F]"></div>
+                                    </div>
+                                ) : messages.length === 0 ? (
                                     <div className="flex flex-col items-center justify-center h-full text-gray-500">
                                         <FaInbox className="h-12 w-12 mb-4" />
                                         <p>No messages yet</p>
@@ -379,7 +410,11 @@ const Messages = () => {
 
                                 {/* Messages */}
                                 <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                                    {messages.length === 0 ? (
+                                    {loadingMessages ? (
+                                        <div className="flex items-center justify-center h-full">
+                                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#00A55F]"></div>
+                                        </div>
+                                    ) : messages.length === 0 ? (
                                         <div className="flex flex-col items-center justify-center h-full text-gray-500">
                                             <FaInbox className="h-12 w-12 mb-4" />
                                             <p>No messages yet</p>
