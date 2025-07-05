@@ -20,15 +20,23 @@ const CandidateMessages = () => {
     const [selectedId, setSelectedId] = useState(null);
     const [search, setSearch] = useState('');
     const [filter, setFilter] = useState('all');
-    const [isLoading, setIsLoading] = useState(true);
+    const [isLoading, setIsLoading] = useState(false);
     const [loadingMessages, setLoadingMessages] = useState(false);
     const [newMessage, setNewMessage] = useState('');
     const [isSending, setIsSending] = useState(false);
     const [inboxLoaded, setInboxLoaded] = useState(false);
+    const [lastRefresh, setLastRefresh] = useState(null);
+    const [showAcceptanceBanner, setShowAcceptanceBanner] = useState(false);
     const navigate = useNavigate();
 
     // ✅ Load inbox conversations from API
     const loadInbox = async () => {
+        // Prevent multiple simultaneous loads
+        if (isLoading) {
+            console.log('Already loading, skipping...');
+            return;
+        }
+
         try {
             setIsLoading(true);
             console.log('Fetching inbox from API...');
@@ -88,6 +96,10 @@ const CandidateMessages = () => {
             console.log('Transformed conversations:', transformedConversations);
             setConversations(transformedConversations);
             setInboxLoaded(true); // Mark inbox as loaded
+            setLastRefresh(new Date().toLocaleTimeString()); // Update last refresh time
+
+            // Check for acceptance messages and show notifications
+            checkForAcceptanceMessages(transformedConversations);
 
             // Only set selected conversation if we have conversations and none is selected
             if (transformedConversations.length > 0 && !selectedId) {
@@ -98,6 +110,15 @@ const CandidateMessages = () => {
             // Show success message if conversations were loaded
             if (transformedConversations.length > 0) {
                 console.log(`Successfully loaded ${transformedConversations.length} conversations`);
+
+                // If we have a selected conversation, refresh its messages to show new ones
+                if (selectedId) {
+                    const selectedConv = transformedConversations.find(c => c.id === selectedId);
+                    if (selectedConv && selectedConv.user_id) {
+                        console.log('Refreshing messages for selected conversation...');
+                        loadMessages(selectedConv.user_id);
+                    }
+                }
             } else {
                 console.log('No conversations found in the response');
             }
@@ -298,29 +319,40 @@ const CandidateMessages = () => {
         return 'New';
     };
 
+    // ✅ Check for acceptance messages and show banner
+    const checkForAcceptanceMessages = (conversations) => {
+        const hasAcceptanceMessage = conversations.some(conv =>
+            conv.messages && conv.messages.some(msg =>
+                msg.text && msg.text.toLowerCase().includes('accepted') &&
+                msg.text.toLowerCase().includes('congratulations')
+            )
+        );
+
+        if (hasAcceptanceMessage && !showAcceptanceBanner) {
+            setShowAcceptanceBanner(true);
+            toast.success('🎉 Congratulations! You have received an acceptance notification!');
+        }
+    };
+
     // ✅ Load inbox on component mount
     useEffect(() => {
         console.log('useEffect triggered - isAuthenticated:', isAuthenticated, 'inboxLoaded:', inboxLoaded, 'currentUser:', currentUser.email);
         if (isAuthenticated && !inboxLoaded) {
             console.log('Loading inbox for authenticated user:', currentUser.email);
             loadInbox();
-        } else if (isAuthenticated && inboxLoaded && conversations.length === 0) {
-            console.log('User authenticated but no conversations loaded, retrying...');
-            setInboxLoaded(false);
-            loadInbox();
         }
-    }, [isAuthenticated, inboxLoaded, conversations.length]);
+    }, [isAuthenticated, inboxLoaded]);
 
     // ✅ Load messages when conversation is selected
     useEffect(() => {
         if (selectedId && conversations.length > 0) {
             const selectedConv = conversations.find(c => c.id === selectedId);
-            if (selectedConv && selectedConv.user_id) {
+            if (selectedConv && selectedConv.user_id && !loadingMessages) {
                 console.log('Loading messages for conversation:', selectedConv);
                 loadMessages(selectedConv.user_id);
             }
         }
-    }, [selectedId]); // Only depend on selectedId, not conversations
+    }, [selectedId, conversations.length, loadingMessages]); // Add loadingMessages to prevent multiple loads
 
     // ✅ Fallback: Load inbox on component mount regardless of auth state
     useEffect(() => {
@@ -331,6 +363,35 @@ const CandidateMessages = () => {
             loadInbox();
         }
     }, []); // Only run once on mount
+
+    // ✅ Periodic inbox refresh to catch new messages (including automatic acceptance messages)
+    useEffect(() => {
+        if (isAuthenticated && inboxLoaded) {
+            // Refresh inbox every 30 seconds to catch new messages (less frequent to prevent issues)
+            const interval = setInterval(() => {
+                console.log('Periodic inbox refresh...');
+                // Only refresh if not currently loading
+                if (!isLoading) {
+                    loadInbox();
+                }
+            }, 30000); // 30 seconds
+
+            return () => clearInterval(interval);
+        }
+    }, [isAuthenticated, inboxLoaded, isLoading]);
+
+    // ✅ Refresh inbox when window gains focus (user returns to tab)
+    useEffect(() => {
+        const handleFocus = () => {
+            if (isAuthenticated && inboxLoaded && !isLoading) {
+                console.log('Window focused, refreshing inbox...');
+                loadInbox();
+            }
+        };
+
+        window.addEventListener('focus', handleFocus);
+        return () => window.removeEventListener('focus', handleFocus);
+    }, [isAuthenticated, inboxLoaded, isLoading]);
 
     // Filter and search logic
     const filteredConversations = conversations.filter(conv => {
@@ -383,8 +444,38 @@ const CandidateMessages = () => {
                         Authenticated: {isAuthenticated ? 'Yes' : 'No'} |
                         Inbox Loaded: {inboxLoaded ? 'Yes' : 'No'} |
                         Conversations: {conversations.length} |
-                        Selected ID: {selectedId || 'None'}
+                        Selected ID: {selectedId || 'None'} |
+                        Last Refresh: {lastRefresh || 'Never'}
                     </p>
+                </div>
+            )}
+
+            {/* Acceptance Notification Banner */}
+            {showAcceptanceBanner && (
+                <div className="mb-4 p-4 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center">
+                            <div className="flex-shrink-0">
+                                <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                                    <span className="text-white text-sm">🎉</span>
+                                </div>
+                            </div>
+                            <div className="ml-3">
+                                <h3 className="text-sm font-medium text-green-800">
+                                    Application Accepted!
+                                </h3>
+                                <p className="text-sm text-green-700">
+                                    Congratulations! Your application has been accepted. Check your messages for details.
+                                </p>
+                            </div>
+                        </div>
+                        <button
+                            onClick={() => setShowAcceptanceBanner(false)}
+                            className="text-green-600 hover:text-green-800"
+                        >
+                            ×
+                        </button>
+                    </div>
                 </div>
             )}
 
@@ -407,12 +498,12 @@ const CandidateMessages = () => {
                     >
                         {isLoading ? 'Loading...' : '🔄 Refresh'}
                     </button>
-                <button
-                    onClick={() => navigate('/candidate/dashboard')}
-                    className="bg-[#00A55F] text-white px-4 py-2 rounded-lg font-medium shadow hover:bg-[#008c4f] transition"
-                >
-                    ← Back to Dashboard
-                </button>
+                    <button
+                        onClick={() => navigate('/candidate/dashboard')}
+                        className="bg-[#00A55F] text-white px-4 py-2 rounded-lg font-medium shadow hover:bg-[#008c4f] transition"
+                    >
+                        ← Back to Dashboard
+                    </button>
                 </div>
             </div>
 
@@ -518,7 +609,7 @@ const CandidateMessages = () => {
                                 {loadingMessages ? (
                                     <div className="flex items-center justify-center h-full">
                                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#00A55F]"></div>
-                                        </div>
+                                    </div>
                                 ) : selectedConversation.messages.length === 0 ? (
                                     <div className="flex flex-col items-center justify-center h-full text-gray-500">
                                         <FaEnvelope className="h-12 w-12 mb-4" />
@@ -575,7 +666,7 @@ const CandidateMessages = () => {
                                             value={newMessage}
                                             onChange={(e) => setNewMessage(e.target.value)}
                                             onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && handleSendMessage()}
-                                        placeholder="Type your message..."
+                                            placeholder="Type your message..."
                                             className="w-full bg-transparent border-none outline-none resize-none text-sm leading-relaxed"
                                             rows="1"
                                             disabled={isSending}
@@ -590,7 +681,7 @@ const CandidateMessages = () => {
                                         {isSending ? (
                                             <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
                                         ) : (
-                                        <FaPaperPlane className="h-4 w-4" />
+                                            <FaPaperPlane className="h-4 w-4" />
                                         )}
                                     </button>
                                 </div>

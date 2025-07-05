@@ -17,8 +17,8 @@ export const messagingApi = {
     getInbox: () => api.get('/messages/inbox/'),
 
     // 🔔 Notify candidate on application acceptance (auto message)
-    notifyCandidate: (applicationId, status) =>
-        api.patch(`/messages/notify-candidate/${applicationId}/`, { status }),
+    notifyCandidate: (applicationId) =>
+        api.post(`/messages/accept-candidate/${applicationId}/`, { application_id: applicationId }),
 };
 
 export default messagingApi; 

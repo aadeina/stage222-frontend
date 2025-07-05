@@ -59,33 +59,31 @@ const RecruiterOpportunityApplicants = () => {
             await api.patch(`/applications/${app.id}/update/`, { status: newStatus });
             setApplicants(prev => prev.map(a => a.id === app.id ? { ...a, status: newStatus } : a));
 
-            // If status is changed to 'accepted', automatically send a congratulatory message
+            // If status is changed to 'accepted', notify candidate via the acceptance endpoint
             if (newStatus === 'accepted') {
                 try {
-                    const candidateEmail = app.candidate_email || app.candidate?.email;
-                    const candidateId = app.candidate?.id || app.candidate_id;
-                    const internshipId = app.internship?.id || app.opportunity?.id || opportunityId;
+                    console.log('Application accepted, notifying candidate via API...');
 
-                    if (candidateEmail && candidateId) {
-                        const messageData = {
-                            receiver: candidateId,
-                            receiver_email: candidateEmail,
-                            internship: internshipId,
-                            body: `🎉 Congratulations! Your application has been accepted! We're excited to move forward with your application. Let's discuss the next steps and answer any questions you might have. Welcome to the team! 🚀`
-                        };
+                    // Call the acceptance endpoint to notify the candidate
+                    const response = await messagingApi.notifyCandidate(app.id);
+                    console.log('Candidate acceptance notification response:', response.data);
 
-                        // Send the automatic message
-                        await messagingApi.sendMessage(messageData);
-                        console.log('Automatic acceptance message sent successfully');
+                    if (response.data.email_sent) {
+                        console.log('✅ Candidate accepted and notified successfully');
                     }
-                } catch (messageError) {
-                    console.error('Failed to send automatic acceptance message:', messageError);
-                    // Don't show error to user as the main status update was successful
+                } catch (notificationError) {
+                    console.error('Failed to send candidate acceptance notification:', notificationError);
+                    // Don't fail the whole process if notification fails
                 }
             }
 
-            setFeedback('Status updated successfully!');
-            setTimeout(() => setFeedback(''), 2000);
+            // Show appropriate feedback based on the action
+            if (newStatus === 'accepted') {
+                setFeedback('Status updated successfully! Candidate has been notified via email.');
+            } else {
+                setFeedback('Status updated successfully!');
+            }
+            setTimeout(() => setFeedback(''), 3000);
         } catch (err) {
             setFeedback('Failed to update status.');
             setTimeout(() => setFeedback(''), 2000);
