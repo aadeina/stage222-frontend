@@ -27,8 +27,8 @@ import RecruiterBilling from '@/features/recruiter/pages/RecruiterBilling';
 import CandidateDashboard from '@/features/candidate/pages/CandidateDashboard';
 import CandidateOnboarding from '@/features/candidate/pages/CandidateOnboarding';
 import EditOpportunity from '@/features/recruiter/pages/EditOpportunity';
-import Messages from '@/features/recruiter/pages/Messages';
-import CandidateMessages from '../features/candidate/pages/CandidateMessages';
+
+
 import CandidateApplications from '../features/candidate/pages/CandidateApplications';
 import CandidateBookmarks from '../features/candidate/pages/CandidateBookmarks';
 import CandidateResume from '../features/candidate/pages/CandidateResume';
@@ -189,16 +189,7 @@ const AppRoutes = () => {
                             </ProtectedRoute>
                         }
                     />
-                    <Route
-                        path="/recruiter/messages"
-                        element={
-                            <ProtectedRoute>
-                                <PageWrapper>
-                                    <Messages />
-                                </PageWrapper>
-                            </ProtectedRoute>
-                        }
-                    />
+
                     <Route
                         path="/recruiter/:recruiterId/opportunities"
                         element={
@@ -278,14 +269,7 @@ const AppRoutes = () => {
                             </ProtectedRoute>
                         }
                     />
-                    <Route
-                        path="/candidate/messages"
-                        element={
-                            <PageWrapper>
-                                <CandidateMessages />
-                            </PageWrapper>
-                        }
-                    />
+
                     <Route
                         path="/candidate/applications"
                         element={

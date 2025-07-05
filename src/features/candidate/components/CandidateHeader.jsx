@@ -3,7 +3,6 @@ import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     FaBell,
-    FaEnvelope,
     FaUser,
     FaHome,
     FaFileAlt,
@@ -26,7 +25,7 @@ import { useAuth } from '../../../context/AuthContext';
 import toast from 'react-hot-toast';
 import logo from '../../../assets/images/MainStage222Logo.png';
 import getMediaUrl from '../../../utils/mediaUrl';
-import messagingApi from '../../../services/messagingApi';
+
 
 // CandidateHeader.jsx
 // Professional header component for candidate pages
@@ -36,35 +35,14 @@ const CandidateHeader = () => {
     const { user, logout } = useAuth();
     const navigate = useNavigate();
     const [isProfileOpen, setIsProfileOpen] = useState(false);
-    const [unreadMessages, setUnreadMessages] = useState(0);
+
     const profileRef = useRef(null);
 
     // Remove all mock user data. Use only the real user from context.
     // If user is not available, show generic fallback.
     const currentUser = user;
 
-    // Fetch unread message count
-    const fetchUnreadCount = async () => {
-        try {
-            const response = await messagingApi.getInbox();
-            const inboxData = response.data;
 
-            // Handle different response structures
-            const inboxArray = Array.isArray(inboxData) ? inboxData :
-                inboxData.results ? inboxData.results :
-                    inboxData.conversations ? inboxData.conversations : [];
-
-            // Count unread messages
-            const unreadCount = inboxArray.reduce((total, item) => {
-                return total + (item.is_read ? 0 : 1);
-            }, 0);
-
-            setUnreadMessages(unreadCount);
-        } catch (error) {
-            console.error('Failed to fetch unread message count:', error);
-            setUnreadMessages(0);
-        }
-    };
 
     // Close profile dropdown when clicking outside
     useEffect(() => {
@@ -78,17 +56,7 @@ const CandidateHeader = () => {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-    // Fetch unread count on component mount and set up interval
-    useEffect(() => {
-        if (user) {
-            fetchUnreadCount();
 
-            // Refresh unread count every 30 seconds
-            const interval = setInterval(fetchUnreadCount, 30000);
-
-            return () => clearInterval(interval);
-        }
-    }, [user]);
 
     const handleLogout = () => {
         logout();
@@ -154,24 +122,6 @@ const CandidateHeader = () => {
 
                     {/* Right Section - Responsive spacing and touch targets */}
                     <div className="flex items-center space-x-2 sm:space-x-4">
-                        {/* Messages Icon - Touch-friendly on mobile */}
-                        <motion.button
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                            className="relative p-2 sm:p-2.5 text-gray-600 hover:text-[#00A55F] hover:bg-gray-50 rounded-lg transition-colors"
-                            onClick={() => {
-                                navigate('/candidate/messages');
-                                // Refresh unread count when navigating to messages
-                                setTimeout(fetchUnreadCount, 1000);
-                            }}
-                        >
-                            <FaEnvelope className="h-5 w-5" />
-                            {unreadMessages > 0 && (
-                                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
-                                    {unreadMessages > 9 ? '9+' : unreadMessages}
-                                </span>
-                            )}
-                        </motion.button>
 
                         {/* Profile Dropdown - Responsive positioning */}
                         <div className="relative" ref={profileRef}>

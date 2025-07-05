@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { FaArrowLeft, FaUser, FaEnvelope, FaClock, FaCheckCircle, FaTimesCircle, FaEye, FaFilePdf, FaComments, FaPaperPlane } from 'react-icons/fa';
+import { FaArrowLeft, FaUser, FaEnvelope, FaClock, FaCheckCircle, FaTimesCircle, FaEye, FaFilePdf, FaComments } from 'react-icons/fa';
 import api from '../../../services/api';
 import ResumeModal from '../components/ResumeModal';
 import AnswersModal from '../components/AnswersModal';
-import MessagingModal from '../components/MessagingModal';
+
 
 // Professional, branded applicants page for Stage222 recruiters
 // Fetches applicants from backend and displays in a modern, responsive table
@@ -36,7 +36,7 @@ const RecruiterApplicants = () => {
     const [error, setError] = useState('');
     const [resumeModal, setResumeModal] = useState({ isOpen: false, resumeUrl: '', candidateName: '' });
     const [answersModal, setAnswersModal] = useState({ isOpen: false, candidate: null, answers: null });
-    const [messagingModal, setMessagingModal] = useState({ isOpen: false, candidate: null, internship: null });
+
     const navigate = useNavigate();
     const query = useQuery();
     const status = query.get('status');
@@ -82,15 +82,7 @@ const RecruiterApplicants = () => {
         setAnswersModal({ isOpen: false, candidate: null, answers: null });
     };
 
-    // Handle messaging modal open
-    const openMessagingModal = (candidate, internship) => {
-        setMessagingModal({ isOpen: true, candidate, internship });
-    };
 
-    // Handle messaging modal close
-    const closeMessagingModal = () => {
-        setMessagingModal({ isOpen: false, candidate: null, internship: null });
-    };
 
     return (
         <div className="max-w-7xl mx-auto py-8 px-2 sm:px-6 lg:px-8">
@@ -125,13 +117,13 @@ const RecruiterApplicants = () => {
                                 <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Applied At</th>
                                 <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Resume</th>
                                 <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Answers</th>
-                                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Message</th>
+
                             </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-100">
                             {applicants.length === 0 ? (
                                 <tr>
-                                    <td colSpan={7} className="py-16 text-center text-gray-400">No applicants found.</td>
+                                    <td colSpan={6} className="py-16 text-center text-gray-400">No applicants found.</td>
                                 </tr>
                             ) : (
                                 applicants.map((app, idx) => {
@@ -223,23 +215,7 @@ const RecruiterApplicants = () => {
                                                     <span className="text-gray-400 text-sm">No answers</span>
                                                 )}
                                             </td>
-                                            <td className="px-4 py-4 whitespace-nowrap">
-                                                <button
-                                                    onClick={() => openMessagingModal(
-                                                        {
-                                                            id: candidateId,
-                                                            name: candidateName,
-                                                            email: candidateEmail,
-                                                            photo: candidatePhoto
-                                                        },
-                                                        internship
-                                                    )}
-                                                    className="flex items-center gap-2 px-3 py-2 bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 transition-colors duration-200 text-sm"
-                                                >
-                                                    <FaPaperPlane className="h-4 w-4" />
-                                                    Message
-                                                </button>
-                                            </td>
+
                                         </tr>
                                     );
                                 })
@@ -265,13 +241,7 @@ const RecruiterApplicants = () => {
                 answers={answersModal.answers}
             />
 
-            {/* Messaging Modal */}
-            <MessagingModal
-                isOpen={messagingModal.isOpen}
-                onClose={closeMessagingModal}
-                candidate={messagingModal.candidate}
-                internship={messagingModal.internship}
-            />
+
         </div>
     );
 };

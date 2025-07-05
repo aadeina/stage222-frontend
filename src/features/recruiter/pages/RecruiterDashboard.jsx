@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useAuth } from '../../../context/AuthContext';
-import { FaComments, FaBriefcase, FaUsers, FaCheckCircle, FaEye, FaEdit, FaTrash, FaChartBar, FaUser, FaBuilding, FaLock, FaCreditCard, FaSignOutAlt, FaSyncAlt, FaTimes, FaClock, FaExclamationTriangle } from 'react-icons/fa';
+import { FaBriefcase, FaUsers, FaCheckCircle, FaEye, FaEdit, FaTrash, FaChartBar, FaUser, FaBuilding, FaLock, FaCreditCard, FaSignOutAlt, FaSyncAlt, FaTimes, FaClock, FaExclamationTriangle } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 import { getDashboardStats, getRecentOpportunities } from '../api/dashboardApi';
 import RecruiterHeader from '../components/RecruiterHeader';
@@ -700,29 +700,7 @@ const RecruiterDashboard = () => {
                     </motion.div>
 
                     {/* Quick Actions Row */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        {/* Chat Shortcut */}
-                        <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.7 }}
-                            className="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
-                        >
-                            <div className="text-center">
-                                <div className="p-3 bg-blue-100 rounded-lg inline-block mb-4">
-                                    <FaComments className="h-8 w-8 text-blue-600" />
-                                </div>
-                                <h3 className="text-lg font-semibold text-gray-900 mb-2">Messages</h3>
-                                <p className="text-sm text-gray-600 mb-4">Stay connected with candidates</p>
-                                <button
-                                    onClick={() => navigate('/recruiter/messages')}
-                                    className="w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors font-medium"
-                                >
-                                    Go to Inbox
-                                </button>
-                            </div>
-                        </motion.div>
-
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {/* Post New Opportunity */}
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
