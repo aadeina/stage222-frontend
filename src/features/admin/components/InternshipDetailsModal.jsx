@@ -1,10 +1,12 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { FaTimes, FaBuilding, FaUser, FaCalendarAlt, FaMapMarkerAlt, FaMoneyBillWave, FaClock, FaGraduationCap, FaInfoCircle, FaCheckCircle, FaTimesCircle, FaListUl, FaQuestionCircle, FaGift, FaBriefcase, FaGlobe, FaUsers } from 'react-icons/fa';
 import { getInternshipDetail } from '../../../services/internshipApi';
 import toast from 'react-hot-toast';
 
 const InternshipDetailsModal = ({ isOpen, onClose, internship, onApprove, onReject, loading }) => {
+    const { t } = useTranslation();
     const [fullInternshipData, setFullInternshipData] = useState(null);
     const [fetchingDetails, setFetchingDetails] = useState(false);
 
@@ -22,7 +24,7 @@ const InternshipDetailsModal = ({ isOpen, onClose, internship, onApprove, onReje
             setFullInternshipData(response.data);
         } catch (error) {
             console.error('Error fetching internship details:', error);
-            toast.error('Failed to fetch complete internship details');
+            toast.error(t('admin.components.internshipDetailsModal.failedToFetchDetails'));
             setFullInternshipData(internship); // Fallback to basic data
         } finally {
             setFetchingDetails(false);
@@ -30,7 +32,7 @@ const InternshipDetailsModal = ({ isOpen, onClose, internship, onApprove, onReje
     };
 
     const formatDate = (dateString) => {
-        if (!dateString) return 'Not specified';
+        if (!dateString) return t('admin.components.internshipDetailsModal.notSpecified');
         const date = new Date(dateString);
         return date.toLocaleDateString('en-US', {
             year: 'numeric',
@@ -42,20 +44,20 @@ const InternshipDetailsModal = ({ isOpen, onClose, internship, onApprove, onReje
     };
 
     const formatSalary = (salary) => {
-        if (!salary) return 'Not specified';
+        if (!salary) return t('admin.components.internshipDetailsModal.notSpecified');
         if (typeof salary === 'string') return salary;
         return `$${salary.toLocaleString()}`;
     };
 
     const formatDuration = (duration) => {
-        if (!duration) return 'Not specified';
+        if (!duration) return t('admin.components.internshipDetailsModal.notSpecified');
         if (typeof duration === 'string') return duration;
-        return `${duration} months`;
+        return `${duration} ${t('admin.components.internshipDetailsModal.months')}`;
     };
 
     // Helper function to safely render field values that might be objects
-    const safeRenderField = (value, fallback = 'Not specified') => {
-        if (!value) return fallback;
+    const safeRenderField = (value, fallback = null) => {
+        if (!value) return fallback || t('admin.components.internshipDetailsModal.notSpecified');
         if (typeof value === 'object') {
             // Handle organization object
             if (value.name) return value.name;
@@ -102,8 +104,8 @@ const InternshipDetailsModal = ({ isOpen, onClose, internship, onApprove, onReje
                                         <FaInfoCircle className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
                                     </div>
                                     <div>
-                                        <h2 className="text-lg sm:text-xl font-bold text-white">Internship Details</h2>
-                                        <p className="text-emerald-100 text-xs sm:text-sm">Review before approval or rejection</p>
+                                        <h2 className="text-lg sm:text-xl font-bold text-white">{t('admin.components.internshipDetailsModal.internshipDetails')}</h2>
+                                        <p className="text-emerald-100 text-xs sm:text-sm">{t('admin.components.internshipDetailsModal.reviewBeforeApproval')}</p>
                                     </div>
                                 </div>
                                 <button
@@ -125,7 +127,7 @@ const InternshipDetailsModal = ({ isOpen, onClose, internship, onApprove, onReje
                                 >
                                     <div className="text-center">
                                         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#00A55F] mx-auto mb-4"></div>
-                                        <p className="text-gray-600">Loading complete internship details...</p>
+                                        <p className="text-gray-600">{t('admin.components.internshipDetailsModal.loadingCompleteDetails')}</p>
                                     </div>
                                 </motion.div>
                             ) : (
@@ -144,19 +146,19 @@ const InternshipDetailsModal = ({ isOpen, onClose, internship, onApprove, onReje
                                     >
                                         <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
                                             <FaInfoCircle className="h-5 w-5 text-[#00A55F]" />
-                                            Basic Information
+                                            {t('admin.components.internshipDetailsModal.basicInformation')}
                                         </h3>
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                                             <div>
-                                                <label className="text-sm font-medium text-gray-600">Title</label>
+                                                <label className="text-sm font-medium text-gray-600">{t('admin.components.internshipDetailsModal.title')}</label>
                                                 <p className="text-lg font-semibold text-gray-900 mt-1">{safeRenderField(fullInternshipData?.title || internship.title)}</p>
                                             </div>
                                             <div>
-                                                <label className="text-sm font-medium text-gray-600">Opportunity Type</label>
+                                                <label className="text-sm font-medium text-gray-600">{t('admin.components.internshipDetailsModal.opportunityType')}</label>
                                                 <p className="text-gray-900 mt-1 capitalize">{safeRenderField(fullInternshipData?.opportunity_type || internship.opportunity_type, 'Internship')}</p>
                                             </div>
                                             <div>
-                                                <label className="text-sm font-medium text-gray-600">Status</label>
+                                                <label className="text-sm font-medium text-gray-600">{t('admin.components.internshipDetailsModal.status')}</label>
                                                 <span className={`inline-flex items-center gap-1 px-3 py-1.5 text-xs font-bold rounded-full border shadow-sm mt-1 ${internship.approval_status === 'pending' ? 'bg-yellow-100 text-yellow-800 border-yellow-200' :
                                                     internship.approval_status === 'approved' ? 'bg-green-100 text-green-800 border-green-200' :
                                                         'bg-red-100 text-red-800 border-red-200'
@@ -168,12 +170,12 @@ const InternshipDetailsModal = ({ isOpen, onClose, internship, onApprove, onReje
                                                     ) : (
                                                         <FaTimesCircle className="h-3 w-3" />
                                                     )}
-                                                    {internship.approval_status === 'pending' ? 'Pending Review' :
-                                                        internship.approval_status === 'approved' ? 'Approved' : 'Rejected'}
+                                                    {internship.approval_status === 'pending' ? t('admin.components.internshipDetailsModal.pendingReview') :
+                                                        internship.approval_status === 'approved' ? t('admin.components.internshipDetailsModal.approved') : t('admin.components.internshipDetailsModal.rejected')}
                                                 </span>
                                             </div>
                                             <div>
-                                                <label className="text-sm font-medium text-gray-600">Submitted</label>
+                                                <label className="text-sm font-medium text-gray-600">{t('admin.components.internshipDetailsModal.submitted')}</label>
                                                 <p className="text-gray-900 mt-1">{formatDate(internship.submitted_on || internship.created_at)}</p>
                                             </div>
                                         </div>
@@ -188,18 +190,18 @@ const InternshipDetailsModal = ({ isOpen, onClose, internship, onApprove, onReje
                                     >
                                         <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
                                             <FaBuilding className="h-5 w-5 text-blue-600" />
-                                            Organization & Recruiter
+                                            {t('admin.components.internshipDetailsModal.organizationAndRecruiter')}
                                         </h3>
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                                             <div>
-                                                <label className="text-sm font-medium text-gray-600">Organization</label>
+                                                <label className="text-sm font-medium text-gray-600">{t('admin.components.internshipDetailsModal.organization')}</label>
                                                 <p className="text-gray-900 mt-1">
-                                                    {safeRenderField(fullInternshipData?.organization || internship.organization, 'Not specified')}
+                                                    {safeRenderField(fullInternshipData?.organization || internship.organization)}
                                                 </p>
                                             </div>
                                             <div>
-                                                <label className="text-sm font-medium text-gray-600">Recruiter Email</label>
-                                                <p className="text-gray-900 mt-1">{fullInternshipData?.recruiter_email || internship.recruiter_email || 'Not specified'}</p>
+                                                <label className="text-sm font-medium text-gray-600">{t('admin.components.internshipDetailsModal.recruiterEmail')}</label>
+                                                <p className="text-gray-900 mt-1">{fullInternshipData?.recruiter_email || internship.recruiter_email || t('admin.components.internshipDetailsModal.notSpecified')}</p>
                                             </div>
                                         </div>
                                     </motion.div>
@@ -213,40 +215,40 @@ const InternshipDetailsModal = ({ isOpen, onClose, internship, onApprove, onReje
                                     >
                                         <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
                                             <FaMapMarkerAlt className="h-5 w-5 text-green-600" />
-                                            Location & Job Details
+                                            {t('admin.components.internshipDetailsModal.locationAndJobDetails')}
                                         </h3>
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                                             <div>
-                                                <label className="text-sm font-medium text-gray-600">Location</label>
+                                                <label className="text-sm font-medium text-gray-600">{t('admin.components.internshipDetailsModal.location')}</label>
                                                 <p className="text-gray-900 mt-1">{safeRenderField(fullInternshipData?.location || internship.location, 'Remote/Not specified')}</p>
                                             </div>
                                             <div>
-                                                <label className="text-sm font-medium text-gray-600">Work Type</label>
-                                                <p className="text-gray-900 mt-1 capitalize">{safeRenderField(fullInternshipData?.type, 'Not specified')}</p>
+                                                <label className="text-sm font-medium text-gray-600">{t('admin.components.internshipDetailsModal.workType')}</label>
+                                                <p className="text-gray-900 mt-1 capitalize">{safeRenderField(fullInternshipData?.type)}</p>
                                             </div>
                                             <div>
-                                                <label className="text-sm font-medium text-gray-600">Job Type</label>
-                                                <p className="text-gray-900 mt-1 capitalize">{safeRenderField(fullInternshipData?.job_type, 'Not specified')}</p>
+                                                <label className="text-sm font-medium text-gray-600">{t('admin.components.internshipDetailsModal.jobType')}</label>
+                                                <p className="text-gray-900 mt-1 capitalize">{safeRenderField(fullInternshipData?.job_type)}</p>
                                             </div>
                                             <div>
-                                                <label className="text-sm font-medium text-gray-600">Openings</label>
-                                                <p className="text-gray-900 mt-1">{fullInternshipData?.openings || 'Not specified'}</p>
+                                                <label className="text-sm font-medium text-gray-600">{t('admin.components.internshipDetailsModal.openings')}</label>
+                                                <p className="text-gray-900 mt-1">{fullInternshipData?.openings || t('admin.components.internshipDetailsModal.notSpecified')}</p>
                                             </div>
                                             <div>
-                                                <label className="text-sm font-medium text-gray-600">Duration</label>
-                                                <p className="text-gray-900 mt-1">{fullInternshipData?.duration || 'Not specified'}</p>
+                                                <label className="text-sm font-medium text-gray-600">{t('admin.components.internshipDetailsModal.duration')}</label>
+                                                <p className="text-gray-900 mt-1">{fullInternshipData?.duration || t('admin.components.internshipDetailsModal.notSpecified')}</p>
                                             </div>
                                             <div>
-                                                <label className="text-sm font-medium text-gray-600">Duration (weeks)</label>
-                                                <p className="text-gray-900 mt-1">{fullInternshipData?.duration_weeks || 'Not specified'}</p>
+                                                <label className="text-sm font-medium text-gray-600">{t('admin.components.internshipDetailsModal.durationWeeks')}</label>
+                                                <p className="text-gray-900 mt-1">{fullInternshipData?.duration_weeks || t('admin.components.internshipDetailsModal.notSpecified')}</p>
                                             </div>
                                             <div>
-                                                <label className="text-sm font-medium text-gray-600">Start Date</label>
-                                                <p className="text-gray-900 mt-1">{fullInternshipData?.start_date ? formatDate(fullInternshipData.start_date) : 'Not specified'}</p>
+                                                <label className="text-sm font-medium text-gray-600">{t('admin.components.internshipDetailsModal.startDate')}</label>
+                                                <p className="text-gray-900 mt-1">{fullInternshipData?.start_date ? formatDate(fullInternshipData.start_date) : t('admin.components.internshipDetailsModal.notSpecified')}</p>
                                             </div>
                                             <div>
-                                                <label className="text-sm font-medium text-gray-600">Deadline</label>
-                                                <p className="text-gray-900 mt-1">{fullInternshipData?.deadline ? formatDate(fullInternshipData.deadline) : 'Not specified'}</p>
+                                                <label className="text-sm font-medium text-gray-600">{t('admin.components.internshipDetailsModal.deadline')}</label>
+                                                <p className="text-gray-900 mt-1">{fullInternshipData?.deadline ? formatDate(fullInternshipData.deadline) : t('admin.components.internshipDetailsModal.notSpecified')}</p>
                                             </div>
                                         </div>
                                     </motion.div>
@@ -260,25 +262,25 @@ const InternshipDetailsModal = ({ isOpen, onClose, internship, onApprove, onReje
                                     >
                                         <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
                                             <FaMoneyBillWave className="h-5 w-5 text-purple-600" />
-                                            Compensation
+                                            {t('admin.components.internshipDetailsModal.compensation')}
                                         </h3>
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                                             <div>
-                                                <label className="text-sm font-medium text-gray-600">Stipend Type</label>
+                                                <label className="text-sm font-medium text-gray-600">{t('admin.components.internshipDetailsModal.stipendType')}</label>
                                                 <p className="text-gray-900 mt-1 capitalize">{safeRenderField(fullInternshipData?.stipend_type)}</p>
                                             </div>
                                             <div>
-                                                <label className="text-sm font-medium text-gray-600">Stipend Amount</label>
+                                                <label className="text-sm font-medium text-gray-600">{t('admin.components.internshipDetailsModal.stipendAmount')}</label>
                                                 <p className="text-gray-900 mt-1">
                                                     {fullInternshipData?.stipend ?
                                                         `MRU ${parseFloat(fullInternshipData.stipend).toLocaleString()}` :
-                                                        'Not specified'
+                                                        t('admin.components.internshipDetailsModal.notSpecified')
                                                     }
                                                 </p>
                                             </div>
                                             <div>
-                                                <label className="text-sm font-medium text-gray-600">Stipend Negotiable</label>
-                                                <p className="text-gray-900 mt-1">{fullInternshipData?.negotiable ? 'Yes' : 'No'}</p>
+                                                <label className="text-sm font-medium text-gray-600">{t('admin.components.internshipDetailsModal.stipendNegotiable')}</label>
+                                                <p className="text-gray-900 mt-1">{fullInternshipData?.negotiable ? t('admin.components.internshipDetailsModal.yes') : t('admin.components.internshipDetailsModal.no')}</p>
                                             </div>
                                         </div>
                                     </motion.div>
@@ -293,7 +295,7 @@ const InternshipDetailsModal = ({ isOpen, onClose, internship, onApprove, onReje
                                         >
                                             <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
                                                 <FaGraduationCap className="h-5 w-5 text-orange-600" />
-                                                Description
+                                                {t('admin.components.internshipDetailsModal.description')}
                                             </h3>
                                             <div className="prose prose-sm max-w-none">
                                                 <p className="text-gray-800 leading-relaxed whitespace-pre-wrap">
@@ -313,7 +315,7 @@ const InternshipDetailsModal = ({ isOpen, onClose, internship, onApprove, onReje
                                         >
                                             <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
                                                 <FaListUl className="h-5 w-5 text-indigo-600" />
-                                                Responsibilities
+                                                {t('admin.components.internshipDetailsModal.responsibilities')}
                                             </h3>
                                             <div className="prose prose-sm max-w-none">
                                                 <p className="text-gray-800 leading-relaxed whitespace-pre-wrap">
@@ -333,7 +335,7 @@ const InternshipDetailsModal = ({ isOpen, onClose, internship, onApprove, onReje
                                         >
                                             <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
                                                 <FaUsers className="h-5 w-5 text-teal-600" />
-                                                Preferences
+                                                {t('admin.components.internshipDetailsModal.preferences')}
                                             </h3>
                                             <div className="space-y-2">
                                                 {Array.isArray(fullInternshipData.preferences) ? (
@@ -362,7 +364,7 @@ const InternshipDetailsModal = ({ isOpen, onClose, internship, onApprove, onReje
                                         >
                                             <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
                                                 <FaQuestionCircle className="h-5 w-5 text-pink-600" />
-                                                Screening Questions
+                                                {t('admin.components.internshipDetailsModal.screeningQuestions')}
                                             </h3>
                                             <div className="space-y-3">
                                                 {fullInternshipData.screening_questions.map((question, index) => (
@@ -389,7 +391,7 @@ const InternshipDetailsModal = ({ isOpen, onClose, internship, onApprove, onReje
                                         >
                                             <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
                                                 <FaGift className="h-5 w-5 text-yellow-600" />
-                                                Perks & Benefits
+                                                {t('admin.components.internshipDetailsModal.perksAndBenefits')}
                                             </h3>
                                             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                                 {Array.isArray(fullInternshipData.perks) ? (
@@ -418,7 +420,7 @@ const InternshipDetailsModal = ({ isOpen, onClose, internship, onApprove, onReje
                                     onClick={onClose}
                                     className="w-full sm:w-auto px-6 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium"
                                 >
-                                    Close
+                                    {t('admin.components.internshipDetailsModal.close')}
                                 </button>
                                 {internship.approval_status === 'pending' && (
                                     <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
@@ -428,7 +430,7 @@ const InternshipDetailsModal = ({ isOpen, onClose, internship, onApprove, onReje
                                             className="w-full sm:w-auto px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium disabled:opacity-50 flex items-center justify-center gap-2"
                                         >
                                             <FaTimesCircle className="h-4 w-4" />
-                                            {loading ? 'Processing...' : 'Reject'}
+                                            {loading ? t('admin.components.internshipDetailsModal.processing') : t('admin.components.internshipDetailsModal.reject')}
                                         </button>
                                         <button
                                             onClick={() => onApprove(internship.id)}
@@ -436,7 +438,7 @@ const InternshipDetailsModal = ({ isOpen, onClose, internship, onApprove, onReje
                                             className="w-full sm:w-auto px-6 py-2 bg-[#00A55F] text-white rounded-lg hover:bg-[#008c4f] transition-colors font-medium disabled:opacity-50 flex items-center justify-center gap-2"
                                         >
                                             <FaCheckCircle className="h-4 w-4" />
-                                            {loading ? 'Processing...' : 'Approve'}
+                                            {loading ? t('admin.components.internshipDetailsModal.processing') : t('admin.components.internshipDetailsModal.approve')}
                                         </button>
                                     </div>
                                 )}
