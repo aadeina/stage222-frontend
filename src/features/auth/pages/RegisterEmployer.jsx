@@ -1,20 +1,19 @@
-// import RegisterForm from '../components/RegisterForm';
+import { useTranslation } from 'react-i18next';
+import RegisterForm from '../components/RegisterForm';
 
-// const RegisterEmployer = () => {
-//     const employerFeatures = [
-//         'Access to active students and fresh graduates',
-//         'Post unlimited internships and jobs',
-//         'Manage applications efficiently'
-//     ];
+const RegisterEmployer = () => {
+    const { t } = useTranslation();
 
-//     return (
-//         <RegisterForm
-//             role="recruiter"
-//             title="Hire Interns & Freshers faster"
-//             description="Create your employer account to post internships and jobs, and connect with talented students and fresh graduates in Mauritania."
-//             features={employerFeatures}
-//         />
-//     );
-// };
+    const employerFeatures = t('registration.employerFeatures', { returnObjects: true });
 
-// export default RegisterEmployer; 
+    return (
+        <RegisterForm
+            role="recruiter"
+            title={t('registration.joinAsEmployer')}
+            description={t('registration.employerDescription')}
+            features={employerFeatures}
+        />
+    );
+};
+
+export default RegisterEmployer; 

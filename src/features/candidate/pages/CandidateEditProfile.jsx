@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { getCandidateProfile, updateCandidateProfile, updateCandidateResume, updateCandidateSkills, getAllSkills, deleteCandidateSkill, updateCandidateProfilePicture } from '../api/candidateApi';
 import SkillBadge from '@/components/ui/SkillBadge';
@@ -31,6 +32,7 @@ const mauritanianCities = [
 
 const CandidateEditProfile = () => {
     const navigate = useNavigate();
+    const { t } = useTranslation();
     const [profile, setProfile] = useState(null);
     const [formData, setFormData] = useState(null);
     const [resumeFile, setResumeFile] = useState(null);
@@ -117,7 +119,7 @@ const CandidateEditProfile = () => {
 
                 // Show success message if signup data was used for prefilling
                 if (signupData) {
-                    toast.success('Welcome! Your profile has been prefilled with your signup information.', {
+                    toast.success(t('profile.welcomePrefilled'), {
                         duration: 4000,
                         icon: '👋'
                     });
@@ -128,7 +130,7 @@ const CandidateEditProfile = () => {
                 setProfileCompletion(calculateProfileCompletion(prefilledData));
             } catch (err) {
                 console.error('Error fetching data:', err);
-                toast.error('Failed to load profile data');
+                toast.error(t('profile.failedToUpdateProfile'));
                 setIsLoading(false);
             }
         };
@@ -169,9 +171,9 @@ const CandidateEditProfile = () => {
                 setResumeFile(file);
                 setFormData(prev => ({ ...prev, resume: file }));
                 setIsChanged(true);
-                toast.success('Resume updated successfully!');
+                toast.success(t('profile.resumeUpdated'));
             } catch (err) {
-                toast.error('Failed to update resume');
+                toast.error(t('profile.failedToUpdateResume'));
             }
         }
     };
@@ -266,9 +268,9 @@ const CandidateEditProfile = () => {
             setSkillInput('');
             setFilteredSkills([]); // Clear suggestions after adding
             setIsChanged(true);
-            toast.success(`${skill.name} added to your skills!`);
+            toast.success(t('profile.skillAdded', { skillName: skill.name }));
         } else {
-            toast.error(`${skill.name} is already in your skills list`);
+            toast.error(t('profile.skillAlreadyExists', { skillName: skill.name }));
         }
     };
 
@@ -299,7 +301,7 @@ const CandidateEditProfile = () => {
             }));
 
             setIsChanged(true);
-            toast.success(`${skill.name} removed from your skills!`);
+            toast.success(t('profile.skillRemoved', { skillName: skill.name }));
 
             // Re-fetch profile to ensure sync with backend
             const updated = await getCandidateProfile();
@@ -328,10 +330,10 @@ const CandidateEditProfile = () => {
             setIsLoadingSkills(true);
             const skillIds = formData.skills.map(skill => skill.id);
             await updateCandidateSkills(skillIds);
-            toast.success('Skills updated successfully!');
+            toast.success(t('profile.skillsUpdated'));
             setIsChanged(false);
         } catch (err) {
-            toast.error('Failed to update skills');
+            toast.error(t('profile.failedToUpdateSkills'));
         } finally {
             setIsLoadingSkills(false);
         }
@@ -413,14 +415,14 @@ const CandidateEditProfile = () => {
                 userContext: updated
             });
 
-            toast.success('Profile picture updated successfully!');
+            toast.success(t('candidateEditProfile.pictureUpdated'));
             setIsChanged(false);
             // Update global user context to ensure changes are reflected everywhere
             // This includes the candidate header and any other components using the auth context
             updateUser(updated);
         } catch (err) {
             console.error('Profile picture update error:', err);
-            toast.error('Failed to update profile picture');
+            toast.error(t('candidateEditProfile.failedToUpdatePicture'));
         } finally {
             setIsLoadingProfilePicture(false);
         }
@@ -488,10 +490,10 @@ const CandidateEditProfile = () => {
                 console.log('Signup data cleared after successful profile update');
             }
 
-            toast.success('Profile updated successfully!');
+            toast.success(t('candidateEditProfile.profileUpdated'));
             updateUser(updated);
         } catch (err) {
-            toast.error('Failed to update profile');
+            toast.error(t('candidateEditProfile.failedToUpdateProfile'));
         } finally {
             setIsLoading(false);
         }
@@ -501,7 +503,7 @@ const CandidateEditProfile = () => {
         <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-green-50 flex items-center justify-center">
             <div className="text-center">
                 <div className="w-16 h-16 border-4 border-[#00A55F] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                <p className="text-gray-600 font-medium">Loading your profile...</p>
+                <p className="text-gray-600 font-medium">{t('profile.loadingProfile')}</p>
             </div>
         </div>
     );
@@ -519,9 +521,9 @@ const CandidateEditProfile = () => {
                     <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-[#00A55F] to-[#008c4f] text-white text-2xl shadow-lg mb-4">
                         <FaUser className="w-8 h-8" />
                     </div>
-                    <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">Edit Profile</h1>
+                    <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">{t('profile.editProfile')}</h1>
                     <p className="text-gray-600 text-lg max-w-2xl mx-auto">
-                        Update your information to keep your profile up to date and improve your chances of landing great opportunities.
+                        {t('profile.updateProfileDescription')}
                     </p>
                 </motion.div>
 
@@ -538,10 +540,9 @@ const CandidateEditProfile = () => {
                                 <FaCheck className="w-4 h-4 text-white" />
                             </div>
                             <div>
-                                <h4 className="font-semibold text-green-800">Welcome! Your profile has been prefilled</h4>
+                                <h4 className="font-semibold text-green-800">{t('profile.profilePrefilled')}</h4>
                                 <p className="text-sm text-green-700">
-                                    We've automatically filled in your name and email from your signup information.
-                                    Please complete the remaining fields to finish your profile.
+                                    {t('profile.profilePrefilledDescription')}
                                 </p>
                             </div>
                         </div>
@@ -558,7 +559,7 @@ const CandidateEditProfile = () => {
                     {/* Profile Completion Section */}
                     <div className="bg-gradient-to-r from-[#00A55F] to-[#008c4f] px-8 py-6 text-white">
                         <div className="flex items-center justify-between mb-3">
-                            <h2 className="text-xl font-semibold">Profile Completion</h2>
+                            <h2 className="text-xl font-semibold">{t('profile.profileCompletion')}</h2>
                             <span className="text-2xl font-bold">{profileCompletion}%</span>
                         </div>
                         <div className="w-full bg-white/20 rounded-full h-3 mb-2">
@@ -571,10 +572,10 @@ const CandidateEditProfile = () => {
                         </div>
                         <p className="text-white/90 text-sm">
                             {profileCompletion < 50
-                                ? "Complete your profile to increase your visibility to recruiters"
+                                ? t('profile.completeProfileMessage')
                                 : profileCompletion < 80
-                                    ? "Great progress! Keep going to maximize your opportunities"
-                                    : "Excellent! Your profile is nearly complete"
+                                    ? t('profile.greatProgressMessage')
+                                    : t('profile.excellentMessage')
                             }
                         </p>
                     </div>
@@ -587,7 +588,7 @@ const CandidateEditProfile = () => {
                                 <div className="flex flex-col sm:flex-row items-center gap-6">
                                     <div className="flex-shrink-0">
                                         <label className="block text-sm font-semibold text-gray-700 mb-3 text-center sm:text-left">
-                                            Profile Picture
+                                            {t('profile.profilePicture')}
                                         </label>
                                         <div className="relative group cursor-pointer" onClick={() => document.getElementById('profile-picture-input').click()}>
                                             <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-white shadow-xl group-hover:shadow-2xl transition-all duration-300">
@@ -647,11 +648,9 @@ const CandidateEditProfile = () => {
 
                                     <div className="flex-1 space-y-4">
                                         <div>
-                                            <h3 className="text-lg font-semibold text-gray-900 mb-2">Update Your Photo</h3>
+                                            <h3 className="text-lg font-semibold text-gray-900 mb-2">{t('profile.updateYourPhoto')}</h3>
                                             <p className="text-gray-600 text-sm mb-4">
-                                                <strong>Click on the profile picture above</strong> to select a new image.
-                                                Upload a professional photo to make your profile stand out.
-                                                Recommended: Square image, 400x400 pixels or larger (max 5MB).
+                                                {t('profile.updatePhotoDescription')}
                                             </p>
                                         </div>
 
@@ -667,12 +666,12 @@ const CandidateEditProfile = () => {
                                                 {isLoadingProfilePicture ? (
                                                     <>
                                                         <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                                                        Updating...
+                                                        {t('profile.updating')}
                                                     </>
                                                 ) : (
                                                     <>
                                                         <FaCamera className="w-5 h-5" />
-                                                        Update Profile Picture
+                                                        {t('profile.updateProfilePicture')}
                                                     </>
                                                 )}
                                             </motion.button>
@@ -693,7 +692,7 @@ const CandidateEditProfile = () => {
                                     <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center">
                                         <FaUser className="w-5 h-5 text-white" />
                                     </div>
-                                    <h3 className="text-xl font-semibold text-gray-900">Personal Information</h3>
+                                    <h3 className="text-xl font-semibold text-gray-900">{t('profile.personalInfo')}</h3>
                                 </div>
 
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">

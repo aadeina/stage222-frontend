@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import { FaRegFileAlt, FaUserTie, FaSearch, FaRobot, FaPhoneAlt, FaEnvelope, FaCheckCircle, FaChevronDown, FaChevronUp } from 'react-icons/fa';
 import RecruiterHeader from '../components/RecruiterHeader';
 
@@ -91,6 +92,7 @@ const faqs = [
 
 
 export default function RecruiterPricing() {
+    const { t } = useTranslation();
     const [faqOpen, setFaqOpen] = useState(null);
 
     return (
@@ -100,10 +102,10 @@ export default function RecruiterPricing() {
                 {/* Title & Subtitle */}
                 <section className="text-center mb-12">
                     <motion.h1 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">
-                        Choose your hiring plan
+                        {t('recruiterPricing.title')}
                     </motion.h1>
                     <motion.p initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="text-lg text-gray-600">
-                        Get guaranteed hiring results with our locally tailored plans
+                        {t('recruiterPricing.subtitle')}
                     </motion.p>
                 </section>
 
@@ -174,7 +176,7 @@ export default function RecruiterPricing() {
 
                 {/* Success Stories */}
                 <section className="mb-16">
-                    <h3 className="text-2xl font-bold text-gray-900 text-center mb-8">Our success stories</h3>
+                    <h3 className="text-2xl font-bold text-gray-900 text-center mb-8">{t('recruiterPricing.successStories')}</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-3xl mx-auto">
                         {testimonials.map((t, i) => (
                             <motion.div

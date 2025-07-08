@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAdminAuth } from '../context/AdminAuthContext';
 import toast from 'react-hot-toast';
 import { motion } from 'framer-motion';
@@ -8,6 +9,7 @@ import { FaShieldAlt, FaEnvelope, FaLock, FaEye, FaEyeSlash, FaCrown } from 'rea
 const AdminLogin = () => {
     const { login } = useAdminAuth();
     const navigate = useNavigate();
+    const { t } = useTranslation();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
@@ -21,15 +23,15 @@ const AdminLogin = () => {
         try {
             const admin = await login({ email, password });
             if (admin && admin.role === 'admin') {
-                toast.success('Welcome, admin!');
+                toast.success(t('admin.login.welcomeAdmin'));
                 navigate('/admin/dashboard');
             } else {
-                setError('You are not authorized to access the admin panel.');
-                toast.error('Not an admin account.');
+                setError(t('admin.login.notAuthorized'));
+                toast.error(t('admin.login.notAdminAccount'));
             }
         } catch (err) {
-            setError('Invalid credentials.');
-            toast.error('Login failed.');
+            setError(t('admin.login.invalidCredentials'));
+            toast.error(t('admin.login.loginFailed'));
         } finally {
             setLoading(false);
         }
@@ -77,10 +79,10 @@ const AdminLogin = () => {
 
 
                     <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-[#00A55F] to-[#008c4f] bg-clip-text text-transparent mb-2">
-                        Welcome Back, Admin
+                        {t('admin.login.welcomeBack')}
                     </h1>
                     <p className="text-gray-600 text-xs sm:text-sm">
-                        Access your administrative dashboard securely
+                        {t('admin.login.accessDashboard')}
                     </p>
                 </motion.div>
 
@@ -95,7 +97,7 @@ const AdminLogin = () => {
                     <div>
                         <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
                             <FaEnvelope className="h-4 w-4 text-[#00A55F]" />
-                            Email Address
+                            {t('admin.login.emailAddress')}
                         </label>
                         <div className="relative">
                             <input
@@ -103,7 +105,7 @@ const AdminLogin = () => {
                                 className="w-full px-4 py-3 pl-12 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#00A55F] focus:border-[#00A55F] transition-all duration-300 bg-white/50 backdrop-blur-sm"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
-                                placeholder="Enter your admin email"
+                                placeholder={t('admin.login.enterAdminEmail')}
                                 required
                                 autoFocus
                             />
@@ -114,7 +116,7 @@ const AdminLogin = () => {
                     <div>
                         <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
                             <FaLock className="h-4 w-4 text-[#00A55F]" />
-                            Password
+                            {t('admin.login.password')}
                         </label>
                         <div className="relative">
                             <input
@@ -122,7 +124,7 @@ const AdminLogin = () => {
                                 className="w-full px-4 py-3 pl-12 pr-12 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#00A55F] focus:border-[#00A55F] transition-all duration-300 bg-white/50 backdrop-blur-sm"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
-                                placeholder="Enter your password"
+                                placeholder={t('admin.login.enterPassword')}
                                 required
                             />
                             <FaLock className="absolute left-4 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -156,12 +158,12 @@ const AdminLogin = () => {
                         {loading ? (
                             <div className="flex items-center justify-center gap-2">
                                 <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                                <span>Authenticating...</span>
+                                <span>{t('admin.login.authenticating')}</span>
                             </div>
                         ) : (
                             <span className="flex items-center justify-center gap-2">
                                 <FaShieldAlt className="h-4 w-4" />
-                                Access Admin Panel
+                                {t('admin.login.accessAdminPanel')}
                             </span>
                         )}
                     </motion.button>
@@ -176,9 +178,9 @@ const AdminLogin = () => {
                 >
                     <div className="flex items-center justify-center gap-2 text-xs text-gray-500">
                         <FaShieldAlt className="h-3 w-3" />
-                        <span>Secure Admin Access</span>
+                        <span>{t('admin.login.secureAdminAccess')}</span>
                         <div className="w-1 h-1 bg-gray-400 rounded-full"></div>
-                        <span>Stage222 Platform</span>
+                        <span>{t('admin.login.stage222Platform')}</span>
                     </div>
                 </motion.div>
             </motion.div>

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { fetchAdminUsers } from '../../../services/adminApi';
 import UserTable from '../components/UserTable';
 import toast from 'react-hot-toast';
@@ -6,6 +7,7 @@ import AdminSidebar from '../components/AdminSidebar';
 import AdminProfileDropdown from '../components/AdminProfileDropdown';
 
 const UserManagement = () => {
+    const { t } = useTranslation();
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -60,8 +62,8 @@ const UserManagement = () => {
             setUsers(userData);
         } catch (err) {
             console.error('Error fetching users:', err);
-            setError('Failed to load users.');
-            toast.error('Failed to load users.');
+            setError(t('admin.userManagement.failedToLoadUsers'));
+            toast.error(t('admin.userManagement.failedToLoadUsers'));
         } finally {
             setLoading(false);
         }
@@ -101,8 +103,8 @@ const UserManagement = () => {
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
                         <div className="flex items-center justify-between">
                             <div>
-                                <h1 className="text-3xl font-bold text-gray-900">User Management</h1>
-                                <p className="text-gray-600 mt-1">View, verify, and manage all users on Stage222</p>
+                                <h1 className="text-3xl font-bold text-gray-900">{t('admin.userManagement.title')}</h1>
+                                <p className="text-gray-600 mt-1">{t('admin.userManagement.subtitle')}</p>
                             </div>
                             <div className="flex items-center gap-4">
                                 <button
@@ -115,7 +117,7 @@ const UserManagement = () => {
                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                                     </svg>
-                                    Refresh Users
+                                    {t('admin.userManagement.refreshUsers')}
                                 </button>
                                 <AdminProfileDropdown />
                             </div>

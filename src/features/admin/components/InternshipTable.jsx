@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { approveInternship, rejectInternship } from '../../../services/adminApi';
 import { FaCheckCircle, FaTimesCircle, FaEye } from 'react-icons/fa';
@@ -18,6 +19,7 @@ const formatDate = (dateString) => {
 };
 
 const InternshipTable = ({ internships = [], onActionComplete }) => {
+    const { t } = useTranslation();
     const [loadingId, setLoadingId] = useState(null);
     const [rejectionModal, setRejectionModal] = useState({
         isOpen: false,
@@ -33,10 +35,10 @@ const InternshipTable = ({ internships = [], onActionComplete }) => {
         setLoadingId(id);
         try {
             await approveInternship(id);
-            toast.success('Internship approved successfully!');
+            toast.success(t('admin.components.internshipTable.internshipApproved'));
             onActionComplete && onActionComplete();
         } catch (error) {
-            toast.error('Failed to approve internship.');
+            toast.error(t('admin.components.internshipTable.failedToApprove'));
         } finally {
             setLoadingId(null);
         }
@@ -56,11 +58,11 @@ const InternshipTable = ({ internships = [], onActionComplete }) => {
         setLoadingId(rejectionModal.internshipId);
         try {
             await rejectInternship(rejectionModal.internshipId, reason);
-            toast.success('Internship rejected successfully!');
+            toast.success(t('admin.components.internshipTable.internshipRejected'));
             setRejectionModal({ isOpen: false, internshipId: null, internshipTitle: '' });
             onActionComplete && onActionComplete();
         } catch (error) {
-            toast.error('Failed to reject internship.');
+            toast.error(t('admin.components.internshipTable.failedToReject'));
         } finally {
             setLoadingId(null);
         }
@@ -102,12 +104,12 @@ const InternshipTable = ({ internships = [], onActionComplete }) => {
                 <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
                         <tr>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Title</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Organization</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Recruiter</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Submitted</th>
-                            <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Actions</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('admin.components.internshipTable.title')}</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('admin.components.internshipTable.organization')}</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('admin.components.internshipTable.recruiter')}</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('admin.components.internshipTable.status')}</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">{t('admin.components.internshipTable.submitted')}</th>
+                            <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">{t('admin.components.internshipTable.actions')}</th>
                         </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-100">
@@ -119,7 +121,7 @@ const InternshipTable = ({ internships = [], onActionComplete }) => {
                                         <button
                                             onClick={() => handleViewDetails(internship)}
                                             className="text-left font-medium text-[#00A55F] hover:text-[#008c4f] transition-colors flex items-center gap-2 group"
-                                            title="Click to view internship details"
+                                            title={t('admin.components.internshipTable.clickToViewDetails')}
                                         >
                                             <span className="group-hover:underline">{internship.title}</span>
                                             <FaEye className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -132,8 +134,8 @@ const InternshipTable = ({ internships = [], onActionComplete }) => {
                                             internship.approval_status === 'approved' ? 'bg-green-100 text-green-800' :
                                                 'bg-red-100 text-red-800'
                                             }`}>
-                                            {internship.approval_status === 'pending' ? 'Pending' :
-                                                internship.approval_status === 'approved' ? 'Approved' : 'Rejected'}
+                                            {internship.approval_status === 'pending' ? t('admin.components.internshipTable.pending') :
+                                                internship.approval_status === 'approved' ? t('admin.components.internshipTable.approved') : t('admin.components.internshipTable.rejected')}
                                         </span>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-gray-500">{formatDate(internship.submitted_on)}</td>
@@ -146,7 +148,7 @@ const InternshipTable = ({ internships = [], onActionComplete }) => {
                                                     className="inline-flex items-center px-3 py-1 text-xs font-medium rounded text-white bg-green-600 hover:bg-green-700 disabled:opacity-50"
                                                 >
                                                     <FaCheckCircle className="mr-1" />
-                                                    Approve
+                                                    {t('admin.components.internshipTable.approve')}
                                                 </button>
                                                 <button
                                                     onClick={() => {
@@ -157,12 +159,12 @@ const InternshipTable = ({ internships = [], onActionComplete }) => {
                                                     className="inline-flex items-center px-3 py-1 text-xs font-medium rounded text-white bg-red-600 hover:bg-red-700 disabled:opacity-50"
                                                 >
                                                     <FaTimesCircle className="mr-1" />
-                                                    Reject
+                                                    {t('admin.components.internshipTable.reject')}
                                                 </button>
                                             </div>
                                         ) : (
                                             <span className="text-sm text-gray-500">
-                                                {internship.approval_status === 'approved' ? 'Approved' : 'Rejected'}
+                                                {internship.approval_status === 'approved' ? t('admin.components.internshipTable.approved') : t('admin.components.internshipTable.rejected')}
                                             </span>
                                         )}
                                     </td>
@@ -172,7 +174,7 @@ const InternshipTable = ({ internships = [], onActionComplete }) => {
                     </tbody>
                 </table>
                 {internships.length === 0 && (
-                    <div className="p-8 text-center text-gray-500">No pending internships found.</div>
+                    <div className="p-8 text-center text-gray-500">{t('admin.components.internshipTable.noPendingInternships')}</div>
                 )}
             </div>
 

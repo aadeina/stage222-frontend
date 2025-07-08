@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../../context/AuthContext';
 import { FaBriefcase, FaSearch, FaBookmark, FaUser, FaExclamationTriangle, FaTimes, FaFileAlt, FaChevronLeft, FaChevronRight, FaStar, FaMapMarkerAlt, FaClock, FaMoneyBillWave } from 'react-icons/fa';
 import { getCandidateProfile } from '../api/candidateApi';
@@ -9,6 +10,7 @@ import api from '../../../services/api';
 const CandidateDashboard = () => {
     const navigate = useNavigate();
     const { user } = useAuth();
+    const { t } = useTranslation();
     const [isLoading, setIsLoading] = useState(true);
     const [currentRecommendedSlide, setCurrentRecommendedSlide] = useState(0);
     const [currentTrendingSlide, setCurrentTrendingSlide] = useState(0);
@@ -109,7 +111,7 @@ const CandidateDashboard = () => {
             <div className="min-h-screen bg-gray-50 flex items-center justify-center">
                 <div className="text-center">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#00A55F] mx-auto mb-4"></div>
-                    <p className="text-gray-600">Loading your dashboard...</p>
+                    <p className="text-gray-600">{t('candidate.loadingDashboard')}</p>
                 </div>
             </div>
         );
@@ -134,8 +136,8 @@ const CandidateDashboard = () => {
                     animate={{ opacity: 1, y: 0 }}
                     className="mb-8"
                 >
-                    <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Welcome back, {currentUser?.first_name || 'Student'} 👋</h1>
-                    <p className="text-gray-600">It's help you land your dream career</p>
+                    <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">{t('candidate.welcomeBack')}, {currentUser?.first_name || t('auth.student')} 👋</h1>
+                    <p className="text-gray-600">{t('candidate.dreamCareer')}</p>
                 </motion.div>
 
                 {/* Statistics Cards - Responsive grid */}
@@ -148,7 +150,7 @@ const CandidateDashboard = () => {
                     >
                         <div className="flex items-center justify-between">
                             <div className="flex-1 min-w-0">
-                                <p className="text-xs sm:text-sm font-medium text-gray-600">Applications</p>
+                                <p className="text-xs sm:text-sm font-medium text-gray-600">{t('candidate.applications')}</p>
                                 <p className="text-xl sm:text-2xl font-bold text-gray-900">{applicationsCount}</p>
                             </div>
                             <div className="p-2 sm:p-3 bg-blue-100 rounded-lg flex-shrink-0 ml-3">
@@ -171,7 +173,7 @@ const CandidateDashboard = () => {
                         <div className="absolute -top-6 -right-6 w-16 h-16 sm:w-20 sm:h-20 bg-green-200 opacity-30 rounded-full z-0"></div>
                         <div className="flex items-center justify-between relative z-10">
                             <div className="flex-1 min-w-0">
-                                <p className="text-xs sm:text-sm font-medium text-green-700">Profile Completion</p>
+                                <p className="text-xs sm:text-sm font-medium text-green-700">{t('candidate.profileCompletion')}</p>
                                 <motion.p
                                     initial={{ scale: 0.8 }}
                                     animate={{ scale: 1 }}
@@ -195,10 +197,10 @@ const CandidateDashboard = () => {
                                     transition={{ duration: 0.2 }}
                                     className="absolute left-1/2 -translate-x-1/2 top-full mt-2 w-64 bg-white border border-green-200 shadow-lg rounded-lg p-4 z-20"
                                 >
-                                    <p className="text-green-800 font-semibold mb-1">Complete your profile to increase your chances of getting hired!</p>
+                                    <p className="text-green-800 font-semibold mb-1">{t('candidate.completeProfileMessage')}</p>
                                     <div className="flex items-center gap-2">
                                         <span className="text-green-700 font-bold text-lg">{profileCompletion}%</span>
-                                        <span className="text-xs text-gray-500">completed</span>
+                                        <span className="text-xs text-gray-500">{t('candidate.completed')}</span>
                                     </div>
                                 </motion.div>
                             )}
@@ -213,7 +215,7 @@ const CandidateDashboard = () => {
                     >
                         <div className="flex items-center justify-between">
                             <div className="flex-1 min-w-0">
-                                <p className="text-xs sm:text-sm font-medium text-gray-600">Saved Jobs</p>
+                                <p className="text-xs sm:text-sm font-medium text-gray-600">{t('candidate.savedJobs')}</p>
                                 <p className="text-xl sm:text-2xl font-bold text-gray-900">{bookmarksCount}</p>
                             </div>
                             <div className="p-2 sm:p-3 bg-yellow-100 rounded-lg flex-shrink-0 ml-3">
@@ -236,8 +238,8 @@ const CandidateDashboard = () => {
                     className="bg-white rounded-lg shadow-sm border border-gray-200"
                 >
                     <div className="px-4 sm:px-6 py-4 border-b border-gray-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
-                        <h2 className="text-lg font-semibold text-gray-900">Recent Applications</h2>
-                        <button onClick={() => navigate('/candidate/applications')} className="text-sm text-[#00A55F] hover:text-[#008c4f] font-medium">View All</button>
+                        <h2 className="text-lg font-semibold text-gray-900">{t('candidate.recentApplications')}</h2>
+                        <button onClick={() => navigate('/candidate/applications')} className="text-sm text-[#00A55F] hover:text-[#008c4f] font-medium">{t('candidate.viewAll')}</button>
                     </div>
                     <div className="p-4 sm:p-6">
                         {recentApplications.length > 0 ? (
@@ -258,7 +260,7 @@ const CandidateDashboard = () => {
                                         <div className="flex-1 min-w-0">
                                             <h3 className="font-medium text-gray-900 truncate">{application.candidate_name}</h3>
                                             <p className="text-sm text-gray-600 truncate">{application.candidate_email}</p>
-                                            <p className="text-xs text-gray-500">Applied on {new Date(application.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: '2-digit' })}</p>
+                                            <p className="text-xs text-gray-500">{t('candidate.appliedOn')} {new Date(application.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: '2-digit' })}</p>
                                         </div>
                                         <div className="text-right">
                                             <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColor(application.status)}`}>
@@ -271,8 +273,8 @@ const CandidateDashboard = () => {
                         ) : (
                             <div className="text-center text-gray-500 py-8">
                                 <FaBookmark className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                                <p>No applications yet</p>
-                                <p className="text-sm">Start applying to internships and jobs to see your applications here</p>
+                                <p>{t('candidate.noApplicationsYet')}</p>
+                                <p className="text-sm">{t('candidate.startApplyingMessage')}</p>
                             </div>
                         )}
                     </div>

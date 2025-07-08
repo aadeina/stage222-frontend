@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import { registerUser } from '@/services/authApi';
 import { toast } from 'react-hot-toast';
 import { useAuth } from '@/context/AuthContext';
@@ -18,6 +19,7 @@ import { useAuth } from '@/context/AuthContext';
 const RegisterForm = ({ role, title, description, features }) => {
     const navigate = useNavigate();
     const { storeSignupData } = useAuth();
+    const { t } = useTranslation();
     const [showEmailForm, setShowEmailForm] = useState(false);
     const [formData, setFormData] = useState({
         email: '',
@@ -47,14 +49,14 @@ const RegisterForm = ({ role, title, description, features }) => {
 
     const validateForm = () => {
         const newErrors = {};
-        if (!formData.email) newErrors.email = 'Email is required';
-        if (!formData.password) newErrors.password = 'Password is required';
+        if (!formData.email) newErrors.email = t('validation.required');
+        if (!formData.password) newErrors.password = t('validation.required');
         if (formData.password && formData.password.length < 6) {
-            newErrors.password = 'Password must be at least 6 characters';
+            newErrors.password = t('validation.passwordMinLength');
         }
-        if (!formData.firstName) newErrors.firstName = 'First name is required';
-        if (!formData.lastName) newErrors.lastName = 'Last name is required';
-        if (!formData.mobileNumber) newErrors.mobileNumber = 'Mobile number is required';
+        if (!formData.firstName) newErrors.firstName = t('validation.firstNameRequired');
+        if (!formData.lastName) newErrors.lastName = t('validation.lastNameRequired');
+        if (!formData.mobileNumber) newErrors.mobileNumber = t('validation.mobileNumberRequired');
 
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
@@ -83,11 +85,11 @@ const RegisterForm = ({ role, title, description, features }) => {
                 email: formData.email
             });
 
-            toast.success('OTP sent to your email!');
+            toast.success(t('auth.otpSent'));
             navigate('/verify-otp', { state: { email: formData.email } });
         } catch (error) {
             toast.error(
-                error.response?.data?.message || 'Registration failed. Please try again.'
+                error.response?.data?.message || t('auth.registrationFailed')
             );
         } finally {
             setIsLoading(false);
@@ -144,12 +146,12 @@ const RegisterForm = ({ role, title, description, features }) => {
                                     onClick={() => setShowEmailForm(true)}
                                     className="w-full bg-[#00A55F] text-white px-4 py-3 rounded-lg hover:bg-[#008c4f] transition-colors"
                                 >
-                                    Sign up with Email
+                                    {t('auth.signUpWithEmail')}
                                 </button>
                                 <p className="text-center text-sm text-gray-600">
-                                    Already have an account?{' '}
+                                    {t('auth.alreadyHaveAccount')}{' '}
                                     <Link to="/login" className="text-[#00A55F] hover:text-[#008c4f] font-medium">
-                                        Log in
+                                        {t('auth.logIn')}
                                     </Link>
                                 </p>
                             </div>
@@ -169,7 +171,7 @@ const RegisterForm = ({ role, title, description, features }) => {
                                 >
                                     <div>
                                         <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-1">
-                                            First Name
+                                            {t('forms.firstName')}
                                         </label>
                                         <input
                                             type="text"
@@ -186,7 +188,7 @@ const RegisterForm = ({ role, title, description, features }) => {
                                     </div>
                                     <div>
                                         <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-1">
-                                            Last Name
+                                            {t('forms.lastName')}
                                         </label>
                                         <input
                                             type="text"
@@ -209,7 +211,7 @@ const RegisterForm = ({ role, title, description, features }) => {
                                     transition={{ delay: 0.4 }}
                                 >
                                     <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                                        Email
+                                        {t('forms.email')}
                                     </label>
                                     <input
                                         type="email"
@@ -231,7 +233,7 @@ const RegisterForm = ({ role, title, description, features }) => {
                                     transition={{ delay: 0.5 }}
                                 >
                                     <label htmlFor="mobileNumber" className="block text-sm font-medium text-gray-700 mb-1">
-                                        Mobile Number
+                                        {t('forms.phone')}
                                     </label>
                                     <div className="flex">
                                         <span className="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-gray-300 bg-gray-50 text-gray-500">
@@ -258,7 +260,7 @@ const RegisterForm = ({ role, title, description, features }) => {
                                     transition={{ delay: 0.6 }}
                                 >
                                     <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-                                        Password
+                                        {t('forms.password')}
                                     </label>
                                     <input
                                         type="password"
@@ -286,9 +288,9 @@ const RegisterForm = ({ role, title, description, features }) => {
                                         className="h-4 w-4 text-[#00A55F] focus:ring-[#00A55F] border-gray-300 rounded"
                                     />
                                     <label htmlFor="terms" className="ml-2 block text-sm text-gray-700">
-                                        I agree to the{' '}
+                                        {t('auth.agreeToTerms')}{' '}
                                         <Link to="/terms" className="text-[#00A55F] hover:text-[#008c4f]">
-                                            Terms and Conditions
+                                            {t('auth.termsAndConditions')}
                                         </Link>
                                     </label>
                                 </motion.div>
@@ -304,7 +306,7 @@ const RegisterForm = ({ role, title, description, features }) => {
                                         className={`w-full bg-[#00A55F] text-white px-4 py-3 rounded-lg hover:bg-[#008c4f] transition-colors ${isLoading ? 'opacity-70 cursor-not-allowed' : ''
                                             }`}
                                     >
-                                        {isLoading ? 'Creating Account...' : 'Create Account'}
+                                        {isLoading ? t('auth.creatingAccount') : t('auth.createAccount')}
                                     </button>
                                 </motion.div>
 
@@ -319,7 +321,7 @@ const RegisterForm = ({ role, title, description, features }) => {
                                         onClick={() => setShowEmailForm(false)}
                                         className="text-[#00A55F] hover:text-[#008c4f] font-medium"
                                     >
-                                        Back to sign up options
+                                        {t('auth.backToSignUpOptions')}
                                     </button>
                                 </motion.div>
                             </motion.form>

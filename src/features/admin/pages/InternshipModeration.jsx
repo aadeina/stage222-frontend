@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { fetchPendingInternships } from '../../../services/adminApi';
 import InternshipTable from '../components/InternshipTable';
 import toast from 'react-hot-toast';
 import AdminSidebar from '../components/AdminSidebar';
 
 const InternshipModeration = () => {
+    const { t } = useTranslation();
     const [internships, setInternships] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -16,8 +18,8 @@ const InternshipModeration = () => {
             const res = await fetchPendingInternships();
             setInternships(res.data.results || res.data);
         } catch (err) {
-            setError('Failed to load internships.');
-            toast.error('Failed to load internships.');
+            setError(t('admin.internshipModeration.failedToLoadInternships'));
+            toast.error(t('admin.internshipModeration.failedToLoadInternships'));
         } finally {
             setLoading(false);
         }
@@ -36,8 +38,8 @@ const InternshipModeration = () => {
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
                         <div className="flex items-center justify-between">
                             <div>
-                                <h1 className="text-3xl font-bold text-gray-900">Internship Moderation</h1>
-                                <p className="text-gray-600 mt-1">Review, approve, or reject pending internships</p>
+                                <h1 className="text-3xl font-bold text-gray-900">{t('admin.internshipModeration.title')}</h1>
+                                <p className="text-gray-600 mt-1">{t('admin.internshipModeration.subtitle')}</p>
                             </div>
                         </div>
                     </div>

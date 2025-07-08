@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../../context/AuthContext';
 import { FaBriefcase, FaUsers, FaCheckCircle, FaEye, FaEdit, FaTrash, FaChartBar, FaUser, FaBuilding, FaLock, FaCreditCard, FaSignOutAlt, FaSyncAlt, FaTimes, FaClock, FaExclamationTriangle } from 'react-icons/fa';
 import toast from 'react-hot-toast';
@@ -14,6 +15,7 @@ import { deleteInternship } from '@/services/internshipApi';
 const RecruiterDashboard = () => {
     const navigate = useNavigate();
     const { user, logout } = useAuth();
+    const { t } = useTranslation();
     const [dashboardStats, setDashboardStats] = useState(null);
     const [recentOpportunities, setRecentOpportunities] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -72,7 +74,7 @@ const RecruiterDashboard = () => {
             setRecentOpportunities(opportunities);
         } catch (error) {
             console.error('Error fetching dashboard data:', error);
-            toast.error('Failed to load dashboard data');
+            toast.error(t('recruiter.failedToLoadData'));
         } finally {
             setIsLoading(false);
         }
@@ -96,9 +98,9 @@ const RecruiterDashboard = () => {
         setIsRefreshing(true);
         try {
             await fetchDashboardData();
-            toast.success('Dashboard refreshed successfully!');
+            toast.success(t('recruiter.dashboardRefreshed'));
         } catch (error) {
-            toast.error('Failed to refresh dashboard');
+            toast.error(t('recruiter.failedToRefresh'));
         } finally {
             setIsRefreshing(false);
         }
@@ -141,34 +143,34 @@ const RecruiterDashboard = () => {
     const formatStatus = (status) => {
         switch (status?.toLowerCase()) {
             case 'open':
-                return 'Active';
+                return t('recruiterDashboard.status.active');
             case 'closed':
-                return 'Closed';
+                return t('recruiterDashboard.status.closed');
             case 'draft':
-                return 'Draft';
+                return t('recruiterDashboard.status.draft');
             case 'pending':
-                return 'Pending';
+                return t('recruiterDashboard.status.pending');
             default:
-                return status || 'Unknown';
+                return status || t('common.unknown');
         }
     };
 
     const formatApprovalStatus = (approvalStatus) => {
         switch (approvalStatus?.toLowerCase()) {
             case 'approved':
-                return 'Approved';
+                return t('recruiterDashboard.approvalStatus.approved');
             case 'pending':
-                return 'Pending Approval';
+                return t('recruiterDashboard.approvalStatus.pendingApproval');
             case 'rejected':
-                return 'Rejected';
+                return t('recruiterDashboard.approvalStatus.rejected');
             default:
-                return approvalStatus || 'Unknown';
+                return approvalStatus || t('common.unknown');
         }
     };
 
     const formatType = (type) => {
         const opportunityType = type?.toLowerCase();
-        return opportunityType === 'internship' ? 'Internship' : 'Job';
+        return opportunityType === 'internship' ? t('recruiterDashboard.type.internship') : t('recruiterDashboard.type.job');
     };
 
     const getOpportunityType = (opportunity) => {
@@ -183,13 +185,13 @@ const RecruiterDashboard = () => {
         setDeleteError(null);
         try {
             await deleteInternship(selectedOpportunity.id);
-            toast.success('Opportunity deleted!');
+            toast.success(t('recruiter.opportunityDeleted'));
             setShowDeleteModal(false);
             setSelectedOpportunity(null);
             // Refresh list
             fetchDashboardData();
         } catch (err) {
-            setDeleteError('Failed to delete. Please try again.');
+            setDeleteError(t('recruiter.failedToDelete'));
         } finally {
             setDeleteLoading(false);
         }
@@ -206,7 +208,7 @@ const RecruiterDashboard = () => {
             <div className="min-h-screen bg-gray-50 flex items-center justify-center">
                 <div className="text-center">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#00A55F] mx-auto mb-4"></div>
-                    <p className="text-gray-600">Loading your dashboard...</p>
+                    <p className="text-gray-600">{t('recruiter.loadingDashboard')}</p>
                 </div>
             </div>
         );
@@ -225,8 +227,8 @@ const RecruiterDashboard = () => {
                 {/* Dashboard Header */}
                 <div className="flex items-center justify-between mb-8">
                     <div>
-                        <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-                        <p className="text-gray-600">Welcome back, {user?.first_name || 'Recruiter'} 👋</p>
+                        <h1 className="text-2xl font-bold text-gray-900">{t('recruiter.dashboard')}</h1>
+                        <p className="text-gray-600">{t('recruiter.welcomeBack')}, {user?.first_name || t('auth.employer')} 👋</p>
                     </div>
                     <motion.button
                         whileHover={{ scale: 1.05 }}
@@ -241,7 +243,7 @@ const RecruiterDashboard = () => {
                         >
                             <FaSyncAlt className="h-4 w-4" />
                         </motion.div>
-                        <span>{isRefreshing ? 'Refreshing...' : 'Refresh'}</span>
+                        <span>{isRefreshing ? t('recruiterDashboard.refreshing') : t('recruiterDashboard.refresh')}</span>
                     </motion.button>
                 </div>
 
@@ -255,7 +257,7 @@ const RecruiterDashboard = () => {
                     >
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-sm font-medium text-gray-600">Total Opportunities</p>
+                                <p className="text-sm font-medium text-gray-600">{t('recruiterDashboard.stats.totalOpportunities')}</p>
                                 <p className="text-3xl font-bold text-gray-900">{dashboardStats?.total_opportunities || 0}</p>
                             </div>
                             <div className="p-3 bg-[#00A55F]/10 rounded-lg">
@@ -272,7 +274,7 @@ const RecruiterDashboard = () => {
                     >
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-sm font-medium text-gray-600">Total Applications</p>
+                                <p className="text-sm font-medium text-gray-600">{t('recruiterDashboard.stats.totalApplications')}</p>
                                 <p className="text-3xl font-bold text-gray-900">{dashboardStats?.total_applications || 0}</p>
                             </div>
                             <div className="p-3 bg-blue-100 rounded-lg">
@@ -289,7 +291,7 @@ const RecruiterDashboard = () => {
                     >
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-sm font-medium text-gray-600">Shortlisted</p>
+                                <p className="text-sm font-medium text-gray-600">{t('recruiterDashboard.stats.shortlisted')}</p>
                                 <p className="text-3xl font-bold text-gray-900">{dashboardStats?.shortlisted || 0}</p>
                             </div>
                             <div className="p-3 bg-yellow-100 rounded-lg">
@@ -306,7 +308,7 @@ const RecruiterDashboard = () => {
                     >
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-sm font-medium text-gray-600">Total Hires</p>
+                                <p className="text-sm font-medium text-gray-600">{t('recruiterDashboard.stats.totalHires')}</p>
                                 <p className="text-3xl font-bold text-gray-900">{dashboardStats?.total_hires || 0}</p>
                             </div>
                             <div className="p-3 bg-green-100 rounded-lg">
@@ -330,10 +332,13 @@ const RecruiterDashboard = () => {
                             </div>
                             <div className="flex-1">
                                 <h3 className="text-sm font-semibold text-yellow-800">
-                                    Pending Approvals ({recentOpportunities.filter(opp => opp.approval_status?.toLowerCase() === 'pending').length})
+                                    {t('recruiter.pendingApprovals')} ({recentOpportunities.filter(opp => opp.approval_status?.toLowerCase() === 'pending').length})
                                 </h3>
                                 <p className="text-sm text-yellow-700">
-                                    You have {recentOpportunities.filter(opp => opp.approval_status?.toLowerCase() === 'pending').length} opportunity{recentOpportunities.filter(opp => opp.approval_status?.toLowerCase() === 'pending').length !== 1 ? 'ies' : 'y'} waiting for admin approval. They will be visible to candidates once approved.
+                                    {t('recruiter.pendingApprovalsMessage', {
+                                        count: recentOpportunities.filter(opp => opp.approval_status?.toLowerCase() === 'pending').length,
+                                        plural: recentOpportunities.filter(opp => opp.approval_status?.toLowerCase() === 'pending').length !== 1 ? 'ies' : 'y'
+                                    })}
                                 </p>
                             </div>
                         </div>
@@ -354,10 +359,14 @@ const RecruiterDashboard = () => {
                             </div>
                             <div className="flex-1">
                                 <h3 className="text-sm font-semibold text-green-800">
-                                    Successfully Approved ({recentOpportunities.filter(opp => opp.approval_status?.toLowerCase() === 'approved').length})
+                                    {t('recruiter.successfullyApproved')} ({recentOpportunities.filter(opp => opp.approval_status?.toLowerCase() === 'approved').length})
                                 </h3>
                                 <p className="text-sm text-green-700">
-                                    {recentOpportunities.filter(opp => opp.approval_status?.toLowerCase() === 'approved').length} opportunity{recentOpportunities.filter(opp => opp.approval_status?.toLowerCase() === 'approved').length !== 1 ? 'ies' : 'y'} {recentOpportunities.filter(opp => opp.approval_status?.toLowerCase() === 'approved').length !== 1 ? 'are' : 'is'} now live and visible to candidates!
+                                    {t('recruiter.successfullyApprovedMessage', {
+                                        count: recentOpportunities.filter(opp => opp.approval_status?.toLowerCase() === 'approved').length,
+                                        plural: recentOpportunities.filter(opp => opp.approval_status?.toLowerCase() === 'approved').length !== 1 ? 'ies' : 'y',
+                                        verb: recentOpportunities.filter(opp => opp.approval_status?.toLowerCase() === 'approved').length !== 1 ? 'are' : 'is'
+                                    })}
                                 </p>
                             </div>
                         </div>
@@ -378,10 +387,14 @@ const RecruiterDashboard = () => {
                             </div>
                             <div className="flex-1">
                                 <h3 className="text-sm font-semibold text-red-800">
-                                    Rejected Opportunities ({recentOpportunities.filter(opp => opp.approval_status?.toLowerCase() === 'rejected').length})
+                                    {t('recruiter.rejectedOpportunities')} ({recentOpportunities.filter(opp => opp.approval_status?.toLowerCase() === 'rejected').length})
                                 </h3>
                                 <p className="text-sm text-red-700">
-                                    {recentOpportunities.filter(opp => opp.approval_status?.toLowerCase() === 'rejected').length} opportunity{recentOpportunities.filter(opp => opp.approval_status?.toLowerCase() === 'rejected').length !== 1 ? 'ies' : 'y'} {recentOpportunities.filter(opp => opp.approval_status?.toLowerCase() === 'rejected').length !== 1 ? 'were' : 'was'} not approved. Click the warning icon to view rejection reasons and make necessary updates.
+                                    {t('recruiter.rejectedOpportunitiesMessage', {
+                                        count: recentOpportunities.filter(opp => opp.approval_status?.toLowerCase() === 'rejected').length,
+                                        plural: recentOpportunities.filter(opp => opp.approval_status?.toLowerCase() === 'rejected').length !== 1 ? 'ies' : 'y',
+                                        verb: recentOpportunities.filter(opp => opp.approval_status?.toLowerCase() === 'rejected').length !== 1 ? 'were' : 'was'
+                                    })}
                                 </p>
                             </div>
                         </div>
@@ -398,20 +411,20 @@ const RecruiterDashboard = () => {
                     >
                         <div className="px-6 py-4 border-b border-gray-200">
                             <div className="flex items-center justify-between">
-                                <h2 className="text-lg font-semibold text-gray-900">All Posted Opportunities</h2>
+                                <h2 className="text-lg font-semibold text-gray-900">{t('recruiter.allPostedOpportunities')}</h2>
                                 <div className="flex items-center gap-4 text-sm text-gray-600">
                                     <div className="flex items-center gap-2">
                                         <div className="flex items-center gap-1">
                                             <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                                            <span>Active</span>
+                                            <span>{t('recruiterDashboard.status.active')}</span>
                                         </div>
                                         <div className="flex items-center gap-1">
                                             <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-                                            <span>Pending</span>
+                                            <span>{t('recruiterDashboard.status.pending')}</span>
                                         </div>
                                         <div className="flex items-center gap-1">
                                             <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-                                            <span>Closed</span>
+                                            <span>{t('recruiterDashboard.status.closed')}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -422,28 +435,28 @@ const RecruiterDashboard = () => {
                                 <thead className="bg-gray-50">
                                     <tr>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Title
+                                            {t('common.title')}
                                         </th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Type
+                                            {t('common.type')}
                                         </th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                             <div className="flex items-center gap-1">
-                                                <span>Applicants</span>
+                                                <span>{t('common.applicants')}</span>
                                                 <div className="w-2 h-2 bg-gray-300 rounded-full" title="Competition level indicator"></div>
                                             </div>
                                         </th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Posted
+                                            {t('common.posted')}
                                         </th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Status
+                                            {t('common.status')}
                                         </th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Approval
+                                            {t('common.approval')}
                                         </th>
                                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Actions
+                                            {t('common.actions')}
                                         </th>
                                     </tr>
                                 </thead>
@@ -476,8 +489,8 @@ const RecruiterDashboard = () => {
                                                         <span className={`text-xs font-medium ${opportunity.applicants_count > 20 ? 'text-red-600' :
                                                             opportunity.applicants_count > 10 ? 'text-yellow-600' : 'text-green-600'
                                                             }`}>
-                                                            {opportunity.applicants_count > 20 ? 'High' :
-                                                                opportunity.applicants_count > 10 ? 'Med' : 'Low'}
+                                                            {opportunity.applicants_count > 20 ? t('recruiter.high') :
+                                                                opportunity.applicants_count > 10 ? t('recruiter.medium') : t('recruiter.low')}
                                                         </span>
                                                     </div>
                                                 </td>
@@ -528,21 +541,21 @@ const RecruiterDashboard = () => {
                                                         <button
                                                             onClick={() => navigate(`/internships/${opportunity.id}`)}
                                                             className="text-[#00A55F] hover:text-[#008c4f] transition-colors"
-                                                            title="View Details"
+                                                            title={t('recruiterDashboard.actions.view')}
                                                         >
                                                             <FaEye className="h-4 w-4" />
                                                         </button>
                                                         <button
                                                             onClick={() => navigate(`/recruiter/edit-opportunity/${opportunity.id}`)}
                                                             className="text-blue-600 hover:text-blue-800 transition-colors"
-                                                            title="Edit Opportunity"
+                                                            title={t('recruiterDashboard.actions.edit')}
                                                         >
                                                             <FaEdit className="h-4 w-4" />
                                                         </button>
                                                         <button
                                                             onClick={() => navigate(`/recruiter/opportunity/${opportunity.id}/applicants`)}
                                                             className="text-purple-600 hover:text-purple-800 transition-colors"
-                                                            title="View Applicants"
+                                                            title={t('recruiterDashboard.actions.viewApplicants')}
                                                         >
                                                             <FaUsers className="h-4 w-4" />
                                                         </button>
@@ -551,7 +564,7 @@ const RecruiterDashboard = () => {
                                                             <button
                                                                 onClick={() => handleViewRejectionReason(opportunity)}
                                                                 className="text-red-600 hover:text-red-800 transition-colors"
-                                                                title="View Rejection Reason"
+                                                                title={t('recruiter.viewRejectionReason')}
                                                             >
                                                                 <FaExclamationTriangle className="h-4 w-4" />
                                                             </button>
@@ -559,7 +572,7 @@ const RecruiterDashboard = () => {
                                                         <button
                                                             onClick={() => { setSelectedOpportunity(opportunity); setShowDeleteModal(true); }}
                                                             className="text-red-600 hover:text-red-800 transition-colors"
-                                                            title="Delete Opportunity"
+                                                            title={t('recruiterDashboard.actions.delete')}
                                                             disabled={deleteLoading && deletingId === opportunity.id}
                                                         >
                                                             <FaTrash className="h-4 w-4" />
@@ -573,13 +586,13 @@ const RecruiterDashboard = () => {
                                             <td colSpan="7" className="px-6 py-8 text-center">
                                                 <div className="text-gray-500">
                                                     <FaBriefcase className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-                                                    <p className="text-lg font-medium">No opportunities found</p>
-                                                    <p className="text-sm">Start posting opportunities to see them here</p>
+                                                    <p className="text-lg font-medium">{t('recruiterDashboard.noOpportunities')}</p>
+                                                    <p className="text-sm">{t('recruiterDashboard.createFirst')}</p>
                                                     <button
                                                         onClick={() => navigate('/recruiter/post-opportunity')}
                                                         className="mt-4 px-4 py-2 bg-[#00A55F] text-white rounded-lg hover:bg-[#008c4f] transition-colors"
                                                     >
-                                                        Post Your First Opportunity
+                                                        {t('recruiterDashboard.createFirst')}
                                                     </button>
                                                 </div>
                                             </td>
@@ -598,44 +611,44 @@ const RecruiterDashboard = () => {
                         className="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
                     >
                         <div className="flex items-center justify-between mb-6">
-                            <h3 className="text-lg font-semibold text-gray-900">Applications Overview</h3>
+                            <h3 className="text-lg font-semibold text-gray-900">{t('recruiter.applicationsOverview')}</h3>
                             <button
                                 onClick={() => navigate('/recruiter/applicants')}
                                 className="px-4 py-2 bg-[#00A55F] text-white rounded-lg hover:bg-[#008c4f] transition-colors font-medium text-sm"
                             >
-                                View All Applicants
+                                {t('recruiter.viewAllApplicants')}
                             </button>
                         </div>
                         {/* New: Filtered Applicants Cards */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
                             <div className="bg-blue-50 border border-blue-200 rounded-xl p-6 flex flex-col items-center justify-center">
-                                <div className="text-blue-700 text-lg font-semibold mb-1">Shortlisted</div>
+                                <div className="text-blue-700 text-lg font-semibold mb-1">{t('recruiter.shortlisted')}</div>
                                 <div className="text-3xl font-bold text-blue-900 mb-2">{shortlistedCount}</div>
                                 <button
                                     onClick={() => navigate('/recruiter/applicants?shortlisted=true')}
                                     className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-xs font-medium"
                                 >
-                                    View All
+                                    {t('recruiter.viewAll')}
                                 </button>
                             </div>
                             <div className="bg-red-50 border border-red-200 rounded-xl p-6 flex flex-col items-center justify-center">
-                                <div className="text-red-700 text-lg font-semibold mb-1">Rejected</div>
+                                <div className="text-red-700 text-lg font-semibold mb-1">{t('recruiter.rejected')}</div>
                                 <div className="text-3xl font-bold text-red-900 mb-2">{rejectedCount}</div>
                                 <button
                                     onClick={() => navigate('/recruiter/applicants?status=rejected')}
                                     className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-xs font-medium"
                                 >
-                                    View All
+                                    {t('recruiter.viewAll')}
                                 </button>
                             </div>
                             <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-6 flex flex-col items-center justify-center">
-                                <div className="text-yellow-700 text-lg font-semibold mb-1">Pending</div>
+                                <div className="text-yellow-700 text-lg font-semibold mb-1">{t('recruiter.pending')}</div>
                                 <div className="text-3xl font-bold text-yellow-900 mb-2">{pendingCount}</div>
                                 <button
                                     onClick={() => navigate('/recruiter/applicants?status=pending&shortlisted=false')}
                                     className="px-3 py-1 bg-yellow-600 text-white rounded hover:bg-yellow-700 text-xs font-medium"
                                 >
-                                    View All
+                                    {t('recruiter.viewAll')}
                                 </button>
                             </div>
                         </div>
@@ -644,7 +657,7 @@ const RecruiterDashboard = () => {
                             <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-xl border border-blue-200">
                                 <div className="flex items-center justify-between">
                                     <div>
-                                        <p className="text-sm font-medium text-blue-700 mb-1">Total Applicants</p>
+                                        <p className="text-sm font-medium text-blue-700 mb-1">{t('recruiter.totalApplicants')}</p>
                                         <p className="text-2xl font-bold text-blue-900">
                                             {recentOpportunities.reduce((sum, opp) => sum + (opp.applicants_count || 0), 0)}
                                         </p>
@@ -658,7 +671,7 @@ const RecruiterDashboard = () => {
                             <div className="bg-gradient-to-br from-green-50 to-green-100 p-6 rounded-xl border border-green-200">
                                 <div className="flex items-center justify-between">
                                     <div>
-                                        <p className="text-sm font-medium text-green-700 mb-1">Active Posts</p>
+                                        <p className="text-sm font-medium text-green-700 mb-1">{t('recruiter.activeOpportunities')}</p>
                                         <p className="text-2xl font-bold text-green-900">
                                             {recentOpportunities.filter(opp => opp.status?.toLowerCase() === 'open').length}
                                         </p>
@@ -672,7 +685,7 @@ const RecruiterDashboard = () => {
                             <div className="bg-gradient-to-br from-red-50 to-red-100 p-6 rounded-xl border border-red-200">
                                 <div className="flex items-center justify-between">
                                     <div>
-                                        <p className="text-sm font-medium text-red-700 mb-1">Closed Posts</p>
+                                        <p className="text-sm font-medium text-red-700 mb-1">{t('recruiter.closedOpportunities')}</p>
                                         <p className="text-2xl font-bold text-red-900">
                                             {recentOpportunities.filter(opp => opp.status?.toLowerCase() === 'closed').length}
                                         </p>
@@ -686,7 +699,7 @@ const RecruiterDashboard = () => {
                             <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 p-6 rounded-xl border border-yellow-200">
                                 <div className="flex items-center justify-between">
                                     <div>
-                                        <p className="text-sm font-medium text-yellow-700 mb-1">Avg. per Post</p>
+                                        <p className="text-sm font-medium text-yellow-700 mb-1">{t('recruiter.averageApplicants')}</p>
                                         <p className="text-2xl font-bold text-yellow-900">
                                             {Math.round(recentOpportunities.reduce((sum, opp) => sum + (opp.applicants_count || 0), 0) / Math.max(recentOpportunities.length, 1))}
                                         </p>
@@ -712,13 +725,13 @@ const RecruiterDashboard = () => {
                                 <div className="p-3 bg-[#00A55F]/10 rounded-lg inline-block mb-4">
                                     <FaBriefcase className="h-8 w-8 text-[#00A55F]" />
                                 </div>
-                                <h3 className="text-lg font-semibold text-gray-900 mb-2">Post Opportunity</h3>
-                                <p className="text-sm text-gray-600 mb-4">Create new job or internship</p>
+                                <h3 className="text-lg font-semibold text-gray-900 mb-2">{t('recruiter.postJob')}</h3>
+                                <p className="text-sm text-gray-600 mb-4">{t('forms.createNewJobOrInternship')}</p>
                                 <button
                                     onClick={() => navigate('/recruiter/post-opportunity')}
                                     className="w-full bg-[#00A55F] text-white px-4 py-2 rounded-lg hover:bg-[#008c4f] transition-colors font-medium"
                                 >
-                                    Post Now
+                                    {t('forms.postNow')}
                                 </button>
                             </div>
                         </motion.div>
@@ -730,14 +743,14 @@ const RecruiterDashboard = () => {
                             transition={{ delay: 0.9 }}
                             className="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
                         >
-                            <h3 className="text-lg font-semibold text-gray-900 mb-4">Manage Account</h3>
+                            <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('forms.manageAccount')}</h3>
                             <div className="space-y-3">
                                 <button
                                     onClick={() => navigate('/recruiter/profile')}
                                     className="w-full flex items-center space-x-3 px-3 py-2 text-left text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
                                 >
                                     <FaUser className="h-4 w-4 text-gray-500" />
-                                    <span>View Profile</span>
+                                    <span>{t('forms.viewProfile')}</span>
                                 </button>
                                 <button
                                     onClick={async () => {
@@ -747,7 +760,7 @@ const RecruiterDashboard = () => {
                                             if (recruiterData?.organization) {
                                                 navigate(`/recruiter/organization/${recruiterData.organization}/update`);
                                             } else {
-                                                toast.error('No organization found. Please contact support.');
+                                                toast.error(t('common.error'));
                                             }
                                         } catch (error) {
                                             console.error('Error fetching recruiter data:', error);
@@ -759,36 +772,35 @@ const RecruiterDashboard = () => {
                                     <FaBuilding className="h-4 w-4 text-gray-500" />
                                     <span className=" flex items-center gap-1">
                                         {!recruiterData
-                                            ? <span className="text-gray-400 animate-pulse">Loading...</span>
+                                            ? <span className="text-gray-400 animate-pulse">{t('common.loading')}</span>
                                             : <>
                                                 {recruiterData?.organization?.name}
                                                 {recruiterData?.organization?.is_verified && <VerifiedBadge />}
                                             </>
                                         }
-                                        Edit Organization
+                                        {t('forms.editOrganization')}
                                     </span>
-                                    {/* <FaEdit className="h-4 w-4 text-blue-500 ml-auto" title="Edit Organization" /> */}
                                 </button>
                                 <button
                                     onClick={() => navigate('/recruiter/change-password')}
                                     className="w-full flex items-center space-x-3 px-3 py-2 text-left text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
                                 >
                                     <FaLock className="h-4 w-4 text-gray-500" />
-                                    <span>Change Password</span>
+                                    <span>{t('forms.changePassword')}</span>
                                 </button>
                                 <button
                                     onClick={() => navigate('/recruiter/billing')}
                                     className="w-full flex items-center space-x-3 px-3 py-2 text-left text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
                                 >
                                     <FaCreditCard className="h-4 w-4 text-gray-500" />
-                                    <span>Billing</span>
+                                    <span>{t('recruiter.billing')}</span>
                                 </button>
                                 <button
                                     onClick={handleLogout}
                                     className="w-full flex items-center space-x-3 px-3 py-2 text-left text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                                 >
                                     <FaSignOutAlt className="h-4 w-4" />
-                                    <span>Logout</span>
+                                    <span>{t('auth.logout')}</span>
                                 </button>
                             </div>
                         </motion.div>
@@ -801,8 +813,8 @@ const RecruiterDashboard = () => {
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
                     <div className="bg-white rounded-xl shadow-lg p-8 max-w-sm w-full text-center">
                         <FaTrash className="mx-auto text-red-500 mb-4" size={32} />
-                        <h3 className="text-lg font-bold mb-2">Delete Opportunity?</h3>
-                        <p className="text-gray-600 mb-4">Are you sure you want to delete <span className="font-semibold">{selectedOpportunity.title}</span>? This action cannot be undone.</p>
+                        <h3 className="text-lg font-bold mb-2">{t('forms.deleteOpportunity')}?</h3>
+                        <p className="text-gray-600 mb-4">{t('forms.deleteConfirmation', { title: selectedOpportunity.title })}</p>
                         {deleteError && <p className="text-red-500 mb-2">{deleteError}</p>}
                         <div className="flex justify-center gap-3">
                             <button
@@ -810,14 +822,14 @@ const RecruiterDashboard = () => {
                                 className="px-4 py-2 rounded bg-gray-100 text-gray-700 hover:bg-gray-200"
                                 disabled={deleteLoading}
                             >
-                                Cancel
+                                {t('forms.cancel')}
                             </button>
                             <button
                                 onClick={handleDeleteOpportunity}
                                 className="px-4 py-2 rounded bg-red-600 text-white hover:bg-red-700 font-semibold"
                                 disabled={deleteLoading}
                             >
-                                {deleteLoading ? 'Deleting...' : 'Delete'}
+                                {deleteLoading ? t('forms.deleting') : t('forms.delete')}
                             </button>
                         </div>
                     </div>

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../../context/AuthContext';
 import api from '../../../services/api';
 import toast from 'react-hot-toast';
@@ -8,6 +9,7 @@ import toast from 'react-hot-toast';
 const Login = () => {
     const navigate = useNavigate();
     const { updateUser } = useAuth();
+    const { t } = useTranslation();
     const [activeTab, setActiveTab] = useState('student');
     const [formData, setFormData] = useState({
         email: '',
@@ -37,13 +39,13 @@ const Login = () => {
         const newErrors = {};
 
         if (!formData.email) {
-            newErrors.email = 'Email is required';
+            newErrors.email = t('validation.required');
         } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-            newErrors.email = 'Please enter a valid email';
+            newErrors.email = t('validation.email');
         }
 
         if (!formData.password) {
-            newErrors.password = 'Password is required';
+            newErrors.password = t('validation.required');
         }
 
         setErrors(newErrors);
@@ -68,7 +70,7 @@ const Login = () => {
             localStorage.setItem('refreshToken', refresh);
             localStorage.setItem('user', JSON.stringify(user));
             updateUser(user);
-            toast.success('Login successful!');
+            toast.success(t('auth.loginSuccess') || 'Login successful!');
 
             // Redirect based on role and onboarding
             if (user.role === 'recruiter') {
@@ -89,7 +91,7 @@ const Login = () => {
 
         } catch (error) {
             console.error('Login error:', error);
-            const errorMessage = error.response?.data?.message || 'Login failed. Please try again.';
+            const errorMessage = error.response?.data?.message || t('auth.loginFailed') || 'Login failed. Please try again.';
             toast.error(errorMessage);
 
             // Set form errors if available
@@ -117,10 +119,10 @@ const Login = () => {
                     className="text-center mb-8"
                 >
                     <h1 className="text-2xl font-bold text-gray-900 mb-2">
-                        Login to Stage222
+                        {t('auth.loginToStage222') || 'Login to Stage222'}
                     </h1>
                     <p className="text-gray-600">
-                        Access your account
+                        {t('auth.accessAccount') || 'Access your account'}
                     </p>
                 </motion.div>
 
@@ -135,7 +137,7 @@ const Login = () => {
                             }`}
                         onClick={() => setActiveTab('student')}
                     >
-                        Student
+                        {t('auth.student')}
                     </motion.button>
                     <motion.button
                         whileHover={{ scale: 1.02 }}
@@ -146,7 +148,7 @@ const Login = () => {
                             }`}
                         onClick={() => setActiveTab('employer')}
                     >
-                        Employer
+                        {t('auth.employer')}
                     </motion.button>
                 </div>
 
@@ -160,7 +162,7 @@ const Login = () => {
                 >
                     <div>
                         <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                            Email
+                            {t('forms.email')}
                         </label>
                         <motion.input
                             whileFocus={{ scale: 1.02, borderColor: "#00A55F" }}
@@ -171,7 +173,7 @@ const Login = () => {
                             value={formData.email}
                             onChange={handleChange}
                             className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#00A55F] focus:border-[#00A55F] outline-none transition-colors ${errors.email ? 'border-red-500' : 'border-gray-300'}`}
-                            placeholder="Enter your email"
+                            placeholder={t('auth.enterEmail')}
                         />
                         {errors.email && (
                             <motion.p
@@ -186,7 +188,7 @@ const Login = () => {
 
                     <div>
                         <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-                            Password
+                            {t('forms.password')}
                         </label>
                         <motion.input
                             whileFocus={{ scale: 1.02, borderColor: "#00A55F" }}
@@ -197,7 +199,7 @@ const Login = () => {
                             value={formData.password}
                             onChange={handleChange}
                             className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#00A55F] focus:border-[#00A55F] outline-none transition-colors ${errors.password ? 'border-red-500' : 'border-gray-300'}`}
-                            placeholder="Enter your password"
+                            placeholder={t('auth.enterPassword')}
                         />
                         {errors.password && (
                             <motion.p
@@ -212,7 +214,7 @@ const Login = () => {
 
                     <div className="flex justify-end">
                         <Link to="/reset-password" className="text-sm text-[#00A55F] hover:text-[#008c4f] transition-colors">
-                            Forgot password?
+                            {t('auth.forgotPassword')}
                         </Link>
                     </div>
 
@@ -230,10 +232,10 @@ const Login = () => {
                                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                 </svg>
-                                Logging in...
+                                {t('auth.loggingIn') || 'Logging in...'}
                             </div>
                         ) : (
-                            'Login'
+                            t('auth.login')
                         )}
                     </motion.button>
                 </motion.form>
@@ -246,12 +248,12 @@ const Login = () => {
                     className="mt-8 text-center"
                 >
                     <p className="text-sm text-gray-600">
-                        New to Stage222?{' '}
+                        {t('auth.newToStage222')}{' '}
                         <Link
                             to={activeTab === 'student' ? '/register/student' : '/register/employer'}
                             className="text-[#00A55F] hover:text-[#008c4f] font-medium transition-colors"
                         >
-                            Register as {activeTab === 'student' ? 'Student' : 'Employer'}
+                            {t('auth.registerAs')} {activeTab === 'student' ? t('auth.student') : t('auth.employer')}
                         </Link>
                     </p>
                 </motion.div>

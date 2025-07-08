@@ -1,8 +1,10 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { FaTimes, FaExclamationTriangle, FaInfoCircle, FaCalendarAlt, FaUserTie } from 'react-icons/fa';
 
 const RejectionReasonModal = ({ isOpen, onClose, opportunity, rejectionReason }) => {
+    const { t } = useTranslation();
     const navigate = useNavigate();
     if (!isOpen || !opportunity) return null;
 
@@ -36,8 +38,8 @@ const RejectionReasonModal = ({ isOpen, onClose, opportunity, rejectionReason })
                                         <FaExclamationTriangle className="h-6 w-6 text-white" />
                                     </div>
                                     <div>
-                                        <h2 className="text-xl font-bold text-white">Rejection Details</h2>
-                                        <p className="text-red-100 text-sm">Opportunity was not approved</p>
+                                        <h2 className="text-xl font-bold text-white">{t('recruiter.rejectionReasonModal.rejectionDetails')}</h2>
+                                        <p className="text-red-100 text-sm">{t('recruiter.rejectionReasonModal.opportunityNotApproved')}</p>
                                     </div>
                                 </div>
                                 <button
@@ -64,11 +66,11 @@ const RejectionReasonModal = ({ isOpen, onClose, opportunity, rejectionReason })
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-gray-600">
                                             <div className="flex items-center gap-2">
                                                 <FaCalendarAlt className="h-4 w-4 text-gray-400" />
-                                                <span>Posted: {new Date(opportunity.created_at || opportunity.postedDate).toLocaleDateString()}</span>
+                                                <span>{t('recruiter.rejectionReasonModal.posted')} {new Date(opportunity.created_at || opportunity.postedDate).toLocaleDateString()}</span>
                                             </div>
                                             <div className="flex items-center gap-2">
                                                 <FaInfoCircle className="h-4 w-4 text-gray-400" />
-                                                <span>Type: {opportunity.opportunity_type || opportunity.type || 'Job'}</span>
+                                                <span>{t('recruiter.rejectionReasonModal.type')} {opportunity.opportunity_type || opportunity.type || 'Job'}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -81,7 +83,7 @@ const RejectionReasonModal = ({ isOpen, onClose, opportunity, rejectionReason })
                                     <div className="p-2 bg-red-100 rounded-lg">
                                         <FaExclamationTriangle className="h-5 w-5 text-red-600" />
                                     </div>
-                                    <h3 className="text-lg font-semibold text-gray-900">Rejection Reason</h3>
+                                    <h3 className="text-lg font-semibold text-gray-900">{t('recruiter.rejectionReasonModal.rejectionReason')}</h3>
                                 </div>
 
                                 <div className="bg-red-50 border border-red-200 rounded-xl p-4">
@@ -91,7 +93,7 @@ const RejectionReasonModal = ({ isOpen, onClose, opportunity, rejectionReason })
                                         </div>
                                         <div className="flex-1">
                                             <p className="text-gray-800 leading-relaxed">
-                                                {rejectionReason || "No specific reason provided. Please review your opportunity details and ensure they meet our platform guidelines."}
+                                                {rejectionReason || t('recruiter.rejectionReasonModal.noSpecificReason')}
                                             </p>
                                         </div>
                                     </div>
@@ -102,20 +104,20 @@ const RejectionReasonModal = ({ isOpen, onClose, opportunity, rejectionReason })
                             <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
                                 <h4 className="font-semibold text-blue-900 mb-3 flex items-center gap-2">
                                     <FaInfoCircle className="h-4 w-4" />
-                                    Next Steps
+                                    {t('recruiter.rejectionReasonModal.nextSteps')}
                                 </h4>
                                 <ul className="space-y-2 text-sm text-blue-800">
                                     <li className="flex items-start gap-2">
                                         <div className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
-                                        <span>Review the rejection reason above</span>
+                                        <span>{t('recruiter.rejectionReasonModal.reviewRejectionReason')}</span>
                                     </li>
                                     <li className="flex items-start gap-2">
                                         <div className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
-                                        <span>Update your opportunity details as needed</span>
+                                        <span>{t('recruiter.rejectionReasonModal.updateOpportunityDetails')}</span>
                                     </li>
                                     <li className="flex items-start gap-2">
                                         <div className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
-                                        <span>Resubmit the opportunity for approval</span>
+                                        <span>{t('recruiter.rejectionReasonModal.resubmitOpportunity')}</span>
                                     </li>
                                 </ul>
                             </div>
@@ -128,7 +130,7 @@ const RejectionReasonModal = ({ isOpen, onClose, opportunity, rejectionReason })
                                     onClick={onClose}
                                     className="px-6 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium"
                                 >
-                                    Close
+                                    {t('recruiter.rejectionReasonModal.close')}
                                 </button>
                                 <button
                                     onClick={() => {
@@ -138,7 +140,7 @@ const RejectionReasonModal = ({ isOpen, onClose, opportunity, rejectionReason })
                                     }}
                                     className="px-6 py-2 bg-[#00A55F] text-white rounded-lg hover:bg-[#008c4f] transition-colors font-medium"
                                 >
-                                    Edit Opportunity
+                                    {t('recruiter.rejectionReasonModal.editOpportunity')}
                                 </button>
                             </div>
                         </div>

@@ -30,11 +30,13 @@ import {
 } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import api from '../../../services/api';
 import toast from 'react-hot-toast';
 import moment from 'moment';
 
 const CandidateBookmarks = () => {
+    const { t } = useTranslation();
     const [bookmarks, setBookmarks] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -67,8 +69,8 @@ const CandidateBookmarks = () => {
             setBookmarks(bookmarksWithDetails);
         } catch (error) {
             console.error('Error fetching bookmarks:', error);
-            setError('Failed to load bookmarks');
-            toast.error('Failed to load bookmarks');
+            setError(t('candidateBookmarks.error'));
+            toast.error(t('candidateBookmarks.error'));
         } finally {
             setLoading(false);
         }
@@ -78,10 +80,10 @@ const CandidateBookmarks = () => {
         try {
             await api.post(`/bookmarks/${internshipId}/`);
             setBookmarks(prev => prev.filter(bookmark => bookmark.id !== bookmarkId));
-            toast.success('Removed from bookmarks');
+            toast.success(t('candidateBookmarks.removedFromBookmarks'));
         } catch (error) {
             console.error('Error removing bookmark:', error);
-            toast.error('Failed to remove bookmark');
+            toast.error(t('candidateBookmarks.failedToRemove'));
         }
     };
 
@@ -91,7 +93,7 @@ const CandidateBookmarks = () => {
 
     useEffect(() => {
         fetchBookmarks();
-    }, []);
+    }, [t]);
 
     // Filter and search bookmarks
     const filteredBookmarks = bookmarks.filter(bookmark => {
@@ -119,9 +121,9 @@ const CandidateBookmarks = () => {
                         <div className="flex items-center justify-between">
                             <div>
                                 <h1 className="text-3xl font-bold bg-gradient-to-r from-[#00A55F] to-[#008c4f] bg-clip-text text-transparent">
-                                    My Bookmarks
+                                    {t('candidateBookmarks.title')}
                                 </h1>
-                                <p className="text-gray-600 mt-2">Your saved opportunities and internships</p>
+                                <p className="text-gray-600 mt-2">{t('candidateBookmarks.subtitle')}</p>
                             </div>
                             <div className="flex items-center gap-3">
                                 <div className="w-8 h-8 bg-gradient-to-r from-[#00A55F] to-[#008c4f] rounded-full flex items-center justify-center">
@@ -140,8 +142,8 @@ const CandidateBookmarks = () => {
                             transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
                             className="w-16 h-16 border-4 border-[#00A55F] border-t-transparent rounded-full mb-6"
                         />
-                        <h3 className="text-xl font-semibold text-gray-900 mb-2">Loading your bookmarks</h3>
-                        <p className="text-gray-500">Fetching your saved opportunities...</p>
+                        <h3 className="text-xl font-semibold text-gray-900 mb-2">{t('candidateBookmarks.loading')}</h3>
+                        <p className="text-gray-500">{t('candidateBookmarks.loadingSubtitle')}</p>
                     </div>
                 </div>
             </div>
@@ -157,9 +159,9 @@ const CandidateBookmarks = () => {
                         <div className="flex items-center justify-between">
                             <div>
                                 <h1 className="text-3xl font-bold bg-gradient-to-r from-[#00A55F] to-[#008c4f] bg-clip-text text-transparent">
-                                    My Bookmarks
+                                    {t('candidateBookmarks.title')}
                                 </h1>
-                                <p className="text-gray-600 mt-2">Your saved opportunities and internships</p>
+                                <p className="text-gray-600 mt-2">{t('candidateBookmarks.subtitle')}</p>
                             </div>
                         </div>
                     </div>
@@ -175,15 +177,15 @@ const CandidateBookmarks = () => {
                         >
                             <FaTimes className="text-red-500 text-2xl" />
                         </motion.div>
-                        <h3 className="text-xl font-semibold text-gray-900 mb-2">Failed to load bookmarks</h3>
+                        <h3 className="text-xl font-semibold text-gray-900 mb-2">{t('candidateBookmarks.error')}</h3>
                         <p className="text-gray-500 mb-6 text-center max-w-md">
-                            We couldn't load your bookmarks. Please check your connection and try again.
+                            {t('candidateBookmarks.errorSubtitle')}
                         </p>
                         <button
                             onClick={fetchBookmarks}
                             className="bg-gradient-to-r from-[#00A55F] to-[#008c4f] text-white px-6 py-3 rounded-xl font-medium hover:shadow-lg transform hover:scale-105 transition-all duration-200"
                         >
-                            Try Again
+                            {t('candidateBookmarks.tryAgain')}
                         </button>
                     </div>
                 </div>
@@ -199,42 +201,69 @@ const CandidateBookmarks = () => {
                     <div className="flex items-center justify-between mb-6">
                         <div>
                             <h1 className="text-3xl font-bold bg-gradient-to-r from-[#00A55F] to-[#008c4f] bg-clip-text text-transparent">
-                                My Bookmarks
+                                {t('candidateBookmarks.title')}
                             </h1>
-                            <p className="text-gray-600 mt-2">
-                                {bookmarks.length} saved {bookmarks.length === 1 ? 'opportunity' : 'opportunities'}
-                            </p>
+                            <p className="text-gray-600 mt-2">{t('candidateBookmarks.subtitle')}</p>
                         </div>
                         <div className="flex items-center gap-3">
-                            <div className="w-12 h-12 bg-gradient-to-r from-[#00A55F] to-[#008c4f] rounded-xl flex items-center justify-center shadow-lg">
-                                <FaBookmarkSolid className="text-white text-lg" />
+                            <div className="w-8 h-8 bg-gradient-to-r from-[#00A55F] to-[#008c4f] rounded-full flex items-center justify-center">
+                                <FaBookmarkSolid className="text-white text-sm" />
                             </div>
                         </div>
                     </div>
 
-                    {/* Search and Filter Bar */}
+                    {/* Search and Filter */}
                     <div className="flex flex-col sm:flex-row gap-4">
-                        <div className="relative flex-1">
-                            <FaSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                        {/* Search */}
+                        <div className="flex-1 relative">
+                            <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                             <input
                                 type="text"
-                                placeholder="Search bookmarks..."
+                                placeholder={t('candidateBookmarks.searchPlaceholder')}
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="w-full pl-12 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#00A55F] focus:border-transparent transition-all duration-200 bg-white shadow-sm"
+                                className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#00A55F] focus:border-transparent bg-white"
                             />
                         </div>
+
+                        {/* Filter */}
                         <div className="flex gap-2">
-                            <select
-                                value={filterType}
-                                onChange={(e) => setFilterType(e.target.value)}
-                                className="px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-[#00A55F] focus:border-transparent transition-all duration-200 bg-white shadow-sm"
+                            <button
+                                onClick={() => setFilterType('all')}
+                                className={`px-4 py-3 rounded-xl font-medium transition-all ${filterType === 'all'
+                                    ? 'bg-[#00A55F] text-white shadow-md'
+                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                    }`}
                             >
-                                <option value="all">All Types</option>
-                                <option value="paid">Paid</option>
-                                <option value="unpaid">Unpaid</option>
-                                <option value="remote">Remote</option>
-                            </select>
+                                {t('candidateBookmarks.filterAll')}
+                            </button>
+                            <button
+                                onClick={() => setFilterType('paid')}
+                                className={`px-4 py-3 rounded-xl font-medium transition-all ${filterType === 'paid'
+                                    ? 'bg-[#00A55F] text-white shadow-md'
+                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                    }`}
+                            >
+                                {t('candidateBookmarks.filterPaid')}
+                            </button>
+                            <button
+                                onClick={() => setFilterType('unpaid')}
+                                className={`px-4 py-3 rounded-xl font-medium transition-all ${filterType === 'unpaid'
+                                    ? 'bg-[#00A55F] text-white shadow-md'
+                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                    }`}
+                            >
+                                {t('candidateBookmarks.filterUnpaid')}
+                            </button>
+                            <button
+                                onClick={() => setFilterType('remote')}
+                                className={`px-4 py-3 rounded-xl font-medium transition-all ${filterType === 'remote'
+                                    ? 'bg-[#00A55F] text-white shadow-md'
+                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                    }`}
+                            >
+                                {t('candidateBookmarks.filterRemote')}
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -242,188 +271,145 @@ const CandidateBookmarks = () => {
 
             {/* Content */}
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                <AnimatePresence mode="wait">
-                    {filteredBookmarks.length === 0 ? (
+                {filteredBookmarks.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-20">
                         <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -20 }}
-                            className="flex flex-col items-center justify-center py-20"
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                            className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-6"
                         >
-                            <div className="w-24 h-24 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center mb-6">
-                                <FaRegBookmark className="text-gray-400 text-3xl" />
-                            </div>
-                            <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                                {bookmarks.length === 0 ? 'No bookmarks yet' : 'No matching bookmarks'}
-                            </h3>
-                            <p className="text-gray-500 text-center max-w-md mb-6">
-                                {bookmarks.length === 0
-                                    ? 'Start bookmarking internships and jobs to see them here. Your bookmarks will be automatically removed when applications close.'
-                                    : 'Try adjusting your search or filter criteria.'
-                                }
-                            </p>
-                            {bookmarks.length === 0 && (
-                                <button
-                                    onClick={() => navigate('/candidate/internships')}
-                                    className="bg-gradient-to-r from-[#00A55F] to-[#008c4f] text-white px-6 py-3 rounded-xl font-medium hover:shadow-lg transform hover:scale-105 transition-all duration-200"
-                                >
-                                    Browse Internships
-                                </button>
-                            )}
+                            <FaBookmarkSolid className="text-gray-400 text-2xl" />
                         </motion.div>
-                    ) : (
-                        <div className="grid gap-6">
-                            {filteredBookmarks.map((bookmark, index) => {
-                                const internship = bookmark.internshipDetails;
-                                if (!internship) return null;
+                        <h3 className="text-xl font-semibold text-gray-900 mb-2">{t('candidateBookmarks.noBookmarks')}</h3>
+                        <p className="text-gray-500 mb-6 text-center max-w-md">
+                            {t('candidateBookmarks.noBookmarksSubtitle')}
+                        </p>
+                        <button
+                            onClick={() => navigate('/candidate/internships')}
+                            className="bg-gradient-to-r from-[#00A55F] to-[#008c4f] text-white px-6 py-3 rounded-xl font-medium hover:shadow-lg transform hover:scale-105 transition-all duration-200"
+                        >
+                            {t('candidateBookmarks.browseInternships')}
+                        </button>
+                    </div>
+                ) : (
+                    <div className="grid gap-6">
+                        {filteredBookmarks.map((bookmark) => {
+                            const internship = bookmark.internshipDetails;
+                            if (!internship) return null;
 
-                                const formatStipend = () => {
-                                    if (!internship) return '';
-                                    if (internship.stipend_type === 'paid') {
-                                        if (internship.stipend && internship.fixed_pay_max && internship.stipend !== internship.fixed_pay_max) {
-                                            return `MRU ${internship.stipend} - ${internship.fixed_pay_max}`;
-                                        } else if (internship.stipend) {
-                                            return `MRU ${internship.stipend}`;
-                                        } else {
-                                            return 'Paid';
-                                        }
-                                    } else {
-                                        return 'Unpaid';
-                                    }
-                                };
+                            const formatStipend = () => {
+                                if (internship.stipend_type === 'paid') {
+                                    return internship.stipend_amount
+                                        ? `${internship.stipend_amount} ${internship.stipend_currency || 'MRO'}/month`
+                                        : 'Paid';
+                                }
+                                return 'Unpaid';
+                            };
 
-                                const formatDuration = () => {
-                                    if (!internship) return '';
-                                    return internship.duration || (internship.duration_weeks ? `${internship.duration_weeks} Weeks` : '');
-                                };
+                            const formatDuration = () => {
+                                if (internship.duration) {
+                                    return `${internship.duration} months`;
+                                }
+                                return 'Flexible';
+                            };
 
-                                const formatPostedTime = () => {
-                                    if (!internship?.created_at) return '';
+                            const formatPostedTime = () => {
+                                if (internship.created_at) {
                                     return moment(internship.created_at).fromNow();
-                                };
+                                }
+                                return 'Recently';
+                            };
 
-                                const isActivelyHiring = internship?.approval_status === 'approved';
+                            return (
+                                <motion.div
+                                    key={bookmark.id}
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-all duration-200"
+                                >
+                                    <div className="flex flex-col lg:flex-row lg:items-center gap-4">
+                                        {/* Company Logo */}
+                                        <div className="flex-shrink-0">
+                                            <div className="w-16 h-16 bg-gradient-to-br from-[#00A55F] to-[#008c4f] rounded-xl flex items-center justify-center">
+                                                {internship.organization?.logo ? (
+                                                    <img
+                                                        src={internship.organization.logo}
+                                                        alt={internship.organization.name}
+                                                        className="w-12 h-12 rounded-lg object-cover"
+                                                    />
+                                                ) : (
+                                                    <FaBuilding className="text-white text-xl" />
+                                                )}
+                                            </div>
+                                        </div>
 
-                                return (
-                                    <motion.div
-                                        key={bookmark.id}
-                                        initial={{ opacity: 0, y: 20 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        transition={{ delay: index * 0.1 }}
-                                        className="bg-white rounded-2xl shadow-sm border border-gray-100 hover:shadow-xl transition-all duration-300 overflow-hidden group"
-                                    >
-                                        <div className="p-6">
-                                            <div className="flex flex-col lg:flex-row lg:items-start gap-6">
-                                                {/* Company Logo and Info */}
-                                                <div className="flex items-start gap-4 flex-shrink-0">
-                                                    <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-[#00A55F] to-[#008c4f] flex items-center justify-center shadow-lg">
-                                                        {internship.organization?.logo ? (
-                                                            <img
-                                                                src={internship.organization.logo.startsWith('http')
-                                                                    ? internship.organization.logo
-                                                                    : `${import.meta.env.VITE_MEDIA_BASE_URL}${internship.organization.logo}`}
-                                                                alt={internship.organization?.name}
-                                                                className="w-16 h-16 rounded-xl object-cover"
-                                                            />
-                                                        ) : (
-                                                            <span className="text-white font-bold text-xl">
-                                                                {internship.organization?.name?.[0] || 'C'}
-                                                            </span>
-                                                        )}
-                                                    </div>
-                                                    <div className="flex-1 min-w-0">
-                                                        <div className="flex items-center gap-2 mb-2">
-                                                            <h3 className="text-xl font-bold text-gray-900 truncate">
-                                                                {internship.title}
-                                                            </h3>
-                                                            {isActivelyHiring && (
-                                                                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">
-                                                                    <FaBolt className="mr-1" />
-                                                                    Actively Hiring
-                                                                </span>
-                                                            )}
-                                                        </div>
-                                                        <p className="text-lg font-medium text-gray-700 mb-1">
-                                                            {internship.organization?.name}
-                                                        </p>
-                                                        <div className="flex items-center gap-4 text-sm text-gray-500">
-                                                            <span className="flex items-center gap-1">
-                                                                <FaMapMarkerAlt className="text-[#00A55F]" />
-                                                                {internship.location || 'Work from home'}
-                                                            </span>
-                                                            <span className="flex items-center gap-1">
-                                                                <FaClock className="text-[#00A55F]" />
-                                                                {formatDuration()}
-                                                            </span>
-                                                            <span className="flex items-center gap-1">
-                                                                <FaMoneyBillWave className="text-[#00A55F]" />
-                                                                {formatStipend()}
-                                                            </span>
-                                                        </div>
-                                                    </div>
-                                                </div>
+                                        {/* Content */}
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+                                                <div className="flex-1 min-w-0">
+                                                    <h3 className="text-lg font-bold text-gray-900 mb-2 hover:text-[#00A55F] transition-colors cursor-pointer" onClick={() => navigateToInternship(internship.id)}>
+                                                        {internship.title}
+                                                    </h3>
+                                                    <p className="text-gray-600 mb-3 font-medium">
+                                                        {internship.organization?.name}
+                                                    </p>
 
-                                                {/* Badges and Actions */}
-                                                <div className="flex flex-col lg:items-end gap-4 flex-1">
                                                     {/* Badges */}
-                                                    <div className="flex flex-wrap gap-2">
-                                                        {internship.early_applicant && (
-                                                            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800">
-                                                                <FaBolt className="mr-1" />
-                                                                Early Applicant
-                                                            </span>
-                                                        )}
-                                                        {internship.job_offer && (
-                                                            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800">
-                                                                <FaStar className="mr-1" />
-                                                                Job Offer
-                                                            </span>
-                                                        )}
-                                                        {internship.part_time && (
-                                                            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-purple-100 text-purple-800">
-                                                                <FaBriefcase className="mr-1" />
-                                                                Part Time
-                                                            </span>
-                                                        )}
-                                                        {internship.applicants_count && (
-                                                            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-700">
-                                                                <FaUserFriends className="mr-1" />
-                                                                {internship.applicants_count}+ applicants
+                                                    <div className="flex flex-wrap gap-2 mb-4">
+                                                        <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                                            <FaMapMarkerAlt className="w-3 h-3" />
+                                                            {internship.location}
+                                                        </span>
+                                                        <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                            <FaClock className="w-3 h-3" />
+                                                            {formatDuration()}
+                                                        </span>
+                                                        <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium ${internship.stipend_type === 'paid'
+                                                            ? 'bg-yellow-100 text-yellow-800'
+                                                            : 'bg-gray-100 text-gray-800'
+                                                            }`}>
+                                                            <FaMoneyBillWave className="w-3 h-3" />
+                                                            {formatStipend()}
+                                                        </span>
+                                                        {internship.is_urgent && (
+                                                            <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                                                <FaBolt className="w-3 h-3" />
+                                                                Urgent
                                                             </span>
                                                         )}
                                                     </div>
 
-                                                    {/* Actions */}
-                                                    <div className="flex items-center gap-3">
-                                                        <button
-                                                            onClick={() => navigateToInternship(internship.id)}
-                                                            className="flex items-center gap-2 bg-gradient-to-r from-[#00A55F] to-[#008c4f] text-white px-4 py-2 rounded-lg font-medium hover:shadow-lg transform hover:scale-105 transition-all duration-200"
-                                                        >
-                                                            <FaEye className="text-sm" />
-                                                            View Details
-                                                        </button>
-                                                        <button
-                                                            onClick={() => removeBookmark(bookmark.id, internship.id)}
-                                                            className="flex items-center gap-2 text-red-500 hover:text-red-700 px-3 py-2 rounded-lg font-medium hover:bg-red-50 transition-all duration-200"
-                                                        >
-                                                            <FaTrash className="text-sm" />
-                                                            Remove
-                                                        </button>
-                                                    </div>
-
-                                                    {/* Posted Time */}
-                                                    <p className="text-xs text-gray-400">
+                                                    {/* Posted time */}
+                                                    <p className="text-sm text-gray-500">
                                                         Posted {formatPostedTime()}
                                                     </p>
                                                 </div>
+
+                                                {/* Actions */}
+                                                <div className="flex items-center gap-2">
+                                                    <button
+                                                        onClick={() => navigateToInternship(internship.id)}
+                                                        className="flex items-center gap-2 px-4 py-2 bg-[#00A55F] text-white rounded-lg font-medium hover:bg-[#008c4f] transition-colors"
+                                                    >
+                                                        <FaEye className="w-4 h-4" />
+                                                        {t('candidateBookmarks.viewDetails')}
+                                                    </button>
+                                                    <button
+                                                        onClick={() => removeBookmark(bookmark.id, internship.id)}
+                                                        className="flex items-center gap-2 px-4 py-2 border border-red-200 text-red-600 rounded-lg font-medium hover:bg-red-50 transition-colors"
+                                                    >
+                                                        <FaTrash className="w-4 h-4" />
+                                                        {t('candidateBookmarks.removeBookmark')}
+                                                    </button>
+                                                </div>
                                             </div>
                                         </div>
-                                    </motion.div>
-                                );
-                            })}
-                        </div>
-                    )}
-                </AnimatePresence>
+                                    </div>
+                                </motion.div>
+                            );
+                        })}
+                    </div>
+                )}
             </div>
         </div>
     );

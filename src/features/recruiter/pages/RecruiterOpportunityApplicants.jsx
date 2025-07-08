@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { FaArrowLeft, FaUser, FaEnvelope, FaClock, FaCheckCircle, FaTimesCircle, FaEye, FaFilePdf, FaComments } from 'react-icons/fa';
 import api from '../../../services/api';
 import messagingApi from '../../../services/messagingApi';
@@ -10,21 +11,8 @@ import CandidateProfileModal from '../components/CandidateProfileModal';
 // Professional, branded applicants page for a specific opportunity
 // Fetches applicants from backend and displays in a modern, responsive table
 
-const STATUS_CHOICES = [
-    { value: 'pending', label: 'Pending' },
-    { value: 'shortlisted', label: 'Shortlisted' },
-    { value: 'accepted', label: 'Accepted' },
-    { value: 'rejected', label: 'Rejected' },
-];
-
-const statusColors = {
-    pending: 'bg-yellow-100 text-yellow-800',
-    shortlisted: 'bg-blue-100 text-blue-800',
-    accepted: 'bg-green-100 text-green-800',
-    rejected: 'bg-red-100 text-red-800',
-};
-
 const RecruiterOpportunityApplicants = () => {
+    const { t } = useTranslation();
     const { opportunityId } = useParams();
     const [applicants, setApplicants] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -36,6 +24,20 @@ const RecruiterOpportunityApplicants = () => {
     const [profileModal, setProfileModal] = useState({ isOpen: false, candidateId: null, candidateName: '', candidateEmail: '' });
     const navigate = useNavigate();
 
+    const STATUS_CHOICES = [
+        { value: 'pending', label: t('recruiterOpportunityApplicants.statusLabels.pending') },
+        { value: 'shortlisted', label: t('recruiterOpportunityApplicants.statusLabels.shortlisted') },
+        { value: 'accepted', label: t('recruiterOpportunityApplicants.statusLabels.accepted') },
+        { value: 'rejected', label: t('recruiterOpportunityApplicants.statusLabels.rejected') },
+    ];
+
+    const statusColors = {
+        pending: 'bg-yellow-100 text-yellow-800',
+        shortlisted: 'bg-blue-100 text-blue-800',
+        accepted: 'bg-green-100 text-green-800',
+        rejected: 'bg-red-100 text-red-800',
+    };
+
     useEffect(() => {
         setLoading(true);
         setError('');
@@ -46,7 +48,7 @@ const RecruiterOpportunityApplicants = () => {
                 setLoading(false);
             })
             .catch(err => {
-                setError('Could not load applicants.');
+                setError(t('recruiterOpportunityApplicants.couldNotLoad'));
                 setLoading(false);
             });
     }, [opportunityId]);
@@ -79,13 +81,13 @@ const RecruiterOpportunityApplicants = () => {
 
             // Show appropriate feedback based on the action
             if (newStatus === 'accepted') {
-                setFeedback('Status updated successfully! Candidate has been notified via email.');
+                setFeedback(t('recruiterOpportunityApplicants.statusUpdatedNotified'));
             } else {
-                setFeedback('Status updated successfully!');
+                setFeedback(t('recruiterOpportunityApplicants.statusUpdated'));
             }
             setTimeout(() => setFeedback(''), 3000);
         } catch (err) {
-            setFeedback('Failed to update status.');
+            setFeedback(t('recruiterOpportunityApplicants.failedToUpdate'));
             setTimeout(() => setFeedback(''), 2000);
         } finally {
             setUpdatingId(null);
@@ -119,15 +121,15 @@ const RecruiterOpportunityApplicants = () => {
                 onClick={() => navigate('/recruiter/dashboard')}
                 className="flex items-center text-[#00A55F] hover:text-[#008c4f] mb-6 font-medium"
             >
-                <FaArrowLeft className="mr-2" /> Back to Dashboard
+                <FaArrowLeft className="mr-2" /> {t('recruiterOpportunityApplicants.backToDashboard')}
             </button>
 
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6">Applicants for Opportunity</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6">{t('recruiterOpportunityApplicants.title')}</h1>
             {feedback && <div className="mb-4 text-center text-sm font-medium text-[#00A55F]">{feedback}</div>}
 
             {/* Loading and Error States */}
             {loading && (
-                <div className="text-center text-gray-500 py-12">Loading applicants...</div>
+                <div className="text-center text-gray-500 py-12">{t('recruiterOpportunityApplicants.loading')}</div>
             )}
             {error && (
                 <div className="text-center text-red-600 py-12">{error}</div>
@@ -139,23 +141,23 @@ const RecruiterOpportunityApplicants = () => {
                     <table className="min-w-full divide-y divide-gray-200">
                         <thead className="bg-gray-50">
                             <tr>
-                                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Candidate</th>
-                                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Email</th>
-                                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
-                                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Applied At</th>
-                                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Resume</th>
-                                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Answers</th>
+                                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('recruiterOpportunityApplicants.candidate')}</th>
+                                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('recruiterOpportunityApplicants.email')}</th>
+                                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('recruiterOpportunityApplicants.status')}</th>
+                                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('recruiterOpportunityApplicants.appliedAt')}</th>
+                                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('recruiterOpportunityApplicants.resume')}</th>
+                                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('recruiterOpportunityApplicants.answers')}</th>
                             </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-100">
                             {applicants.length === 0 ? (
                                 <tr>
-                                    <td colSpan={6} className="py-16 text-center text-gray-400">No applicants found.</td>
+                                    <td colSpan={6} className="py-16 text-center text-gray-400">{t('recruiterOpportunityApplicants.noApplicants')}</td>
                                 </tr>
                             ) : (
                                 applicants.map((app, idx) => {
-                                    const candidateName = app.candidate_name || app.candidate?.full_name || app.candidate?.name || 'N/A';
-                                    const candidateEmail = app.candidate_email || app.candidate?.email || 'N/A';
+                                    const candidateName = app.candidate_name || app.candidate?.full_name || app.candidate?.name || t('recruiterOpportunityApplicants.notAvailable');
+                                    const candidateEmail = app.candidate_email || app.candidate?.email || t('recruiterOpportunityApplicants.notAvailable');
                                     const candidatePhoto = app.candidate?.photo || app.candidate_photo;
                                     const resumeUrl = app.candidate?.resume || app.candidate_resume;
                                     // Since we don't have candidate_id, we'll use the candidate email as identifier
@@ -221,11 +223,11 @@ const RecruiterOpportunityApplicants = () => {
                                                             <option key={opt.value} value={opt.value}>{opt.label}</option>
                                                         ))}
                                                     </select>
-                                                    {updatingId === app.id && <span className="ml-2 text-xs text-gray-400 animate-pulse">Updating...</span>}
+                                                    {updatingId === app.id && <span className="ml-2 text-xs text-gray-400 animate-pulse">{t('recruiterOpportunityApplicants.updating')}</span>}
                                                 </div>
                                             </td>
                                             <td className="px-4 py-4 whitespace-nowrap text-gray-600 text-sm">
-                                                {app.created_at ? new Date(app.created_at).toLocaleString() : 'N/A'}
+                                                {app.created_at ? new Date(app.created_at).toLocaleString() : t('recruiterOpportunityApplicants.notAvailable')}
                                             </td>
                                             <td className="px-4 py-4 whitespace-nowrap">
                                                 {resumeUrl ? (
@@ -234,7 +236,7 @@ const RecruiterOpportunityApplicants = () => {
                                                         className="flex items-center gap-2 px-3 py-2 bg-[#00A55F] text-white rounded-lg hover:bg-[#008c4f] transition-colors duration-200 text-sm"
                                                     >
                                                         <FaEye className="h-4 w-4" />
-                                                        View Resume
+                                                        {t('recruiterOpportunityApplicants.viewResume')}
                                                     </button>
                                                 ) : (
                                                     <span className="text-gray-400 text-sm">No resume</span>
@@ -257,7 +259,7 @@ const RecruiterOpportunityApplicants = () => {
                                                         className="flex items-center gap-2 px-3 py-2 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors duration-200 text-sm"
                                                     >
                                                         <FaComments className="h-4 w-4" />
-                                                        View Answers
+                                                        {t('recruiterOpportunityApplicants.viewAnswers')}
                                                         <span className="bg-blue-200 text-blue-800 text-xs px-2 py-0.5 rounded-full">
                                                             {(app.screening_answers ? Object.keys(app.screening_answers).length : 0) +
                                                                 (app.answers ? Object.keys(app.answers).length : 0)}

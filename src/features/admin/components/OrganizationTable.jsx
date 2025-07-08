@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import { toggleVerifyOrganization } from '../../../services/adminApi';
 import {
@@ -16,6 +17,7 @@ import {
 import { motion } from 'framer-motion';
 
 const OrganizationTable = ({ organizations = [], onActionComplete }) => {
+    const { t } = useTranslation();
     const [loadingId, setLoadingId] = useState(null);
     const [selectedOrg, setSelectedOrg] = useState(null);
     const [showDetailsModal, setShowDetailsModal] = useState(false);
@@ -25,10 +27,10 @@ const OrganizationTable = ({ organizations = [], onActionComplete }) => {
         setLoadingId(orgId);
         try {
             await toggleVerifyOrganization(orgId);
-            toast.success(isVerified ? 'Organization unverified!' : 'Organization verified!');
+            toast.success(isVerified ? t('admin.components.organizationTable.organizationUnverified') : t('admin.components.organizationTable.organizationVerified'));
             onActionComplete && onActionComplete();
         } catch {
-            toast.error('Failed to toggle verification.');
+            toast.error(t('admin.components.organizationTable.failedToToggleVerification'));
         } finally {
             setLoadingId(null);
         }
@@ -62,11 +64,11 @@ const OrganizationTable = ({ organizations = [], onActionComplete }) => {
                 <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
                         <tr>
-                            <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Organization</th>
-                            <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Contact Info</th>
-                            <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Details</th>
-                            <th className="px-6 py-4 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">Status</th>
-                            <th className="px-6 py-4 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">Actions</th>
+                            <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">{t('admin.components.organizationTable.organization')}</th>
+                            <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">{t('admin.components.organizationTable.contactInfo')}</th>
+                            <th className="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">{t('admin.components.organizationTable.details')}</th>
+                            <th className="px-6 py-4 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">{t('admin.components.organizationTable.status')}</th>
+                            <th className="px-6 py-4 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">{t('admin.components.organizationTable.actions')}</th>
                         </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-100">
@@ -88,7 +90,7 @@ const OrganizationTable = ({ organizations = [], onActionComplete }) => {
                                         <div className="ml-4">
                                             <div className="text-sm font-semibold text-gray-900">{org.name}</div>
                                             <div className="text-sm text-gray-500">
-                                                {org.is_independent ? 'Independent' : 'Company'}
+                                                {org.is_independent ? t('admin.components.organizationTable.independent') : t('admin.components.organizationTable.company')}
                                             </div>
                                         </div>
                                     </div>
@@ -116,7 +118,7 @@ const OrganizationTable = ({ organizations = [], onActionComplete }) => {
                                         {org.founded_year && (
                                             <div className="flex items-center gap-2">
                                                 <FaCalendarAlt className="h-3 w-3 text-gray-400" />
-                                                <span className="text-sm text-gray-600">Founded {org.founded_year}</span>
+                                                <span className="text-sm text-gray-600">{t('admin.components.organizationTable.foundedYear', { year: org.founded_year })}</span>
                                             </div>
                                         )}
                                     </div>
@@ -126,7 +128,7 @@ const OrganizationTable = ({ organizations = [], onActionComplete }) => {
                                             ? 'bg-green-100 text-green-800'
                                             : 'bg-yellow-100 text-yellow-800'
                                         }`}>
-                                        {org.is_verified ? 'Verified' : 'Pending'}
+                                        {org.is_verified ? t('admin.components.organizationTable.verified') : t('admin.components.organizationTable.pending')}
                                     </span>
                                 </td>
                                 <td className="px-6 py-4 text-center">
@@ -136,7 +138,7 @@ const OrganizationTable = ({ organizations = [], onActionComplete }) => {
                                             whileTap={{ scale: 0.95 }}
                                             onClick={() => handleShowDetails(org)}
                                             className="p-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors"
-                                            title="View Details"
+                                            title={t('admin.components.organizationTable.viewDetails')}
                                         >
                                             <FaEye className="h-4 w-4" />
                                         </motion.button>
@@ -149,7 +151,7 @@ const OrganizationTable = ({ organizations = [], onActionComplete }) => {
                                                     ? 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200'
                                                     : 'bg-green-100 text-green-700 hover:bg-green-200'
                                                 }`}
-                                            title={org.is_verified ? 'Unverify Organization' : 'Verify Organization'}
+                                            title={org.is_verified ? t('admin.components.organizationTable.unverifyOrganization') : t('admin.components.organizationTable.verifyOrganization')}
                                         >
                                             {org.is_verified ? <FaFolderOpen className="h-4 w-4" /> : <FaCheckCircle className="h-4 w-4" />}
                                         </motion.button>
@@ -162,8 +164,8 @@ const OrganizationTable = ({ organizations = [], onActionComplete }) => {
                 {organizations.length === 0 && (
                     <div className="p-8 text-center text-gray-500">
                         <FaBuilding className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                        <p className="text-lg font-medium">No organizations found</p>
-                        <p className="text-sm text-gray-400">Organizations will appear here once they register</p>
+                        <p className="text-lg font-medium">{t('admin.components.organizationTable.noOrganizationsFound')}</p>
+                        <p className="text-sm text-gray-400">{t('admin.components.organizationTable.organizationsWillAppear')}</p>
                     </div>
                 )}
             </div>
@@ -186,7 +188,7 @@ const OrganizationTable = ({ organizations = [], onActionComplete }) => {
                                     <div>
                                         <h2 className="text-xl font-bold">{selectedOrg.name}</h2>
                                         <p className="text-blue-100">
-                                            {selectedOrg.is_independent ? 'Independent Organization' : 'Company'}
+                                            {selectedOrg.is_independent ? t('admin.components.organizationTable.independentOrganization') : t('admin.components.organizationTable.company')}
                                         </p>
                                     </div>
                                 </div>
@@ -205,7 +207,7 @@ const OrganizationTable = ({ organizations = [], onActionComplete }) => {
                             {/* About Section */}
                             {selectedOrg.about && (
                                 <div>
-                                    <h3 className="text-lg font-semibold text-gray-900 mb-3">About</h3>
+                                    <h3 className="text-lg font-semibold text-gray-900 mb-3">{t('admin.components.organizationTable.about')}</h3>
                                     <p className="text-gray-700 bg-gray-50 p-4 rounded-lg">
                                         {selectedOrg.about}
                                     </p>
@@ -214,12 +216,12 @@ const OrganizationTable = ({ organizations = [], onActionComplete }) => {
 
                             {/* Contact Information */}
                             <div>
-                                <h3 className="text-lg font-semibold text-gray-900 mb-3">Contact Information</h3>
+                                <h3 className="text-lg font-semibold text-gray-900 mb-3">{t('admin.components.organizationTable.contactInformation')}</h3>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                                         <FaEnvelope className="h-5 w-5 text-blue-600" />
                                         <div>
-                                            <p className="text-sm font-medium text-gray-900">Email</p>
+                                            <p className="text-sm font-medium text-gray-900">{t('admin.components.organizationTable.email')}</p>
                                             <p className="text-sm text-gray-600">{selectedOrg.email || 'N/A'}</p>
                                         </div>
                                     </div>
@@ -227,7 +229,7 @@ const OrganizationTable = ({ organizations = [], onActionComplete }) => {
                                         <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                                             <FaPhone className="h-5 w-5 text-green-600" />
                                             <div>
-                                                <p className="text-sm font-medium text-gray-900">Phone</p>
+                                                <p className="text-sm font-medium text-gray-900">{t('admin.components.organizationTable.phone')}</p>
                                                 <p className="text-sm text-gray-600">{selectedOrg.phone_number}</p>
                                             </div>
                                         </div>
@@ -236,7 +238,7 @@ const OrganizationTable = ({ organizations = [], onActionComplete }) => {
                                         <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                                             <FaMapMarkerAlt className="h-5 w-5 text-red-600" />
                                             <div>
-                                                <p className="text-sm font-medium text-gray-900">Address</p>
+                                                <p className="text-sm font-medium text-gray-900">{t('admin.components.organizationTable.address')}</p>
                                                 <p className="text-sm text-gray-600">{selectedOrg.address}</p>
                                             </div>
                                         </div>
@@ -245,7 +247,7 @@ const OrganizationTable = ({ organizations = [], onActionComplete }) => {
                                         <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                                             <FaCalendarAlt className="h-5 w-5 text-purple-600" />
                                             <div>
-                                                <p className="text-sm font-medium text-gray-900">Founded</p>
+                                                <p className="text-sm font-medium text-gray-900">{t('admin.components.organizationTable.founded')}</p>
                                                 <p className="text-sm text-gray-600">{selectedOrg.founded_year}</p>
                                             </div>
                                         </div>
@@ -255,16 +257,16 @@ const OrganizationTable = ({ organizations = [], onActionComplete }) => {
 
                             {/* Status */}
                             <div>
-                                <h3 className="text-lg font-semibold text-gray-900 mb-3">Status</h3>
+                                <h3 className="text-lg font-semibold text-gray-900 mb-3">{t('admin.components.organizationTable.status')}</h3>
                                 <div className="flex items-center gap-3">
                                     <span className={`inline-flex px-3 py-1 text-sm font-semibold rounded-full ${selectedOrg.is_verified
                                             ? 'bg-green-100 text-green-800'
                                             : 'bg-yellow-100 text-yellow-800'
                                         }`}>
-                                        {selectedOrg.is_verified ? 'Verified' : 'Pending Verification'}
+                                        {selectedOrg.is_verified ? t('admin.components.organizationTable.verified') : t('admin.components.organizationTable.pendingVerification')}
                                     </span>
                                     <span className="inline-flex px-3 py-1 text-sm font-semibold rounded-full bg-blue-100 text-blue-800">
-                                        {selectedOrg.is_independent ? 'Independent' : 'Company'}
+                                        {selectedOrg.is_independent ? t('admin.components.organizationTable.independent') : t('admin.components.organizationTable.company')}
                                     </span>
                                 </div>
                             </div>
@@ -281,8 +283,8 @@ const OrganizationTable = ({ organizations = [], onActionComplete }) => {
                                             : 'bg-green-100 text-green-700 hover:bg-green-200'
                                         }`}
                                 >
-                                    {loadingId === selectedOrg.id ? 'Processing...' :
-                                        selectedOrg.is_verified ? 'Unverify Organization' : 'Verify Organization'
+                                    {loadingId === selectedOrg.id ? t('admin.components.organizationTable.processing') :
+                                        selectedOrg.is_verified ? t('admin.components.organizationTable.unverifyOrganization') : t('admin.components.organizationTable.verifyOrganization')
                                     }
                                 </motion.button>
                                 <motion.button
@@ -291,7 +293,7 @@ const OrganizationTable = ({ organizations = [], onActionComplete }) => {
                                     onClick={() => setShowDetailsModal(false)}
                                     className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
                                 >
-                                    Close
+                                    {t('admin.components.organizationTable.close')}
                                 </motion.button>
                             </div>
                         </div>

@@ -9,8 +9,8 @@ import React, { useEffect, useState } from 'react';
 import { FaUserTie, FaFileAlt, FaCheckCircle, FaTimesCircle, FaHourglassHalf, FaCertificate, FaChevronRight, FaRegStar, FaTimes } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '../../../services/api';
-
 import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 
 const statusColors = {
     'accepted': 'bg-green-100 text-green-800',
@@ -19,6 +19,7 @@ const statusColors = {
 };
 
 const ApplicationModal = ({ isOpen, onClose, application }) => {
+    const { t } = useTranslation();
     if (!isOpen || !application) return null;
     return (
         <AnimatePresence>
@@ -57,8 +58,8 @@ const ApplicationModal = ({ isOpen, onClose, application }) => {
                         </div>
                     </div>
                     <div className="mb-4">
-                        <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${statusColors[application.status] || 'bg-gray-100 text-gray-700'}`}>{application.status}</span>
-                        <span className="ml-3 text-xs text-gray-500">Applied on {new Date(application.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: '2-digit' })}</span>
+                        <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold ${statusColors[application.status] || 'bg-gray-100 text-gray-700'}`}>{t(`candidateApplications.${application.status}`) || application.status}</span>
+                        <span className="ml-3 text-xs text-gray-500">{t('candidateApplications.appliedOn')} {new Date(application.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: '2-digit' })}</span>
                     </div>
                     {/* Opportunity Button */}
                     {application.opportunity && (
@@ -67,7 +68,7 @@ const ApplicationModal = ({ isOpen, onClose, application }) => {
                                 className="w-full inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-gradient-to-r from-[#00A55F] to-[#008c4f] text-white font-semibold shadow hover:from-[#008c4f] hover:to-[#00A55F] transition"
                                 onClick={() => window.open(`/internships/${application.opportunity.id}`, '_blank')}
                             >
-                                View Opportunity (General)
+                                {t('candidateApplications.showOpportunity')}
                                 <FaChevronRight className="h-4 w-4" />
                             </button>
                             <button
@@ -82,12 +83,12 @@ const ApplicationModal = ({ isOpen, onClose, application }) => {
                     {/* Screening Answers */}
                     {application.screening_answers && Object.keys(application.screening_answers).length > 0 && (
                         <div className="mb-4">
-                            <h3 className="font-semibold text-gray-800 mb-2">Screening Answers</h3>
+                            <h3 className="font-semibold text-gray-800 mb-2">{t('candidateApplications.screeningAnswers')}</h3>
                             <div className="space-y-2">
                                 {Object.entries(application.screening_answers).map(([question, answer], idx) => (
                                     <div key={idx} className="bg-gray-50 rounded-lg p-3">
                                         <div className="text-xs text-gray-500 mb-1">{question}</div>
-                                        <div className="text-gray-700 text-sm">{answer || <span className="text-gray-400">No answer</span>}</div>
+                                        <div className="text-gray-700 text-sm">{answer || <span className="text-gray-400">{t('candidateApplications.noAnswer')}</span>}</div>
                                     </div>
                                 ))}
                             </div>
@@ -96,14 +97,14 @@ const ApplicationModal = ({ isOpen, onClose, application }) => {
                     {/* Resume */}
                     {application.candidate_resume && (
                         <div className="mb-4">
-                            <h3 className="font-semibold text-gray-800 mb-2">Resume</h3>
+                            <h3 className="font-semibold text-gray-800 mb-2">{t('candidateApplications.viewResume')}</h3>
                             <a
                                 href={application.candidate_resume.startsWith('http') ? application.candidate_resume : `${import.meta.env.VITE_MEDIA_BASE_URL}${application.candidate_resume}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="inline-flex items-center gap-2 text-[#00A55F] hover:text-[#008c4f] text-sm font-medium underline"
                             >
-                                <FaFileAlt className="h-4 w-4" /> View Resume
+                                <FaFileAlt className="h-4 w-4" /> {t('candidateApplications.viewResume')}
                             </a>
                         </div>
                     )}
@@ -114,12 +115,12 @@ const ApplicationModal = ({ isOpen, onClose, application }) => {
 };
 
 const CandidateApplications = () => {
+    const { t } = useTranslation();
     const [applications, setApplications] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [selectedApp, setSelectedApp] = useState(null);
     const [modalOpen, setModalOpen] = useState(false);
-
 
     useEffect(() => {
         const fetchApplications = async () => {
@@ -145,22 +146,19 @@ const CandidateApplications = () => {
         setSelectedApp(null);
     };
 
-
-
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-gray-50">
             <ApplicationModal isOpen={modalOpen} onClose={closeModal} application={selectedApp} />
-
 
             <div className="max-w-7xl mx-auto py-8 px-2 sm:px-6 lg:px-8">
                 {/* Header - Responsive layout */}
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
                     <div>
-                        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">My Applications</h1>
-                        <p className="text-gray-500 text-sm">Track your internship and job applications in Mauritania.</p>
+                        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1">{t('candidateApplications.title')}</h1>
+                        <p className="text-gray-500 text-sm">{t('candidateApplications.subtitle')}</p>
                     </div>
                     <button className="text-[#00A55F] hover:text-[#008c4f] text-sm font-medium flex items-center gap-1">
-                        View old applications <FaChevronRight className="h-4 w-4" />
+                        {t('candidateApplications.viewOld')} <FaChevronRight className="h-4 w-4" />
                     </button>
                 </div>
 
@@ -170,13 +168,13 @@ const CandidateApplications = () => {
                         <table className="min-w-full divide-y divide-gray-200">
                             <thead className="bg-gray-50">
                                 <tr>
-                                    <th className="px-4 sm:px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Candidate</th>
-                                    <th className="px-4 sm:px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Email</th>
-                                    <th className="px-4 sm:px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Opportunity</th>
-                                    <th className="px-4 sm:px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Organization</th>
-                                    <th className="px-4 sm:px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">Applied On</th>
-                                    <th className="px-4 sm:px-6 py-3 text-center text-xs font-bold text-gray-700 uppercase tracking-wider">Status</th>
-                                    <th className="px-4 sm:px-6 py-3 text-center text-xs font-bold text-gray-700 uppercase tracking-wider">Actions</th>
+                                    <th className="px-4 sm:px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">{t('candidateApplications.candidate')}</th>
+                                    <th className="px-4 sm:px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">{t('candidateApplications.email')}</th>
+                                    <th className="px-4 sm:px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">{t('candidateApplications.opportunity')}</th>
+                                    <th className="px-4 sm:px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">{t('candidateApplications.organization')}</th>
+                                    <th className="px-4 sm:px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider">{t('candidateApplications.appliedOn')}</th>
+                                    <th className="px-4 sm:px-6 py-3 text-center text-xs font-bold text-gray-700 uppercase tracking-wider">{t('candidateApplications.status')}</th>
+                                    <th className="px-4 sm:px-6 py-3 text-center text-xs font-bold text-gray-700 uppercase tracking-wider">{t('candidateApplications.actions')}</th>
                                 </tr>
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-100">
@@ -269,7 +267,6 @@ const CandidateApplications = () => {
                                                             Show Opportunity
                                                         </motion.button>
                                                     )}
-
                                                 </div>
                                             </td>
                                         </motion.tr>

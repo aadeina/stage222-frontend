@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 const RegisterEmail = () => {
+    const { t } = useTranslation();
     const [formData, setFormData] = useState({
         email: '',
         password: '',
@@ -30,23 +32,23 @@ const RegisterEmail = () => {
         const newErrors = {};
 
         if (!formData.email) {
-            newErrors.email = 'Email is required';
+            newErrors.email = t('auth.enterValidEmail');
         } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-            newErrors.email = 'Please enter a valid email';
+            newErrors.email = t('auth.enterValidEmail');
         }
 
         if (!formData.password) {
-            newErrors.password = 'Password is required';
+            newErrors.password = t('auth.passwordRequired');
         } else if (formData.password.length < 6) {
-            newErrors.password = 'Password must be at least 6 characters';
+            newErrors.password = t('auth.passwordMinLength');
         }
 
         if (!formData.firstName) {
-            newErrors.firstName = 'First name is required';
+            newErrors.firstName = t('auth.firstNameRequired');
         }
 
         if (!formData.lastName) {
-            newErrors.lastName = 'Last name is required';
+            newErrors.lastName = t('auth.lastNameRequired');
         }
 
         setErrors(newErrors);
@@ -66,10 +68,10 @@ const RegisterEmail = () => {
                 {/* Header */}
                 <div className="text-center mb-8">
                     <h1 className="text-2xl font-bold text-gray-900 mb-2">
-                        Sign up with Email
+                        {t('auth.signUpWithEmail')}
                     </h1>
                     <p className="text-gray-600">
-                        Create your Stage222 account
+                        {t('auth.createStage222Account')}
                     </p>
                 </div>
 
@@ -77,7 +79,7 @@ const RegisterEmail = () => {
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
                         <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                            Email
+                            {t('forms.email')}
                         </label>
                         <input
                             type="email"
@@ -87,7 +89,7 @@ const RegisterEmail = () => {
                             onChange={handleChange}
                             className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#00A55F] focus:border-[#00A55F] outline-none transition-colors ${errors.email ? 'border-red-500' : 'border-gray-300'
                                 }`}
-                            placeholder="Enter your email"
+                            placeholder={t('auth.enterEmailPlaceholder')}
                         />
                         {errors.email && (
                             <p className="mt-1 text-sm text-red-500">{errors.email}</p>
@@ -96,7 +98,7 @@ const RegisterEmail = () => {
 
                     <div>
                         <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-                            Password
+                            {t('forms.password')}
                         </label>
                         <input
                             type="password"
@@ -106,7 +108,7 @@ const RegisterEmail = () => {
                             onChange={handleChange}
                             className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#00A55F] focus:border-[#00A55F] outline-none transition-colors ${errors.password ? 'border-red-500' : 'border-gray-300'
                                 }`}
-                            placeholder="Enter your password"
+                            placeholder={t('auth.enterPasswordPlaceholder')}
                         />
                         {errors.password && (
                             <p className="mt-1 text-sm text-red-500">{errors.password}</p>
@@ -116,7 +118,7 @@ const RegisterEmail = () => {
                     <div className="grid grid-cols-2 gap-4">
                         <div>
                             <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-1">
-                                First Name
+                                {t('forms.firstName')}
                             </label>
                             <input
                                 type="text"
@@ -126,7 +128,7 @@ const RegisterEmail = () => {
                                 onChange={handleChange}
                                 className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#00A55F] focus:border-[#00A55F] outline-none transition-colors ${errors.firstName ? 'border-red-500' : 'border-gray-300'
                                     }`}
-                                placeholder="First name"
+                                placeholder={t('auth.firstNamePlaceholder')}
                             />
                             {errors.firstName && (
                                 <p className="mt-1 text-sm text-red-500">{errors.firstName}</p>
@@ -135,7 +137,7 @@ const RegisterEmail = () => {
 
                         <div>
                             <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-1">
-                                Last Name
+                                {t('forms.lastName')}
                             </label>
                             <input
                                 type="text"
@@ -145,7 +147,7 @@ const RegisterEmail = () => {
                                 onChange={handleChange}
                                 className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#00A55F] focus:border-[#00A55F] outline-none transition-colors ${errors.lastName ? 'border-red-500' : 'border-gray-300'
                                     }`}
-                                placeholder="Last name"
+                                placeholder={t('auth.lastNamePlaceholder')}
                             />
                             {errors.lastName && (
                                 <p className="mt-1 text-sm text-red-500">{errors.lastName}</p>
@@ -157,22 +159,22 @@ const RegisterEmail = () => {
                         type="submit"
                         className="w-full bg-[#00A55F] text-white px-4 py-3 rounded-lg hover:bg-[#008c4f] transition-colors font-medium"
                     >
-                        Register
+                        {t('auth.register')}
                     </button>
                 </form>
 
                 {/* Footer */}
                 <div className="mt-8 text-center space-y-4">
                     <p className="text-sm text-gray-600">
-                        By signing up, you agree to our{' '}
+                        {t('auth.bySigningUp')}{' '}
                         <Link to="/terms" className="text-[#00A55F] hover:text-[#008c4f]">
-                            Terms and Conditions
+                            {t('auth.termsAndConditions')}
                         </Link>
                     </p>
                     <p className="text-sm text-gray-600">
-                        Already registered?{' '}
+                        {t('auth.alreadyRegistered')}{' '}
                         <Link to="/login" className="text-[#00A55F] hover:text-[#008c4f]">
-                            Login
+                            {t('auth.login')}
                         </Link>
                     </p>
                 </div>

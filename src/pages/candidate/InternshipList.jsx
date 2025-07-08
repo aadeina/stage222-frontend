@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import InternshipCard from '@/components/InternshipCard';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
@@ -10,6 +11,7 @@ const InternshipList = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const navigate = useNavigate();
+    const { t } = useTranslation();
 
     useEffect(() => {
         const loadInternships = async () => {
@@ -23,8 +25,8 @@ const InternshipList = () => {
                 setInternships(internshipsData);
             } catch (err) {
                 console.error('Error loading internships:', err);
-                setError('Failed to load internships.');
-                toast.error('Failed to load internships.');
+                setError(t('internshipList.loadError') || 'Failed to load internships.');
+                toast.error(t('internshipList.loadError') || 'Failed to load internships.');
             } finally {
                 setLoading(false);
             }
@@ -40,7 +42,7 @@ const InternshipList = () => {
     return (
         <div className="min-h-screen bg-gray-50 py-10 px-2 sm:px-6 lg:px-8">
             <div className="max-w-5xl mx-auto">
-                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-8 text-center">Latest Internships</h1>
+                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-8 text-center">{t('internshipList.latestInternships') || 'Latest Internships'}</h1>
                 {loading ? (
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                         {[...Array(4)].map((_, i) => (
@@ -50,7 +52,7 @@ const InternshipList = () => {
                 ) : error ? (
                     <div className="text-center text-red-500 py-12">{error}</div>
                 ) : internships.length === 0 ? (
-                    <div className="text-center text-gray-500 py-12">No internships found.</div>
+                    <div className="text-center text-gray-500 py-12">{t('internshipList.noResults')}</div>
                 ) : (
                     <motion.div
                         initial="hidden"

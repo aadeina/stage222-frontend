@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import {
     FaUser,
     FaCog,
@@ -16,6 +17,7 @@ import toast from 'react-hot-toast';
 import axios from 'axios';
 
 const AdminProfileDropdown = () => {
+    const { t } = useTranslation();
     const [isOpen, setIsOpen] = useState(false);
     const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
     const [showProfileModal, setShowProfileModal] = useState(false);
@@ -56,7 +58,7 @@ const AdminProfileDropdown = () => {
         localStorage.removeItem('admin_token');
 
         // Show success message
-        toast.success('Logged out successfully');
+        toast.success(t('admin.components.profileDropdown.loggedOutSuccessfully'));
 
         // Redirect to admin login
         navigate('/admin/login');
@@ -95,17 +97,17 @@ const AdminProfileDropdown = () => {
     const handleSubmitPasswordChange = async () => {
         // Validation
         if (!passwordData.old_password || !passwordData.new_password || !passwordData.confirm_password) {
-            toast.error('Please fill in all password fields');
+            toast.error(t('admin.components.profileDropdown.fillAllFields'));
             return;
         }
 
         if (passwordData.new_password !== passwordData.confirm_password) {
-            toast.error('New passwords do not match');
+            toast.error(t('admin.components.profileDropdown.passwordsDoNotMatch'));
             return;
         }
 
         if (passwordData.new_password.length < 6) {
-            toast.error('New password must be at least 6 characters long');
+            toast.error(t('admin.components.profileDropdown.passwordTooShort'));
             return;
         }
 
@@ -142,7 +144,7 @@ const AdminProfileDropdown = () => {
             } else if (error.response?.data?.message) {
                 toast.error(error.response.data.message);
             } else {
-                toast.error('Failed to change password. Please try again.');
+                toast.error(t('admin.components.profileDropdown.failedToChangePassword'));
             }
         } finally {
             setIsChangingPassword(false);
@@ -200,7 +202,7 @@ const AdminProfileDropdown = () => {
                                         <p className="text-sm text-gray-500">{adminEmail}</p>
                                         <div className="flex items-center gap-1 mt-1">
                                             <FaShieldAlt className="h-3 w-3 text-green-500" />
-                                            <span className="text-xs text-green-600 font-medium">Administrator</span>
+                                            <span className="text-xs text-green-600 font-medium">{t('admin.components.profileDropdown.administrator')}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -214,7 +216,7 @@ const AdminProfileDropdown = () => {
                                     className="w-full flex items-center gap-3 px-4 py-3 text-left text-gray-700 hover:bg-gray-50 transition-colors"
                                 >
                                     <FaUser className="h-4 w-4 text-blue-500" />
-                                    <span className="font-medium">View Profile</span>
+                                    <span className="font-medium">{t('admin.components.profileDropdown.viewProfile')}</span>
                                 </motion.button>
 
                                 <motion.button
@@ -223,7 +225,7 @@ const AdminProfileDropdown = () => {
                                     className="w-full flex items-center gap-3 px-4 py-3 text-left text-gray-700 hover:bg-gray-50 transition-colors"
                                 >
                                     <FaCog className="h-4 w-4 text-purple-500" />
-                                    <span className="font-medium">Change Password</span>
+                                    <span className="font-medium">{t('admin.components.profileDropdown.changePassword')}</span>
                                 </motion.button>
 
                                 <div className="border-t border-gray-100 my-2"></div>
@@ -234,7 +236,7 @@ const AdminProfileDropdown = () => {
                                     className="w-full flex items-center gap-3 px-4 py-3 text-left text-red-600 hover:bg-red-50 transition-colors"
                                 >
                                     <FaSignOutAlt className="h-4 w-4" />
-                                    <span className="font-medium">Logout</span>
+                                    <span className="font-medium">{t('admin.components.profileDropdown.logout')}</span>
                                 </motion.button>
                             </div>
                         </motion.div>
@@ -259,8 +261,8 @@ const AdminProfileDropdown = () => {
                                             <FaCog className="h-6 w-6" />
                                         </div>
                                         <div>
-                                            <h2 className="text-xl font-bold">Change Password</h2>
-                                            <p className="text-green-100">Enter your current password and choose a new secure password</p>
+                                            <h2 className="text-xl font-bold">{t('admin.components.profileDropdown.changePasswordTitle')}</h2>
+                                            <p className="text-green-100">{t('admin.components.profileDropdown.changePasswordSubtitle')}</p>
                                         </div>
                                     </div>
                                     <button
@@ -278,7 +280,7 @@ const AdminProfileDropdown = () => {
                                 <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); handleSubmitPasswordChange(); }}>
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                                            Current Password
+                                            {t('admin.components.profileDropdown.currentPassword')}
                                         </label>
                                         <div className="relative">
                                             <input
@@ -286,7 +288,7 @@ const AdminProfileDropdown = () => {
                                                 value={passwordData.old_password}
                                                 onChange={(e) => handlePasswordChange('old_password', e.target.value)}
                                                 className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00A55F] focus:border-[#00A55F] transition-colors"
-                                                placeholder="Enter current password"
+                                                placeholder={t('admin.components.profileDropdown.enterCurrentPassword')}
                                             />
                                             <button
                                                 type="button"
@@ -299,7 +301,7 @@ const AdminProfileDropdown = () => {
                                     </div>
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                                            New Password
+                                            {t('admin.components.profileDropdown.newPassword')}
                                         </label>
                                         <div className="relative">
                                             <input
@@ -307,7 +309,7 @@ const AdminProfileDropdown = () => {
                                                 value={passwordData.new_password}
                                                 onChange={(e) => handlePasswordChange('new_password', e.target.value)}
                                                 className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00A55F] focus:border-[#00A55F] transition-colors"
-                                                placeholder="Enter new password"
+                                                placeholder={t('admin.components.profileDropdown.enterNewPassword')}
                                             />
                                             <button
                                                 type="button"
@@ -320,7 +322,7 @@ const AdminProfileDropdown = () => {
                                     </div>
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                                            Confirm New Password
+                                            {t('admin.components.profileDropdown.confirmNewPassword')}
                                         </label>
                                         <div className="relative">
                                             <input
@@ -328,7 +330,7 @@ const AdminProfileDropdown = () => {
                                                 value={passwordData.confirm_password}
                                                 onChange={(e) => handlePasswordChange('confirm_password', e.target.value)}
                                                 className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00A55F] focus:border-[#00A55F] transition-colors"
-                                                placeholder="Confirm new password"
+                                                placeholder={t('admin.components.profileDropdown.confirmNewPasswordPlaceholder')}
                                             />
                                             <button
                                                 type="button"
@@ -351,10 +353,10 @@ const AdminProfileDropdown = () => {
                                             {isChangingPassword ? (
                                                 <div className="flex items-center justify-center gap-2">
                                                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                                                    Updating...
+                                                    {t('admin.components.profileDropdown.updating')}
                                                 </div>
                                             ) : (
-                                                'Update Password'
+                                                t('admin.components.profileDropdown.updatePassword')
                                             )}
                                         </motion.button>
                                         <motion.button
@@ -365,7 +367,7 @@ const AdminProfileDropdown = () => {
                                             disabled={isChangingPassword}
                                             className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium disabled:opacity-50"
                                         >
-                                            Cancel
+                                            {t('admin.components.profileDropdown.cancel')}
                                         </motion.button>
                                     </div>
                                 </form>
@@ -392,8 +394,8 @@ const AdminProfileDropdown = () => {
                                             <FaUser className="h-6 w-6" />
                                         </div>
                                         <div>
-                                            <h2 className="text-xl font-bold">Admin Profile</h2>
-                                            <p className="text-blue-100">Your account information</p>
+                                            <h2 className="text-xl font-bold">{t('admin.components.profileDropdown.adminProfile')}</h2>
+                                            <p className="text-blue-100">{t('admin.components.profileDropdown.accountInformation')}</p>
                                         </div>
                                     </div>
                                     <button
@@ -411,28 +413,28 @@ const AdminProfileDropdown = () => {
                                 <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                                     <FaUser className="h-5 w-5 text-blue-600" />
                                     <div>
-                                        <p className="text-sm font-medium text-gray-900">Name</p>
+                                        <p className="text-sm font-medium text-gray-900">{t('admin.components.profileDropdown.name')}</p>
                                         <p className="text-sm text-gray-600">{adminName}</p>
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                                     <FaEnvelope className="h-5 w-5 text-green-600" />
                                     <div>
-                                        <p className="text-sm font-medium text-gray-900">Email</p>
+                                        <p className="text-sm font-medium text-gray-900">{t('admin.components.profileDropdown.email')}</p>
                                         <p className="text-sm text-gray-600">{adminEmail}</p>
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                                     <FaShieldAlt className="h-5 w-5 text-purple-600" />
                                     <div>
-                                        <p className="text-sm font-medium text-gray-900">Role</p>
-                                        <p className="text-sm text-gray-600">Administrator</p>
+                                        <p className="text-sm font-medium text-gray-900">{t('admin.components.profileDropdown.role')}</p>
+                                        <p className="text-sm text-gray-600">{t('admin.components.profileDropdown.administrator')}</p>
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                                     <FaCalendarAlt className="h-5 w-5 text-orange-600" />
                                     <div>
-                                        <p className="text-sm font-medium text-gray-900">Member Since</p>
+                                        <p className="text-sm font-medium text-gray-900">{t('admin.components.profileDropdown.memberSince')}</p>
                                         <p className="text-sm text-gray-600">January 2024</p>
                                     </div>
                                 </div>
@@ -445,7 +447,7 @@ const AdminProfileDropdown = () => {
                                     onClick={() => setShowProfileModal(false)}
                                     className="w-full px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
                                 >
-                                    Close
+                                    {t('admin.components.profileDropdown.close')}
                                 </motion.button>
                             </div>
                         </motion.div>

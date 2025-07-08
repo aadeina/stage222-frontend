@@ -1,17 +1,16 @@
+import { useTranslation } from 'react-i18next';
 import RegisterForm from '../components/RegisterForm';
 
 const RegisterStudent = () => {
-    const studentFeatures = [
-        'Access to 1000+ internships and jobs',
-        'Connect with top employers',
-        'Build your professional profile'
-    ];
+    const { t } = useTranslation();
+
+    const studentFeatures = t('registration.studentFeatures', { returnObjects: true });
 
     return (
         <RegisterForm
             role="candidate"
-            title="Join Stage222 as a Student"
-            description="Create your account to access internships and job opportunities in Mauritania. Connect with employers and start your career journey."
+            title={t('registration.joinAsStudent')}
+            description={t('registration.studentDescription')}
             features={studentFeatures}
         />
     );

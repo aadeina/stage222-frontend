@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { FaTimes, FaDownload, FaEye, FaSpinner } from 'react-icons/fa';
 
 // Professional resume modal component for viewing and downloading candidate resumes
 // Features smooth animations, loading states, and professional design
 
 const ResumeModal = ({ isOpen, onClose, resumeUrl, candidateName }) => {
+    const { t } = useTranslation();
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState('');
 
@@ -36,7 +38,7 @@ const ResumeModal = ({ isOpen, onClose, resumeUrl, candidateName }) => {
     // Handle iframe error
     const handleIframeError = () => {
         setIsLoading(false);
-        setError('Failed to load resume. Please try downloading instead.');
+        setError(t('recruiter.resumeModal.failedToLoad'));
     };
 
     if (!isOpen) return null;
@@ -56,10 +58,10 @@ const ResumeModal = ({ isOpen, onClose, resumeUrl, candidateName }) => {
                     <div className="flex items-center justify-between p-6 border-b border-gray-200">
                         <div>
                             <h2 className="text-xl font-semibold text-gray-900">
-                                Resume - {candidateName}
+                                {t('recruiter.resumeModal.resume')} - {candidateName}
                             </h2>
                             <p className="text-sm text-gray-600 mt-1">
-                                View and download candidate resume
+                                {t('recruiter.resumeModal.viewAndDownload')}
                             </p>
                         </div>
                         <div className="flex items-center gap-3">
@@ -69,7 +71,7 @@ const ResumeModal = ({ isOpen, onClose, resumeUrl, candidateName }) => {
                                 className="flex items-center gap-2 px-4 py-2 bg-[#00A55F] text-white rounded-lg hover:bg-[#008c4f] transition-colors duration-200"
                             >
                                 <FaDownload className="h-4 w-4" />
-                                Download
+                                {t('recruiter.resumeModal.download')}
                             </button>
 
                             {/* Close Button */}
@@ -88,7 +90,7 @@ const ResumeModal = ({ isOpen, onClose, resumeUrl, candidateName }) => {
                             <div className="flex items-center justify-center h-64">
                                 <div className="flex items-center gap-3 text-gray-600">
                                     <FaSpinner className="h-6 w-6 animate-spin" />
-                                    <span>Loading resume...</span>
+                                    <span>{t('recruiter.resumeModal.loadingResume')}</span>
                                 </div>
                             </div>
                         )}
@@ -102,7 +104,7 @@ const ResumeModal = ({ isOpen, onClose, resumeUrl, candidateName }) => {
                                         className="flex items-center gap-2 px-4 py-2 bg-[#00A55F] text-white rounded-lg hover:bg-[#008c4f] transition-colors duration-200 mx-auto"
                                     >
                                         <FaDownload className="h-4 w-4" />
-                                        Download Resume
+                                        {t('recruiter.resumeModal.downloadResume')}
                                     </button>
                                 </div>
                             </div>
@@ -115,7 +117,7 @@ const ResumeModal = ({ isOpen, onClose, resumeUrl, candidateName }) => {
                                 className="w-full h-full border-0 rounded-lg"
                                 onLoad={handleIframeLoad}
                                 onError={handleIframeError}
-                                title={`Resume - ${candidateName}`}
+                                title={`${t('recruiter.resumeModal.resume')} - ${candidateName}`}
                             />
                         </div>
                     </div>

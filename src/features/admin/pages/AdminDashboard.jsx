@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import {
     FaUsers,
     FaBuilding,
@@ -36,6 +37,7 @@ import {
 } from '../../../services/adminApi';
 
 const AdminDashboard = () => {
+    const { t } = useTranslation();
     const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -51,10 +53,10 @@ const AdminDashboard = () => {
 
     // Navigation items for mobile menu
     const navItems = [
-        { name: 'Dashboard', path: '/admin/dashboard', icon: <FaChartBar className="h-5 w-5" /> },
-        { name: 'User Management', path: '/admin/users', icon: <FaUserShield className="h-5 w-5" /> },
-        { name: 'Internship Moderation', path: '/admin/internships', icon: <FaClipboardCheck className="h-5 w-5" /> },
-        { name: 'Organization Moderation', path: '/admin/organizations', icon: <FaBuilding className="h-5 w-5" /> },
+        { name: t('admin.navigation.dashboard'), path: '/admin/dashboard', icon: <FaChartBar className="h-5 w-5" /> },
+        { name: t('admin.navigation.userManagement'), path: '/admin/users', icon: <FaUserShield className="h-5 w-5" /> },
+        { name: t('admin.navigation.internshipModeration'), path: '/admin/internships', icon: <FaClipboardCheck className="h-5 w-5" /> },
+        { name: t('admin.navigation.organizationModeration'), path: '/admin/organizations', icon: <FaBuilding className="h-5 w-5" /> },
     ];
 
     // Mock data for development/demo purposes
@@ -109,8 +111,8 @@ const AdminDashboard = () => {
             setStats(res.data);
         } catch (err) {
             console.error('Error fetching stats:', err);
-            setError('Failed to load platform stats.');
-            toast.error('Failed to load platform statistics');
+            setError(t('admin.failedToLoadStats'));
+            toast.error(t('admin.failedToLoadStats'));
 
             // Set mock data for development/demo purposes
             setStats({
@@ -160,9 +162,9 @@ const AdminDashboard = () => {
         setIsRefreshing(true);
         try {
             await getStats();
-            toast.success('Dashboard refreshed successfully!');
+            toast.success(t('admin.dashboardRefreshed'));
         } catch (error) {
-            toast.error('Failed to refresh dashboard');
+            toast.error(t('admin.failedToRefresh'));
         } finally {
             setIsRefreshing(false);
         }
@@ -220,8 +222,8 @@ const AdminDashboard = () => {
                 setTopUsersData(topUsersData);
             })
             .catch((err) => {
-                setAnalyticsError('Failed to load analytics data.');
-                toast.error('Failed to load analytics data.');
+                setAnalyticsError(t('admin.failedToLoadAnalytics'));
+                toast.error(t('admin.failedToLoadAnalytics'));
             })
             .finally(() => setAnalyticsLoading(false));
     }, []);
@@ -235,8 +237,8 @@ const AdminDashboard = () => {
                         transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
                         className="w-16 h-16 border-4 border-[#00A55F] border-t-transparent rounded-full mx-auto mb-4"
                     />
-                    <p className="text-gray-600 text-lg font-medium">Loading platform analytics...</p>
-                    <p className="text-gray-500 text-sm mt-2">Gathering comprehensive data</p>
+                    <p className="text-gray-600 text-lg font-medium">{t('admin.loadingAnalytics')}</p>
+                    <p className="text-gray-500 text-sm mt-2">{t('admin.gatheringData')}</p>
                 </div>
             </div>
         );
@@ -257,7 +259,7 @@ const AdminDashboard = () => {
                                     transition={{ duration: 0.5 }}
                                     className="text-2xl sm:text-3xl font-bold text-gray-900"
                                 >
-                                    Admin Dashboard
+                                    {t('admin.dashboard')}
                                 </motion.h1>
                                 <motion.p
                                     initial={{ opacity: 0, x: -20 }}
@@ -265,8 +267,8 @@ const AdminDashboard = () => {
                                     transition={{ duration: 0.5, delay: 0.1 }}
                                     className="text-gray-600 mt-1 text-sm sm:text-base"
                                 >
-                                    Platform overview and analytics
-                                    {error && <span className="ml-2 text-yellow-600 text-sm">(Demo data)</span>}
+                                    {t('admin.platformOverview')}
+                                    {error && <span className="ml-2 text-yellow-600 text-sm">{t('admin.demoData')}</span>}
                                 </motion.p>
                             </div>
                             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
@@ -295,7 +297,7 @@ const AdminDashboard = () => {
                                     >
                                         <FaSyncAlt className="h-4 w-4" />
                                     </motion.div>
-                                    <span>{isRefreshing ? 'Refreshing...' : 'Refresh Data'}</span>
+                                    <span>{isRefreshing ? t('admin.refreshing') : t('admin.refreshData')}</span>
                                 </motion.button>
 
                                 {/* Admin Profile Dropdown */}
@@ -350,7 +352,7 @@ const AdminDashboard = () => {
                                     <FaExclamationTriangle className="h-5 w-5 text-red-600" />
                                 </div>
                                 <div>
-                                    <h3 className="text-sm font-semibold text-red-800">Error Loading Data</h3>
+                                    <h3 className="text-sm font-semibold text-red-800">{t('admin.errorLoadingData')}</h3>
                                     <p className="text-sm text-red-700">{error}</p>
                                 </div>
                             </div>
@@ -364,7 +366,7 @@ const AdminDashboard = () => {
                         transition={{ duration: 0.6 }}
                         className="mb-8"
                     >
-                        <h2 className="text-xl font-semibold text-gray-900 mb-6">Platform Overview</h2>
+                        <h2 className="text-xl font-semibold text-gray-900 mb-6">{t('admin.platformOverviewTitle')}</h2>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
                             {/* Total Users Card */}
                             <motion.div
@@ -375,7 +377,7 @@ const AdminDashboard = () => {
                             >
                                 <div className="flex items-center justify-between">
                                     <div>
-                                        <p className="text-sm font-medium text-gray-600 mb-1">Total Users</p>
+                                        <p className="text-sm font-medium text-gray-600 mb-1">{t('admin.totalUsers')}</p>
                                         <p className="text-3xl font-bold text-gray-900">
                                             {typeof stats?.users === 'object' ? stats?.users?.total || 0 : stats?.users || 0}
                                         </p>
@@ -392,7 +394,7 @@ const AdminDashboard = () => {
                                             <div className="mt-2 flex items-center gap-1">
                                                 <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium bg-green-50 text-green-700 rounded-full">
                                                     <FaCheckCircle className="h-3 w-3" />
-                                                    {stats.users.verified} Verified
+                                                    {stats.users.verified} {t('admin.verified')}
                                                 </span>
                                             </div>
                                         )}
@@ -412,7 +414,7 @@ const AdminDashboard = () => {
                             >
                                 <div className="flex items-center justify-between">
                                     <div>
-                                        <p className="text-sm font-medium text-gray-600 mb-1">Organizations</p>
+                                        <p className="text-sm font-medium text-gray-600 mb-1">{t('admin.organizations')}</p>
                                         <p className="text-3xl font-bold text-gray-900">
                                             {typeof stats?.organizations === 'object' ? stats?.organizations?.total || 0 : stats?.organizations || 0}
                                         </p>
@@ -421,13 +423,13 @@ const AdminDashboard = () => {
                                                 {stats.organizations.verified && (
                                                     <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium bg-green-50 text-green-700 rounded-full">
                                                         <FaCheckCircle className="h-3 w-3" />
-                                                        {stats.organizations.verified} Verified
+                                                        {stats.organizations.verified} {t('admin.verified')}
                                                     </span>
                                                 )}
                                                 {stats.organizations.unverified && (
                                                     <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium bg-yellow-50 text-yellow-700 rounded-full">
                                                         <FaClock className="h-3 w-3" />
-                                                        {stats.organizations.unverified} Pending
+                                                        {stats.organizations.unverified} {t('admin.pending')}
                                                     </span>
                                                 )}
                                             </div>
@@ -448,22 +450,22 @@ const AdminDashboard = () => {
                             >
                                 <div className="flex items-center justify-between">
                                     <div>
-                                        <p className="text-sm font-medium text-gray-600 mb-1">Opportunities</p>
+                                        <p className="text-sm font-medium text-gray-600 mb-1">{t('admin.opportunities')}</p>
                                         <p className="text-3xl font-bold text-gray-900">
                                             {(typeof stats?.internships === 'object' ? stats?.internships?.total || 0 : stats?.internships || 0) +
                                                 (typeof stats?.jobs === 'object' ? stats?.jobs?.total || 0 : stats?.jobs || 0)}
                                         </p>
                                         <div className="mt-2 flex flex-wrap gap-1">
                                             <span className="inline-block bg-purple-50 text-purple-700 rounded-full px-2 py-1 text-xs font-medium">
-                                                {typeof stats?.internships === 'object' ? stats?.internships?.total || 0 : stats?.internships || 0} Internships
+                                                {typeof stats?.internships === 'object' ? stats?.internships?.total || 0 : stats?.internships || 0} {t('admin.internships')}
                                             </span>
                                             <span className="inline-block bg-pink-50 text-pink-700 rounded-full px-2 py-1 text-xs font-medium">
-                                                {typeof stats?.jobs === 'object' ? stats?.jobs?.total || 0 : stats?.jobs || 0} Jobs
+                                                {typeof stats?.jobs === 'object' ? stats?.jobs?.total || 0 : stats?.jobs || 0} {t('admin.jobs')}
                                             </span>
                                             {typeof stats?.internships === 'object' && stats?.internships?.pending && (
                                                 <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium bg-yellow-50 text-yellow-700 rounded-full">
                                                     <FaClock className="h-3 w-3" />
-                                                    {stats.internships.pending} Pending
+                                                    {stats.internships.pending} {t('admin.pending')}
                                                 </span>
                                             )}
                                         </div>
@@ -483,7 +485,7 @@ const AdminDashboard = () => {
                             >
                                 <div className="flex items-center justify-between">
                                     <div>
-                                        <p className="text-sm font-medium text-gray-600 mb-1">Applications</p>
+                                        <p className="text-sm font-medium text-gray-600 mb-1">{t('admin.applications')}</p>
                                         <p className="text-3xl font-bold text-gray-900">
                                             {typeof stats?.applications === 'object' ? stats?.applications?.total || 0 : stats?.applications || 0}
                                         </p>
@@ -491,18 +493,18 @@ const AdminDashboard = () => {
                                             <div className="mt-2 flex flex-wrap gap-1">
                                                 <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium bg-yellow-50 text-yellow-700 rounded-full">
                                                     <FaClock className="h-3 w-3" />
-                                                    {stats.applications.pending} Pending
+                                                    {stats.applications.pending} {t('admin.pending')}
                                                 </span>
                                                 {stats.applications.accepted && (
                                                     <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium bg-green-50 text-green-700 rounded-full">
                                                         <FaCheckCircle className="h-3 w-3" />
-                                                        {stats.applications.accepted} Accepted
+                                                        {stats.applications.accepted} {t('admin.accepted')}
                                                     </span>
                                                 )}
                                                 {stats.applications.rejected && (
                                                     <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium bg-red-50 text-red-700 rounded-full">
                                                         <FaExclamationTriangle className="h-3 w-3" />
-                                                        {stats.applications.rejected} Rejected
+                                                        {stats.applications.rejected} {t('admin.rejected')}
                                                     </span>
                                                 )}
                                             </div>
@@ -523,12 +525,12 @@ const AdminDashboard = () => {
                         transition={{ duration: 0.6, delay: 0.5 }}
                         className="mb-8"
                     >
-                        <h2 className="text-xl font-semibold text-gray-900 mb-6">Growth & Performance</h2>
+                        <h2 className="text-xl font-semibold text-gray-900 mb-6">{t('admin.growthPerformance')}</h2>
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                             {/* Growth Metrics */}
                             <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                                 <div className="flex items-center justify-between mb-4">
-                                    <h3 className="text-lg font-semibold text-gray-900">Platform Growth</h3>
+                                    <h3 className="text-lg font-semibold text-gray-900">{t('admin.platformGrowth')}</h3>
                                     <div className="p-2 bg-green-100 rounded-lg">
                                         <FaChartLine className="h-5 w-5 text-green-600" />
                                     </div>
@@ -538,32 +540,32 @@ const AdminDashboard = () => {
                                         <p className="text-2xl font-bold text-blue-900">
                                             {stats?.growth?.users || '0%'}
                                         </p>
-                                        <p className="text-sm text-blue-700">User Growth</p>
+                                        <p className="text-sm text-blue-700">{t('admin.userGrowth')}</p>
                                     </div>
                                     <div className="text-center p-4 bg-gradient-to-br from-green-50 to-green-100 rounded-lg">
                                         <p className="text-2xl font-bold text-green-900">
                                             {stats?.growth?.opportunities || '0%'}
                                         </p>
-                                        <p className="text-sm text-green-700">Opportunity Growth</p>
+                                        <p className="text-sm text-green-700">{t('admin.opportunityGrowth')}</p>
                                     </div>
                                     <div className="text-center p-4 bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg">
                                         <p className="text-2xl font-bold text-purple-900">
                                             {stats?.growth?.applications || '0%'}
                                         </p>
-                                        <p className="text-sm text-purple-700">Application Growth</p>
+                                        <p className="text-sm text-purple-700">{t('admin.applicationGrowth')}</p>
                                     </div>
                                     <div className="text-center p-4 bg-gradient-to-br from-orange-50 to-orange-100 rounded-lg">
                                         <p className="text-2xl font-bold text-orange-900">
                                             {stats?.growth?.engagement || '0%'}
                                         </p>
-                                        <p className="text-sm text-orange-700">Engagement Rate</p>
+                                        <p className="text-sm text-orange-700">{t('admin.engagementRate')}</p>
                                     </div>
                                 </div>
                             </div>
 
                             {/* Quick Actions */}
                             <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                                <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
+                                <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('admin.quickActions')}</h3>
                                 <div className="space-y-3">
                                     {/* User Management Quick Action */}
                                     <motion.button
@@ -576,8 +578,8 @@ const AdminDashboard = () => {
                                             <FaUsers className="h-4 w-4 text-white" />
                                         </div>
                                         <div>
-                                            <p className="font-medium text-yellow-900">Manage Users</p>
-                                            <p className="text-xs text-yellow-700">View, verify, and edit users</p>
+                                            <p className="font-medium text-yellow-900">{t('admin.manageUsers')}</p>
+                                            <p className="text-xs text-yellow-700">{t('admin.viewVerifyEditUsers')}</p>
                                         </div>
                                     </motion.button>
 
@@ -590,8 +592,8 @@ const AdminDashboard = () => {
                                             <FaEye className="h-4 w-4 text-white" />
                                         </div>
                                         <div>
-                                            <p className="font-medium text-blue-900">View Users</p>
-                                            <p className="text-xs text-blue-700">Manage user accounts</p>
+                                            <p className="font-medium text-blue-900">{t('admin.viewUsers')}</p>
+                                            <p className="text-xs text-blue-700">{t('admin.manageUserAccounts')}</p>
                                         </div>
                                     </motion.button>
 
@@ -604,8 +606,8 @@ const AdminDashboard = () => {
                                             <FaShieldAlt className="h-4 w-4 text-white" />
                                         </div>
                                         <div>
-                                            <p className="font-medium text-green-900">Moderate Content</p>
-                                            <p className="text-xs text-green-700">Review opportunities</p>
+                                            <p className="font-medium text-green-900">{t('admin.moderateContent')}</p>
+                                            <p className="text-xs text-green-700">{t('admin.reviewOpportunities')}</p>
                                         </div>
                                     </motion.button>
 
@@ -618,8 +620,8 @@ const AdminDashboard = () => {
                                             <FaCog className="h-4 w-4 text-white" />
                                         </div>
                                         <div>
-                                            <p className="font-medium text-purple-900">Platform Settings</p>
-                                            <p className="text-xs text-purple-700">Configure system</p>
+                                            <p className="font-medium text-purple-900">{t('admin.platformSettings')}</p>
+                                            <p className="text-xs text-purple-700">{t('admin.configureSystem')}</p>
                                         </div>
                                     </motion.button>
                                 </div>
@@ -635,32 +637,32 @@ const AdminDashboard = () => {
                         className="mt-8 bg-white rounded-xl shadow-sm border border-gray-200 p-6"
                     >
                         <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-lg font-semibold text-gray-900">Platform Health</h3>
+                            <h3 className="text-lg font-semibold text-gray-900">{t('admin.platformHealth')}</h3>
                             <div className="flex items-center gap-2">
                                 <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
-                                <span className="text-sm font-medium text-green-600">All Systems Operational</span>
+                                <span className="text-sm font-medium text-green-600">{t('admin.allSystemsOperational')}</span>
                             </div>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div className="flex items-center gap-3 p-4 bg-green-50 rounded-lg">
                                 <FaTrophy className="h-5 w-5 text-green-600" />
                                 <div>
-                                    <p className="font-medium text-green-900">Performance</p>
-                                    <p className="text-sm text-green-700">Excellent</p>
+                                    <p className="font-medium text-green-900">{t('admin.performance')}</p>
+                                    <p className="text-sm text-green-700">{t('admin.excellent')}</p>
                                 </div>
                             </div>
                             <div className="flex items-center gap-3 p-4 bg-blue-50 rounded-lg">
                                 <FaRocket className="h-5 w-5 text-blue-600" />
                                 <div>
-                                    <p className="font-medium text-blue-900">Uptime</p>
+                                    <p className="font-medium text-blue-900">{t('admin.uptime')}</p>
                                     <p className="text-sm text-blue-700">99.9%</p>
                                 </div>
                             </div>
                             <div className="flex items-center gap-3 p-4 bg-purple-50 rounded-lg">
                                 <FaShieldAlt className="h-5 w-5 text-purple-600" />
                                 <div>
-                                    <p className="font-medium text-purple-900">Security</p>
-                                    <p className="text-sm text-purple-700">Protected</p>
+                                    <p className="font-medium text-purple-900">{t('admin.security')}</p>
+                                    <p className="text-sm text-purple-700">{t('admin.protected')}</p>
                                 </div>
                             </div>
                         </div>
@@ -668,7 +670,7 @@ const AdminDashboard = () => {
 
                     {/* Analytics Section */}
                     <div className="max-w-7xl mx-auto w-full">
-                        <h2 className="text-2xl font-bold text-gray-900 mt-8 mb-2">Platform Analytics</h2>
+                        <h2 className="text-2xl font-bold text-gray-900 mt-8 mb-2">{t('admin.platformAnalytics')}</h2>
                         {analyticsError && <div className="text-red-600 font-medium mb-4">{analyticsError}</div>}
                         <AnalyticsCards
                             growthData={growthData}

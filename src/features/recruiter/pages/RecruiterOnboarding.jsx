@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import { submitRecruiterOnboarding } from '../api/onboardingApi';
 import { sendOtp, verifyRecruiterOtp } from '../../../services/authApi';
 import toast from 'react-hot-toast';
@@ -10,6 +11,7 @@ import { useAuth } from '../../../context/AuthContext';
 
 const RecruiterOnboarding = () => {
     const navigate = useNavigate();
+    const { t } = useTranslation();
     const { user, clearSignupData, signupData } = useAuth();
     const [currentStep, setCurrentStep] = useState(1);
     const [isLoading, setIsLoading] = useState(false);
@@ -86,33 +88,33 @@ const RecruiterOnboarding = () => {
     const steps = [
         {
             number: 1,
-            title: 'Personal Details',
+            title: t('recruiterOnboarding.step1'),
             icon: (
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                 </svg>
             ),
-            description: 'Tell us about yourself'
+            description: t('recruiterOnboarding.tellUsAboutYourself')
         },
         {
             number: 2,
-            title: 'Organization Details',
+            title: t('recruiterOnboarding.step2'),
             icon: (
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                 </svg>
             ),
-            description: 'Company information'
+            description: t('recruiterOnboarding.companyInformation')
         },
         {
             number: 3,
-            title: 'Post Internship/Job',
+            title: t('recruiterOnboarding.step3'),
             icon: (
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                 </svg>
             ),
-            description: 'Final setup'
+            description: t('recruiterOnboarding.finalSetup')
         }
     ];
 

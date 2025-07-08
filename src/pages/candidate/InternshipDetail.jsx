@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import {
     FaMapMarkerAlt,
     FaMoneyBillWave,
@@ -57,6 +58,7 @@ const InternshipDetail = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const location = useLocation();
+    const { t } = useTranslation();
     const { user, isAuthenticated } = useAuth();
     const [internship, setInternship] = useState(null);
     const [organization, setOrganization] = useState(null);
@@ -95,7 +97,7 @@ const InternshipDetail = () => {
                 <div className="flex items-center justify-center min-h-[40vh]">
                     <div className={`animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-${color}`} />
                     <span className={`ml-4 text-${color} font-semibold text-lg`}>
-                        Redirecting to {roleText} view...
+                        {t('redirectingToRole', { role: roleText })}
                     </span>
                 </div>
             );

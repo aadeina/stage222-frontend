@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import logo from '@/assets/images/Stage222RecuiterLogo.png';
 import { useAuth } from '../../../context/AuthContext';
 import { FaUser, FaSignOutAlt, FaBars, FaTimes, FaBriefcase, FaPlus, FaCreditCard, FaChartBar, FaCog } from 'react-icons/fa';
@@ -10,6 +11,7 @@ import toast from 'react-hot-toast';
 import VerifiedBadge from '@/components/VerifiedBadge';
 
 const RecruiterHeader = ({ title, subtitle }) => {
+    const { t } = useTranslation();
     const { user, logout } = useAuth();
     const [menuOpen, setMenuOpen] = useState(false);
     const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
@@ -24,19 +26,15 @@ const RecruiterHeader = ({ title, subtitle }) => {
 
     // Navigation items
     const navigationItems = [
-        { name: 'Dashboard', path: '/recruiter/dashboard', icon: FaChartBar },
-        { name: 'Post Job/Internship', path: '/recruiter/post-opportunity', icon: FaPlus },
-        { name: 'Plans and Pricing', path: '/recruiter/pricing', icon: FaCreditCard },
+        { name: t('recruiter.header.dashboard'), path: '/recruiter/dashboard', icon: FaChartBar },
+        { name: t('recruiter.header.postJobInternship'), path: '/recruiter/post-opportunity', icon: FaPlus },
+        { name: t('recruiter.header.plansAndPricing'), path: '/recruiter/pricing', icon: FaCreditCard },
     ];
-
-
 
     // Fetch organization name
     useEffect(() => {
         fetchOrganizationName();
     }, []);
-
-
 
     const fetchOrganizationName = async () => {
         try {
@@ -47,15 +45,15 @@ const RecruiterHeader = ({ title, subtitle }) => {
                 // Fetch organization details
                 const orgResponse = await api.get(`/organizations/${recruiterData.organization}/`);
                 const orgData = orgResponse.data.data || orgResponse.data;
-                setOrganizationName(orgData.name || 'Your Organization');
+                setOrganizationName(orgData.name || t('recruiter.header.yourOrganization'));
                 setIsVerified(!!orgData.is_verified);
             } else {
-                setOrganizationName('Your Organization');
+                setOrganizationName(t('recruiter.header.yourOrganization'));
                 setIsVerified(false);
             }
         } catch (error) {
             console.error('Error fetching organization name:', error);
-            setOrganizationName('Your Organization');
+            setOrganizationName(t('recruiter.header.yourOrganization'));
             setIsVerified(false);
         } finally {
             setIsLoadingOrg(false);
@@ -102,7 +100,7 @@ const RecruiterHeader = ({ title, subtitle }) => {
 
                             <img
                                 src={logo}
-                                alt="Stage222RecuiterLogo"
+                                alt={t('recruiter.header.logoAlt')}
                                 className="h-12 w-auto"
                                 draggable="false"
                             />
@@ -141,7 +139,7 @@ const RecruiterHeader = ({ title, subtitle }) => {
                         <div className="hidden sm:flex items-center space-x-3 relative" ref={profileRef}>
                             <div className="text-right">
                                 <p className="text-sm font-medium text-gray-900">
-                                    {user?.first_name || 'Recruiter'}
+                                    {user?.first_name || t('recruiter.header.recruiter')}
                                 </p>
                                 <p className="text-xs text-gray-500 flex items-center gap-1">
                                     {isLoadingOrg ? (
@@ -150,7 +148,7 @@ const RecruiterHeader = ({ title, subtitle }) => {
                                                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                             </svg>
-                                            Loading...
+                                            {t('recruiter.header.loading')}
                                         </span>
                                     ) : (
                                         <>
@@ -185,7 +183,7 @@ const RecruiterHeader = ({ title, subtitle }) => {
                                             className="w-full flex items-center space-x-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
                                         >
                                             <FaCog className="h-4 w-4" />
-                                            <span>Profile Settings</span>
+                                            <span>{t('recruiter.header.profileSettings')}</span>
                                         </button>
                                         <button
                                             onClick={() => {
@@ -195,7 +193,7 @@ const RecruiterHeader = ({ title, subtitle }) => {
                                             className="w-full flex items-center space-x-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
                                         >
                                             <FaSignOutAlt className="h-4 w-4" />
-                                            <span>Logout</span>
+                                            <span>{t('recruiter.header.logout')}</span>
                                         </button>
                                     </motion.div>
                                 )}
@@ -253,10 +251,10 @@ const RecruiterHeader = ({ title, subtitle }) => {
                                         </div>
                                         <div className="flex-1">
                                             <p className="text-sm font-medium text-gray-900">
-                                                {user?.first_name || 'Recruiter'}
+                                                {user?.first_name || t('recruiter.header.recruiter')}
                                             </p>
                                             <p className="text-xs text-gray-500 flex items-center gap-1">
-                                                {isLoadingOrg ? 'Loading...' : <><span>{organizationName}</span>{isVerified && <VerifiedBadge size={16} className="ml-1" />}</>}
+                                                {isLoadingOrg ? t('recruiter.header.loading') : <><span>{organizationName}</span>{isVerified && <VerifiedBadge size={16} className="ml-1" />}</>}
                                             </p>
                                         </div>
                                     </div>
@@ -269,7 +267,7 @@ const RecruiterHeader = ({ title, subtitle }) => {
                                         className="w-full flex items-center space-x-3 px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
                                     >
                                         <FaCog className="h-4 w-4" />
-                                        <span>Profile Settings</span>
+                                        <span>{t('recruiter.header.profileSettings')}</span>
                                     </button>
 
                                     <button
@@ -277,7 +275,7 @@ const RecruiterHeader = ({ title, subtitle }) => {
                                         className="w-full flex items-center space-x-3 px-4 py-3 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                                     >
                                         <FaSignOutAlt className="h-4 w-4" />
-                                        <span>Logout</span>
+                                        <span>{t('recruiter.header.logout')}</span>
                                     </button>
                                 </div>
                             </div>

@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { FaTimes, FaUser, FaEnvelope, FaCalendar } from 'react-icons/fa';
 
 // AnswersModal.jsx
@@ -6,6 +7,7 @@ import { FaTimes, FaUser, FaEnvelope, FaCalendar } from 'react-icons/fa';
 // Shows questions and answers in a clean, organized layout
 
 const AnswersModal = ({ isOpen, onClose, candidate, answers }) => {
+    const { t } = useTranslation();
     if (!isOpen) return null;
 
     const candidateName = candidate?.name || candidate?.full_name || candidate?.candidate_name || 'N/A';
@@ -75,7 +77,7 @@ const AnswersModal = ({ isOpen, onClose, candidate, answers }) => {
                                 <div>
                                     <h3 className="text-lg font-semibold text-[#00A55F] mb-4 flex items-center gap-2">
                                         <FaCalendar className="h-4 w-4" />
-                                        Screening Questions & Answers
+                                        {t('recruiter.answersModal.screeningQuestionsAnswers')}
                                     </h3>
                                     <div className="space-y-4">
                                         {Object.entries(screeningAnswers).map(([question, answer], index) => (
@@ -101,7 +103,7 @@ const AnswersModal = ({ isOpen, onClose, candidate, answers }) => {
                                 <div>
                                     <h3 className="text-lg font-semibold text-[#00A55F] mb-4 flex items-center gap-2">
                                         <FaUser className="h-4 w-4" />
-                                        Additional Questions & Answers
+                                        {t('recruiter.answersModal.additionalQuestionsAnswers')}
                                     </h3>
                                     <div className="space-y-4">
                                         {Object.entries(otherAnswers).map(([question, answer], index) => (
@@ -126,9 +128,9 @@ const AnswersModal = ({ isOpen, onClose, candidate, answers }) => {
                             {(!screeningAnswers || Object.keys(screeningAnswers).length === 0) &&
                                 (!otherAnswers || Object.keys(otherAnswers).length === 0) && (
                                     <div className="text-center py-8">
-                                        <div className="text-gray-400 text-lg mb-2">No answers provided</div>
+                                        <div className="text-gray-400 text-lg mb-2">{t('recruiter.answersModal.noAnswersProvided')}</div>
                                         <p className="text-gray-500 text-sm">
-                                            This candidate hasn't answered any screening questions yet.
+                                            {t('recruiter.answersModal.noAnswersYet')}
                                         </p>
                                     </div>
                                 )}
@@ -141,7 +143,7 @@ const AnswersModal = ({ isOpen, onClose, candidate, answers }) => {
                             onClick={onClose}
                             className="px-6 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors duration-200 font-medium"
                         >
-                            Close
+                            {t('recruiter.answersModal.close')}
                         </button>
                     </div>
                 </div>

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import { useTranslation } from 'react-i18next';
 import api from '@/services/api';
 import { useAuth } from '@/context/AuthContext';
 import { FaArrowLeft, FaUpload, FaCheckCircle } from 'react-icons/fa';
@@ -28,6 +29,7 @@ const designations = [
 
 export default function RecruiterProfile() {
     const navigate = useNavigate();
+    const { t } = useTranslation();
     const { user, updateUser } = useAuth();
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -67,13 +69,13 @@ export default function RecruiterProfile() {
                     phone: user?.phone || '',
                     designation: user?.designation || '',
                 });
-                toast.error('Failed to load profile');
+                toast.error(t('recruiterProfile.failedToLoad'));
             } finally {
                 setLoading(false);
             }
         };
         fetchData();
-    }, [user]);
+    }, [user, t]);
 
     const handleChange = e => {
         const { name, value, type, checked } = e.target;
@@ -83,9 +85,9 @@ export default function RecruiterProfile() {
 
     const validate = () => {
         const newErrors = {};
-        if (!form.firstName) newErrors.firstName = 'First name required';
-        if (!form.lastName) newErrors.lastName = 'Last name required';
-        if (!form.designation) newErrors.designation = 'Designation required';
+        if (!form.firstName) newErrors.firstName = t('recruiterProfile.firstNameRequired');
+        if (!form.lastName) newErrors.lastName = t('recruiterProfile.lastNameRequired');
+        if (!form.designation) newErrors.designation = t('recruiterProfile.designationRequired');
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
@@ -111,16 +113,16 @@ export default function RecruiterProfile() {
             };
             updateUser(updatedUser);
 
-            toast.success('Profile updated!');
+            toast.success(t('recruiterProfile.profileUpdated'));
             navigate('/recruiter/dashboard');
         } catch (err) {
-            toast.error('Failed to update profile');
+            toast.error(t('recruiterProfile.failedToUpdate'));
         } finally {
             setSaving(false);
         }
     };
 
-    if (loading) return <div className="p-8 text-center">Loading...</div>;
+    if (loading) return <div className="p-8 text-center">{t('recruiterProfile.loading')}</div>;
 
     return (
         <div className="min-h-screen bg-gray-50">
@@ -131,34 +133,34 @@ export default function RecruiterProfile() {
                     className="flex items-center gap-2 text-gray-500 hover:text-gray-700 mb-6 transition-colors"
                 >
                     <FaArrowLeft className="w-4 h-4" />
-                    <span className="text-sm font-medium">Back to Dashboard</span>
+                    <span className="text-sm font-medium">{t('recruiterProfile.backToDashboard')}</span>
                 </button>
                 <div className="bg-white rounded-xl shadow p-6">
-                    <h2 className="text-2xl font-bold mb-4">Edit Profile</h2>
+                    <h2 className="text-2xl font-bold mb-4">{t('recruiterProfile.title')}</h2>
                     <form onSubmit={handleSubmit} className="space-y-8">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
-                                <label className="block font-semibold mb-1 text-gray-800">First Name</label>
+                                <label className="block font-semibold mb-1 text-gray-800">{t('recruiterProfile.firstName')}</label>
                                 <input name="firstName" value={form.firstName} onChange={handleChange} className="w-full border border-gray-200 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#00A55F] focus:border-transparent bg-white" />
                                 {errors.firstName && <p className="text-red-500 text-sm mt-1">{errors.firstName}</p>}
                             </div>
                             <div>
-                                <label className="block font-semibold mb-1 text-gray-800">Last Name</label>
+                                <label className="block font-semibold mb-1 text-gray-800">{t('recruiterProfile.lastName')}</label>
                                 <input name="lastName" value={form.lastName} onChange={handleChange} className="w-full border border-gray-200 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#00A55F] focus:border-transparent bg-white" />
                                 {errors.lastName && <p className="text-red-500 text-sm mt-1">{errors.lastName}</p>}
                             </div>
                             <div>
-                                <label className="block font-semibold mb-1 text-gray-800">Email</label>
+                                <label className="block font-semibold mb-1 text-gray-800">{t('recruiterProfile.email')}</label>
                                 <input name="email" value={form.email} disabled className="w-full border border-gray-200 rounded-lg px-4 py-2.5 bg-gray-100 text-gray-600 cursor-not-allowed" />
                             </div>
                             <div>
-                                <label className="block font-semibold mb-1 text-gray-800">Phone</label>
+                                <label className="block font-semibold mb-1 text-gray-800">{t('recruiterProfile.phone')}</label>
                                 <input name="phone" value={form.phone} disabled className="w-full border border-gray-200 rounded-lg px-4 py-2.5 bg-gray-100 text-gray-600 cursor-not-allowed" />
                             </div>
                             <div>
-                                <label className="block font-semibold mb-1 text-gray-800">Designation</label>
+                                <label className="block font-semibold mb-1 text-gray-800">{t('recruiterProfile.designation')}</label>
                                 <select name="designation" value={form.designation} onChange={handleChange} className="w-full border border-gray-200 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#00A55F] focus:border-transparent bg-white">
-                                    <option value="">Select designation</option>
+                                    <option value="">{t('recruiterProfile.selectDesignation')}</option>
                                     {designations.map(designation => (
                                         <option key={designation} value={designation}>{designation}</option>
                                     ))}
@@ -167,9 +169,9 @@ export default function RecruiterProfile() {
                             </div>
                         </div>
                         <div className="flex justify-end gap-4 mt-8">
-                            <button type="button" onClick={() => navigate('/recruiter/dashboard')} className="px-6 py-2 rounded-lg border border-gray-200 bg-gray-50 text-gray-700 font-semibold hover:bg-gray-100 transition-all">Cancel</button>
+                            <button type="button" onClick={() => navigate('/recruiter/dashboard')} className="px-6 py-2 rounded-lg border border-gray-200 bg-gray-50 text-gray-700 font-semibold hover:bg-gray-100 transition-all">{t('recruiterProfile.cancel')}</button>
                             <button type="submit" disabled={saving} className="px-8 py-2 rounded-lg bg-gradient-to-r from-[#00A55F] to-[#008c4f] text-white font-bold shadow-md hover:from-[#008c4f] hover:to-[#00A55F] transition-all">
-                                {saving ? 'Saving...' : 'Save Changes'}
+                                {saving ? t('recruiterProfile.saving') : t('recruiterProfile.saveChanges')}
                             </button>
                         </div>
                     </form>

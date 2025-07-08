@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import Navbar from '@/components/layout/Navbar';
 import { motion } from 'framer-motion';
 import AfterImg from '../assets/images/after_image.webp';
@@ -8,6 +9,7 @@ import BeforImg from '../assets/images/before_image.webp';
 const Home = () => {
     const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
     const [activeTab, setActiveTab] = useState('student');
+    const { t } = useTranslation();
 
     // Placeholder data for internships
     const internships = [
@@ -82,7 +84,7 @@ const Home = () => {
                     <div className="bg-white rounded-lg w-full max-w-md mx-4">
                         {/* Modal Header */}
                         <div className="flex justify-between items-center p-6 border-b">
-                            <h2 className="text-2xl font-bold text-gray-900">Login</h2>
+                            <h2 className="text-2xl font-bold text-gray-900">{t('auth.login')}</h2>
                             <button
                                 onClick={() => setIsLoginModalOpen(false)}
                                 className="text-gray-500 hover:text-gray-700 transition-colors"
@@ -104,7 +106,7 @@ const Home = () => {
                                         }`}
                                     onClick={() => setActiveTab('student')}
                                 >
-                                    Student
+                                    {t('auth.student')}
                                 </button>
                                 <button
                                     className={`px-4 py-2 font-medium text-sm text-gray-400 cursor-not-allowed`}
@@ -120,45 +122,45 @@ const Home = () => {
                             <form className="space-y-4">
                                 <div>
                                     <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                                        Email
+                                        {t('auth.email')}
                                     </label>
                                     <input
                                         type="email"
                                         id="email"
                                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00A55F] focus:border-[#00A55F] outline-none transition-colors"
-                                        placeholder="Enter your email"
+                                        placeholder={t('auth.enterEmail')}
                                     />
                                 </div>
                                 <div>
                                     <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-                                        Password
+                                        {t('auth.password')}
                                     </label>
                                     <input
                                         type="password"
                                         id="password"
                                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00A55F] focus:border-[#00A55F] outline-none transition-colors"
-                                        placeholder="Enter your password"
+                                        placeholder={t('auth.enterPassword')}
                                     />
                                 </div>
                                 <div className="flex justify-end">
                                     <Link to="/forgot-password" className="text-sm text-[#00A55F] hover:text-[#008c4f] transition-colors">
-                                        Forgot password?
+                                        {t('auth.forgotPassword')}
                                     </Link>
                                 </div>
                                 <button
                                     type="submit"
                                     className="w-full bg-[#00A55F] text-white px-4 py-3 rounded-lg hover:bg-[#008c4f] transition-colors font-medium"
                                 >
-                                    Login
+                                    {t('auth.login')}
                                 </button>
                             </form>
 
                             {/* Register Link */}
                             <div className="mt-6 text-center">
                                 <p className="text-gray-600">
-                                    New to Stage222?{' '}
+                                    {t('auth.newToStage222')}{' '}
                                     <Link to="/register/student" className="text-[#00A55F] hover:text-[#008c4f] font-medium transition-colors">
-                                        Register
+                                        {t('auth.register')}
                                     </Link>
                                 </p>
                             </div>
@@ -177,10 +179,10 @@ const Home = () => {
                         className="text-center"
                     >
                         <h1 className="text-4xl font-bold text-gray-900 mb-4">
-                            Welcome to Stage222
+                            {t('homepage.welcome')}
                         </h1>
                         <p className="text-xl text-gray-600 mb-8">
-                            Your platform for finding the best opportunities
+                            {t('homepage.subtitle')}
                         </p>
                     </motion.div>
                     <div className="flex flex-col md:flex-row justify-center gap-4 mb-16">
@@ -188,13 +190,13 @@ const Home = () => {
                             to="/register/student"
                             className="bg-[#00A55F] text-white px-8 py-4 rounded-lg hover:bg-[#008c4f] transition-colors text-lg font-semibold shadow-md hover:shadow-lg"
                         >
-                            Register as Student
+                            {t('homepage.registerAsStudent')}
                         </Link>
                         <Link
                             to="/register/employer"
                             className="bg-white text-[#00A55F] border-2 border-[#00A55F] px-8 py-4 rounded-lg hover:bg-[#00A55F]/5 transition-colors text-lg font-semibold shadow-md hover:shadow-lg"
                         >
-                            Register as Employer
+                            {t('homepage.registerAsEmployer')}
                         </Link>
                     </div>
 
@@ -206,7 +208,7 @@ const Home = () => {
                 <div className="max-w-6xl mx-auto w-full px-4">
                     <div className="flex flex-col lg:flex-row items-center justify-center gap-12">
                         <div className="flex-1 flex flex-col items-center">
-                            <h3 className="text-xl sm:text-2xl font-bold text-gray-600 mb-6 text-center">The usual path</h3>
+                            <h3 className="text-xl sm:text-2xl font-bold text-gray-600 mb-6 text-center">{t('homepage.usualPath')}</h3>
                             <img
                                 src={BeforImg}
                                 alt="Illustration of the usual job search path with obstacles and detours"
@@ -215,7 +217,7 @@ const Home = () => {
                         </div>
                         <div className="flex-1 flex flex-col items-center">
                             <h3 className="text-xl sm:text-2xl font-bold mb-2 text-center bg-gradient-to-r from-[#00A55F] to-[#34d399] bg-clip-text text-transparent select-none">
-                                Stage222 🚀
+                                {t('homepage.stage222Path')}
                             </h3>
                             <div className="w-12 h-2 rounded-full bg-gradient-to-r from-[#00A55F] to-[#34d399] mb-4"></div>
                             <img
@@ -231,7 +233,7 @@ const Home = () => {
             {/* Why Stage222 Section */}
             <section className="py-20 bg-white">
                 <div className="container mx-auto px-4">
-                    <h2 className="text-3xl font-bold text-center text-gray-900 mb-16">Why Stage222?</h2>
+                    <h2 className="text-3xl font-bold text-center text-gray-900 mb-16">{t('homepage.whyStage222')}</h2>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
                         <div className="bg-white p-8 rounded-xl shadow-md hover:shadow-lg transition-shadow border border-gray-100">
                             <div className="w-12 h-12 bg-[#00A55F]/10 rounded-lg flex items-center justify-center mb-6">
@@ -239,8 +241,8 @@ const Home = () => {
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
                             </div>
-                            <h3 className="text-xl font-semibold text-gray-900 mb-4">Verified Opportunities</h3>
-                            <p className="text-gray-600">All internships and jobs are verified by our team to ensure quality and legitimacy.</p>
+                            <h3 className="text-xl font-semibold text-gray-900 mb-4">{t('homepage.verifiedOpportunities')}</h3>
+                            <p className="text-gray-600">{t('homepage.verifiedOpportunitiesDesc')}</p>
                         </div>
                         <div className="bg-white p-8 rounded-xl shadow-md hover:shadow-lg transition-shadow border border-gray-100">
                             <div className="w-12 h-12 bg-[#00A55F]/10 rounded-lg flex items-center justify-center mb-6">
@@ -248,8 +250,8 @@ const Home = () => {
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
                                 </svg>
                             </div>
-                            <h3 className="text-xl font-semibold text-gray-900 mb-4">Career Guidance</h3>
-                            <p className="text-gray-600">Get expert advice and resources to help you make informed career decisions.</p>
+                            <h3 className="text-xl font-semibold text-gray-900 mb-4">{t('homepage.careerGuidance')}</h3>
+                            <p className="text-gray-600">{t('homepage.careerGuidanceDesc')}</p>
                         </div>
                         <div className="bg-white p-8 rounded-xl shadow-md hover:shadow-lg transition-shadow border border-gray-100">
                             <div className="w-12 h-12 bg-[#00A55F]/10 rounded-lg flex items-center justify-center mb-6">
@@ -258,8 +260,8 @@ const Home = () => {
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                                 </svg>
                             </div>
-                            <h3 className="text-xl font-semibold text-gray-900 mb-4">Local Focus</h3>
-                            <p className="text-gray-600">Specifically designed for Mauritanian students and employers.</p>
+                            <h3 className="text-xl font-semibold text-gray-900 mb-4">{t('homepage.localFocus')}</h3>
+                            <p className="text-gray-600">{t('homepage.localFocusDesc')}</p>
                         </div>
                     </div>
                 </div>
@@ -268,7 +270,7 @@ const Home = () => {
             {/* Testimonials Section */}
             <section className="py-20 bg-gray-50">
                 <div className="container mx-auto px-4">
-                    <h2 className="text-3xl font-bold text-center text-gray-900 mb-16">What Our Users Say</h2>
+                    <h2 className="text-3xl font-bold text-center text-gray-900 mb-16">{t('homepage.whatUsersSay')}</h2>
                     <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
                         {testimonials.map(testimonial => (
                             <div key={testimonial.id} className="bg-white p-8 rounded-xl shadow-md hover:shadow-lg transition-shadow">
@@ -293,7 +295,7 @@ const Home = () => {
             {/* Internships Section */}
             <section className="py-20 bg-white">
                 <div className="container mx-auto px-4">
-                    <h2 className="text-3xl font-bold text-center text-gray-900 mb-16">Featured Internships</h2>
+                    <h2 className="text-3xl font-bold text-center text-gray-900 mb-16">{t('homepage.featuredInternships')}</h2>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
                         {internships.map(internship => (
                             <div key={internship.id} className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow border border-gray-100">
@@ -324,7 +326,7 @@ const Home = () => {
                     </div>
                     <div className="text-center mt-12">
                         <Link to="/internships" className="text-[#00A55F] hover:text-[#008c4f] font-semibold inline-flex items-center">
-                            View all internships
+                            {t('homepage.viewAllInternships')}
                             <svg className="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
                             </svg>
@@ -336,7 +338,7 @@ const Home = () => {
             {/* Jobs Section */}
             <section className="py-20 bg-gray-50">
                 <div className="container mx-auto px-4">
-                    <h2 className="text-3xl font-bold text-center text-gray-900 mb-16">Latest Jobs</h2>
+                    <h2 className="text-3xl font-bold text-center text-gray-900 mb-16">{t('homepage.latestJobs')}</h2>
                     <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
                         {jobs.map(job => (
                             <div key={job.id} className="bg-white p-6 rounded-xl shadow-md hover:shadow-lg transition-shadow border border-gray-100">

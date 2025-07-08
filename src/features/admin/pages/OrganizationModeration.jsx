@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { fetchAdminOrganizations } from '../../../services/adminApi';
 import OrganizationTable from '../components/OrganizationTable';
 import toast from 'react-hot-toast';
@@ -8,6 +9,7 @@ import { FaBuilding, FaCheckCircle, FaTimesCircle, FaEye, FaSync } from 'react-i
 import { motion } from 'framer-motion';
 
 const OrganizationModeration = () => {
+    const { t } = useTranslation();
     const [organizations, setOrganizations] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -35,8 +37,8 @@ const OrganizationModeration = () => {
 
             setStats({ total, verified, unverified, independent });
         } catch (err) {
-            setError('Failed to load organizations.');
-            toast.error('Failed to load organizations.');
+            setError(t('admin.organizationModeration.failedToLoadOrganizations'));
+            toast.error(t('admin.organizationModeration.failedToLoadOrganizations'));
         } finally {
             setLoading(false);
         }
@@ -55,8 +57,8 @@ const OrganizationModeration = () => {
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
                         <div className="flex items-center justify-between">
                             <div>
-                                <h1 className="text-3xl font-bold text-gray-900">Organization Moderation</h1>
-                                <p className="text-gray-600 mt-1">View, verify, and manage all organizations on Stage222</p>
+                                <h1 className="text-3xl font-bold text-gray-900">{t('admin.organizationModeration.title')}</h1>
+                                <p className="text-gray-600 mt-1">{t('admin.organizationModeration.subtitle')}</p>
                             </div>
                             <div className="flex items-center gap-4">
                                 <motion.button
@@ -66,7 +68,7 @@ const OrganizationModeration = () => {
                                     className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
                                 >
                                     <FaSync className="h-4 w-4" />
-                                    Refresh
+                                    {t('admin.organizationModeration.refresh')}
                                 </motion.button>
                                 <AdminProfileDropdown />
                             </div>
@@ -100,7 +102,7 @@ const OrganizationModeration = () => {
                                 >
                                     <div className="flex items-center justify-between">
                                         <div>
-                                            <p className="text-sm font-medium text-gray-600 mb-1">Total Organizations</p>
+                                            <p className="text-sm font-medium text-gray-600 mb-1">{t('admin.organizationModeration.totalOrganizations')}</p>
                                             <p className="text-3xl font-bold text-gray-900">{stats.total}</p>
                                         </div>
                                         <div className="p-3 bg-blue-100 rounded-lg">
@@ -117,7 +119,7 @@ const OrganizationModeration = () => {
                                 >
                                     <div className="flex items-center justify-between">
                                         <div>
-                                            <p className="text-sm font-medium text-gray-600 mb-1">Verified</p>
+                                            <p className="text-sm font-medium text-gray-600 mb-1">{t('admin.organizationModeration.verified')}</p>
                                             <p className="text-3xl font-bold text-green-600">{stats.verified}</p>
                                         </div>
                                         <div className="p-3 bg-green-100 rounded-lg">
@@ -134,7 +136,7 @@ const OrganizationModeration = () => {
                                 >
                                     <div className="flex items-center justify-between">
                                         <div>
-                                            <p className="text-sm font-medium text-gray-600 mb-1">Pending Verification</p>
+                                            <p className="text-sm font-medium text-gray-600 mb-1">{t('admin.organizationModeration.pendingVerification')}</p>
                                             <p className="text-3xl font-bold text-yellow-600">{stats.unverified}</p>
                                         </div>
                                         <div className="p-3 bg-yellow-100 rounded-lg">
@@ -151,7 +153,7 @@ const OrganizationModeration = () => {
                                 >
                                     <div className="flex items-center justify-between">
                                         <div>
-                                            <p className="text-sm font-medium text-gray-600 mb-1">Independent</p>
+                                            <p className="text-sm font-medium text-gray-600 mb-1">{t('admin.organizationModeration.independent')}</p>
                                             <p className="text-3xl font-bold text-purple-600">{stats.independent}</p>
                                         </div>
                                         <div className="p-3 bg-purple-100 rounded-lg">

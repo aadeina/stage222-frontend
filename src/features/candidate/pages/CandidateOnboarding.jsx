@@ -164,10 +164,10 @@ const CandidateOnboarding = () => {
                     className="text-center mb-8"
                 >
                     <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                        Welcome to Stage222! 🎉
+                        {t('candidateOnboarding.title')}
                     </h1>
                     <p className="text-gray-600">
-                        Let's set up your profile to help you find the perfect internship
+                        {t('candidateOnboarding.subtitle')}
                     </p>
                 </motion.div>
 
@@ -182,14 +182,14 @@ const CandidateOnboarding = () => {
                             <div className={`w-8 h-8 rounded-full flex items-center justify-center border-2 ${currentStep >= 1 ? 'bg-[#00A55F] border-[#00A55F] text-white' : 'border-gray-300'}`}>
                                 {currentStep > 1 ? <FaCheck className="w-4 h-4" /> : '1'}
                             </div>
-                            <span className="font-medium">Personal Info</span>
+                            <span className="font-medium">{t('candidateOnboarding.step1')}</span>
                         </div>
                         <div className={`w-16 h-1 ${currentStep >= 2 ? 'bg-[#00A55F]' : 'bg-gray-300'}`}></div>
                         <div className={`flex items-center space-x-2 ${currentStep >= 2 ? 'text-[#00A55F]' : 'text-gray-400'}`}>
                             <div className={`w-8 h-8 rounded-full flex items-center justify-center border-2 ${currentStep >= 2 ? 'bg-[#00A55F] border-[#00A55F] text-white' : 'border-gray-300'}`}>
                                 {currentStep > 2 ? <FaCheck className="w-4 h-4" /> : '2'}
                             </div>
-                            <span className="font-medium">Skills & Resume</span>
+                            <span className="font-medium">{t('candidateOnboarding.step2')}</span>
                         </div>
                     </div>
                 </motion.div>

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../../context/AuthContext';
+import { useTranslation } from 'react-i18next';
 import toast from 'react-hot-toast';
 import api from '@/services/api';
 import {
@@ -33,6 +34,7 @@ const EditOrganization = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const { user } = useAuth();
+    const { t } = useTranslation();
 
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
@@ -151,12 +153,12 @@ const EditOrganization = () => {
             if (recruiterData?.organization) {
                 setOrganizationId(recruiterData.organization);
             } else {
-                toast.error('No organization found. Please contact support.');
+                toast.error(t('recruiter.organizationProfile.noOrganizationFound'));
                 navigate('/recruiter/dashboard');
             }
         } catch (error) {
             console.error('Error fetching recruiter data:', error);
-            toast.error('Failed to load organization information');
+            toast.error(t('recruiter.organizationProfile.failedToLoadOrganization'));
             navigate('/recruiter/dashboard');
         }
     };
@@ -518,7 +520,7 @@ const EditOrganization = () => {
             console.log('API Response:', response.data);
 
             if (response.data.status === 'success') {
-                toast.success(response.data.message || 'Organization updated successfully!');
+                toast.success(t('recruiter.organizationProfile.organizationUpdated'));
 
                 // Update local state with new data
                 setOriginalData(response.data.data);
@@ -607,15 +609,15 @@ const EditOrganization = () => {
             } else if (error.response?.data?.message) {
                 toast.error(error.response.data.message);
             } else if (error.response?.status === 400) {
-                toast.error('Please check your input and try again');
+                toast.error(t('recruiter.organizationProfile.checkInputAndTryAgain'));
             } else if (error.response?.status === 401) {
-                toast.error('You are not authorized to update this organization');
+                toast.error(t('recruiter.organizationProfile.notAuthorized'));
             } else if (error.response?.status === 404) {
-                toast.error('Organization not found');
+                toast.error(t('recruiter.organizationProfile.organizationNotFound'));
             } else if (error.response?.status === 415) {
-                toast.error('File upload error. Please check file format and size.');
+                toast.error(t('recruiter.organizationProfile.fileUploadError'));
             } else {
-                toast.error('Failed to update organization. Please try again.');
+                toast.error(t('recruiter.organizationProfile.failedToUpdateOrganization'));
             }
         } finally {
             setIsSaving(false);
@@ -631,7 +633,7 @@ const EditOrganization = () => {
             <div className="min-h-screen bg-gray-50 flex items-center justify-center">
                 <div className="text-center">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#00A55F] mx-auto mb-4"></div>
-                    <p className="text-gray-600">Loading organization data...</p>
+                    <p className="text-gray-600">{t('recruiter.organizationProfile.loadingOrganizationData')}</p>
                 </div>
             </div>
         );
@@ -649,19 +651,19 @@ const EditOrganization = () => {
                                 className="flex items-center gap-2 text-gray-500 hover:text-gray-700 transition-colors"
                             >
                                 <FaArrowLeft className="w-4 h-4" />
-                                <span className="text-sm font-medium">Back to Dashboard</span>
+                                <span className="text-sm font-medium">{t('recruiter.organizationProfile.backToDashboard')}</span>
                             </button>
                             <div className="h-6 w-px bg-gray-300"></div>
                             <div>
-                                <h1 className="text-2xl font-bold text-gray-900">Organization Profile</h1>
-                                <p className="text-sm text-gray-600 mt-1">Manage your company information and branding</p>
+                                <h1 className="text-2xl font-bold text-gray-900">{t('recruiter.organizationProfile.title')}</h1>
+                                <p className="text-sm text-gray-600 mt-1">{t('recruiter.organizationProfile.subtitle')}</p>
                             </div>
                         </div>
 
                         <div className="flex items-center space-x-4">
                             <div className="text-right">
                                 <p className="text-sm font-medium text-gray-900">{originalData?.name}</p>
-                                <p className="text-xs text-gray-500">Organization</p>
+                                <p className="text-xs text-gray-500">{t('recruiter.organizationProfile.organization')}</p>
                             </div>
                         </div>
                     </div>
@@ -679,7 +681,7 @@ const EditOrganization = () => {
                             animate={{ opacity: 1, y: 0 }}
                             className="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
                         >
-                            <h3 className="text-lg font-semibold text-gray-900 mb-4">Company Logo</h3>
+                            <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('recruiter.organizationProfile.companyLogo')}</h3>
 
                             <div className="text-center">
                                 <div
@@ -691,7 +693,7 @@ const EditOrganization = () => {
                                         <div className="relative">
                                             <img
                                                 src={logoPreview}
-                                                alt="Organization Logo"
+                                                alt={t('recruiter.organizationProfile.organizationLogo')}
                                                 className="w-32 h-32 rounded-xl object-cover border-2 border-gray-200 shadow-sm"
                                             />
                                             <AnimatePresence>
@@ -731,12 +733,12 @@ const EditOrganization = () => {
                                             className="hidden"
                                         />
                                         <div className="mt-4 px-4 py-2 bg-[#00A55F] text-white rounded-lg hover:bg-[#008c4f] transition-colors cursor-pointer text-sm font-medium">
-                                            {logoPreview ? 'Change Logo' : 'Upload Logo'}
+                                            {logoPreview ? t('recruiter.organizationProfile.changeLogo') : t('recruiter.organizationProfile.uploadLogo')}
                                         </div>
                                     </label>
 
                                     <p className="text-xs text-gray-500 mt-2">
-                                        Recommended: 256x256px, Max 5MB
+                                        {t('recruiter.organizationProfile.logoRecommendation')}
                                     </p>
                                 </div>
                             </div>
@@ -749,45 +751,45 @@ const EditOrganization = () => {
                             transition={{ delay: 0.1 }}
                             className="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
                         >
-                            <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Stats</h3>
+                            <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('recruiter.organizationProfile.quickStats')}</h3>
                             <div className="space-y-4">
                                 <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
                                     <div className="flex items-center gap-2">
                                         <FaUsers className="h-4 w-4 text-blue-600" />
-                                        <span className="text-sm font-medium text-gray-700">Company Size</span>
+                                        <span className="text-sm font-medium text-gray-700">{t('recruiter.organizationProfile.companySize')}</span>
                                     </div>
                                     <span className="text-sm font-bold text-blue-600">
-                                        {formData.employee_range || 'Not set'}
+                                        {formData.employee_range || t('recruiter.organizationProfile.notSet')}
                                     </span>
                                 </div>
 
                                 <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
                                     <div className="flex items-center gap-2">
                                         <FaIndustry className="h-4 w-4 text-green-600" />
-                                        <span className="text-sm font-medium text-gray-700">Industry</span>
+                                        <span className="text-sm font-medium text-gray-700">{t('recruiter.organizationProfile.industry')}</span>
                                     </div>
                                     <span className="text-sm font-bold text-green-600">
-                                        {formData.industry || 'Not set'}
+                                        {formData.industry || t('recruiter.organizationProfile.notSet')}
                                     </span>
                                 </div>
 
                                 <div className="flex items-center justify-between p-3 bg-purple-50 rounded-lg">
                                     <div className="flex items-center gap-2">
                                         <FaMapMarkerAlt className="h-4 w-4 text-purple-600" />
-                                        <span className="text-sm font-medium text-gray-700">Location</span>
+                                        <span className="text-sm font-medium text-gray-700">{t('recruiter.organizationProfile.location')}</span>
                                     </div>
                                     <span className="text-sm font-bold text-purple-600">
-                                        {formData.city || 'Not set'}
+                                        {formData.city || t('recruiter.organizationProfile.notSet')}
                                     </span>
                                 </div>
 
                                 <div className="flex items-center justify-between p-3 bg-yellow-50 rounded-lg">
                                     <div className="flex items-center gap-2">
                                         <FaCalendarAlt className="h-4 w-4 text-yellow-600" />
-                                        <span className="text-sm font-medium text-gray-700">Founded</span>
+                                        <span className="text-sm font-medium text-gray-700">{t('recruiter.organizationProfile.founded')}</span>
                                     </div>
                                     <span className="text-sm font-bold text-yellow-600">
-                                        {formData.founded_year || 'Not set'}
+                                        {formData.founded_year || t('recruiter.organizationProfile.notSet')}
                                     </span>
                                 </div>
                             </div>
@@ -800,7 +802,7 @@ const EditOrganization = () => {
                             transition={{ delay: 0.15 }}
                             className="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
                         >
-                            <h3 className="text-lg font-semibold text-gray-900 mb-4">License Document</h3>
+                            <h3 className="text-lg font-semibold text-gray-900 mb-4">{t('recruiter.organizationProfile.licenseDocument')}</h3>
 
                             <div className="space-y-4">
                                 {/* Current License Display */}
@@ -812,7 +814,7 @@ const EditOrganization = () => {
                                                     <FaFileUpload className="h-5 w-5 text-blue-600" />
                                                 </div>
                                                 <div>
-                                                    <p className="text-sm font-medium text-gray-900">Current License</p>
+                                                    <p className="text-sm font-medium text-gray-900">{t('recruiter.organizationProfile.currentLicense')}</p>
                                                     <p className="text-xs text-gray-500">
                                                         {originalData.license_document.split('/').pop()}
                                                     </p>
@@ -824,7 +826,7 @@ const EditOrganization = () => {
                                                     target="_blank"
                                                     rel="noopener noreferrer"
                                                     className="p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-colors"
-                                                    title="View Document"
+                                                    title={t('recruiter.organizationProfile.viewDocument')}
                                                 >
                                                     <FaEye className="h-4 w-4" />
                                                 </a>
@@ -849,7 +851,7 @@ const EditOrganization = () => {
                                                     <FaFileUpload className="h-5 w-5 text-green-600" />
                                                 </div>
                                                 <div>
-                                                    <p className="text-sm font-medium text-gray-900">New License Document</p>
+                                                    <p className="text-sm font-medium text-gray-900">{t('recruiter.organizationProfile.newLicenseDocument')}</p>
                                                     <p className="text-xs text-gray-500">
                                                         {files.license_document.name} ({(files.license_document.size / 1024 / 1024).toFixed(2)} MB)
                                                     </p>
@@ -880,10 +882,10 @@ const EditOrganization = () => {
                                                 <FaFileUpload className="h-6 w-6 text-gray-400" />
                                             </div>
                                             <p className="text-sm font-medium text-gray-700 mb-1">
-                                                Upload License Document
+                                                {t('recruiter.organizationProfile.uploadLicenseDocument')}
                                             </p>
                                             <p className="text-xs text-gray-500">
-                                                PDF, DOC, or DOCX files only (Max 10MB)
+                                                {t('recruiter.organizationProfile.supportedFormats')}
                                             </p>
                                         </div>
                                     </label>
@@ -894,13 +896,13 @@ const EditOrganization = () => {
                                     <div className="flex items-start gap-2">
                                         <FaExclamationTriangle className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
                                         <div className="text-xs text-blue-800">
-                                            <p className="font-medium mb-1">License Document Requirements:</p>
+                                            <p className="font-medium mb-1">{t('recruiter.organizationProfile.licenseRequirements')}</p>
                                             <ul className="space-y-1 text-blue-700">
-                                                <li>• Business registration or trade license</li>
-                                                <li>• Valid government-issued business permit</li>
-                                                <li>• Company registration certificate</li>
-                                                <li>• Maximum file size: 10MB</li>
-                                                <li>• Supported formats: PDF, DOC, DOCX</li>
+                                                <li>{t('recruiter.organizationProfile.businessRegistration')}</li>
+                                                <li>{t('recruiter.organizationProfile.governmentPermit')}</li>
+                                                <li>{t('recruiter.organizationProfile.companyRegistration')}</li>
+                                                <li>{t('recruiter.organizationProfile.maxFileSize')}</li>
+                                                <li>{t('recruiter.organizationProfile.supportedFormats')}</li>
                                             </ul>
                                         </div>
                                     </div>
@@ -918,12 +920,12 @@ const EditOrganization = () => {
                             transition={{ delay: 0.2 }}
                             className="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
                         >
-                            <h3 className="text-lg font-semibold text-gray-900 mb-6">Basic Information</h3>
+                            <h3 className="text-lg font-semibold text-gray-900 mb-6">{t('recruiter.organizationProfile.basicInformation')}</h3>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Organization Name *
+                                        {t('recruiter.organizationProfile.organizationNameRequired')}
                                     </label>
                                     <input
                                         type="text"
@@ -931,7 +933,7 @@ const EditOrganization = () => {
                                         value={formData.name}
                                         onChange={handleInputChange}
                                         className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#00A55F] focus:border-[#00A55F] outline-none transition-colors ${errors.name ? 'border-red-500' : 'border-gray-300'}`}
-                                        placeholder="Enter organization name"
+                                        placeholder={t('recruiter.organizationProfile.organizationName')}
                                     />
                                     {errors.name && (
                                         <p className="mt-1 text-sm text-red-500">{errors.name}</p>
@@ -940,7 +942,7 @@ const EditOrganization = () => {
 
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Industry
+                                        {t('recruiter.organizationProfile.industry')}
                                     </label>
                                     <select
                                         name="industry"
@@ -948,7 +950,7 @@ const EditOrganization = () => {
                                         onChange={handleInputChange}
                                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00A55F] focus:border-[#00A55F] outline-none transition-colors"
                                     >
-                                        <option value="">Select Industry</option>
+                                        <option value="">{t('recruiter.organizationProfile.selectIndustry')}</option>
                                         {industries.map((industry) => (
                                             <option key={industry} value={industry}>
                                                 {industry}
@@ -959,7 +961,7 @@ const EditOrganization = () => {
 
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Company Size
+                                        {t('recruiter.organizationProfile.companySize')}
                                     </label>
                                     <select
                                         name="employee_range"
@@ -967,10 +969,10 @@ const EditOrganization = () => {
                                         onChange={handleInputChange}
                                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00A55F] focus:border-[#00A55F] outline-none transition-colors"
                                     >
-                                        <option value="">Select Company Size</option>
+                                        <option value="">{t('recruiter.organizationProfile.selectCompanySize')}</option>
                                         {employeeRanges.map((range) => (
                                             <option key={range} value={range}>
-                                                {range} employees
+                                                {range} {t('recruiter.organizationProfile.employees')}
                                             </option>
                                         ))}
                                     </select>
@@ -978,7 +980,7 @@ const EditOrganization = () => {
 
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Founded Year
+                                        {t('recruiter.organizationProfile.foundedYear')}
                                     </label>
                                     <select
                                         name="founded_year"
@@ -986,7 +988,7 @@ const EditOrganization = () => {
                                         onChange={handleInputChange}
                                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00A55F] focus:border-[#00A55F] outline-none transition-colors"
                                     >
-                                        <option value="">Select Year</option>
+                                        <option value="">{t('recruiter.organizationProfile.selectYear')}</option>
                                         {foundedYears.map((year) => (
                                             <option key={year} value={year}>
                                                 {year}
@@ -997,7 +999,7 @@ const EditOrganization = () => {
 
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Website
+                                        {t('recruiter.organizationProfile.website')}
                                     </label>
                                     <div className="relative">
                                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -1019,7 +1021,7 @@ const EditOrganization = () => {
 
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Location
+                                        {t('recruiter.organizationProfile.location')}
                                     </label>
                                     <select
                                         name="city"
@@ -1027,7 +1029,7 @@ const EditOrganization = () => {
                                         onChange={handleInputChange}
                                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00A55F] focus:border-[#00A55F] outline-none transition-colors"
                                     >
-                                        <option value="">Select City</option>
+                                        <option value="">{t('recruiter.organizationProfile.selectCity')}</option>
                                         {cities.map((city) => (
                                             <option key={city} value={city}>
                                                 {city}
@@ -1039,7 +1041,7 @@ const EditOrganization = () => {
 
                             <div className="mt-6">
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    About Organization
+                                    {t('recruiter.organizationProfile.aboutOrganization')}
                                 </label>
                                 <textarea
                                     name="about"
@@ -1048,7 +1050,7 @@ const EditOrganization = () => {
                                     rows="4"
                                     maxLength="500"
                                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00A55F] focus:border-[#00A55F] outline-none transition-colors resize-none"
-                                    placeholder="Tell us about your organization, mission, and values..."
+                                    placeholder={t('recruiter.organizationProfile.aboutPlaceholder')}
                                 />
                                 <div className="mt-1 text-xs text-gray-500 text-right">
                                     {formData.about.length}/500 characters
@@ -1063,12 +1065,12 @@ const EditOrganization = () => {
                             transition={{ delay: 0.3 }}
                             className="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
                         >
-                            <h3 className="text-lg font-semibold text-gray-900 mb-6">Contact Information</h3>
+                            <h3 className="text-lg font-semibold text-gray-900 mb-6">{t('recruiter.organizationProfile.contactInformation')}</h3>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Phone Number
+                                        {t('recruiter.organizationProfile.phoneNumber')}
                                     </label>
                                     <div className="relative">
                                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -1087,7 +1089,7 @@ const EditOrganization = () => {
 
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Email Address
+                                        {t('recruiter.organizationProfile.emailAddress')}
                                     </label>
                                     <div className="relative">
                                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -1110,7 +1112,7 @@ const EditOrganization = () => {
 
                             <div className="mt-6">
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Address
+                                    {t('recruiter.organizationProfile.address')}
                                 </label>
                                 <textarea
                                     name="address"
@@ -1118,7 +1120,7 @@ const EditOrganization = () => {
                                     onChange={handleInputChange}
                                     rows="3"
                                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00A55F] focus:border-[#00A55F] outline-none transition-colors resize-none"
-                                    placeholder="Enter your company address..."
+                                    placeholder={t('recruiter.organizationProfile.addressPlaceholder')}
                                 />
                             </div>
                         </motion.div>
@@ -1130,7 +1132,7 @@ const EditOrganization = () => {
                             transition={{ delay: 0.4 }}
                             className="bg-white rounded-xl shadow-sm border border-gray-200 p-6"
                         >
-                            <h3 className="text-lg font-semibold text-gray-900 mb-6">Social Media</h3>
+                            <h3 className="text-lg font-semibold text-gray-900 mb-6">{t('recruiter.organizationProfile.socialMedia')}</h3>
 
                             {/* Verification Error Display */}
                             {errors.verification && (
@@ -1202,12 +1204,12 @@ const EditOrganization = () => {
                                         <FaGlobe className="h-4 w-4 text-blue-600" />
                                     </div>
                                     <div>
-                                        <h4 className="text-sm font-medium text-blue-900 mb-1">Social Media Tips</h4>
+                                        <h4 className="text-sm font-medium text-blue-900 mb-1">{t('recruiter.organizationProfile.socialMediaTips')}</h4>
                                         <ul className="text-xs text-blue-800 space-y-1">
-                                            <li>• Use your company's official social media profiles</li>
-                                            <li>• Ensure URLs are complete and accessible</li>
-                                            <li>• Keep profiles updated and professional</li>
-                                            <li>• These links will be visible to candidates</li>
+                                            <li>{t('recruiter.organizationProfile.socialMediaTipsList.0')}</li>
+                                            <li>{t('recruiter.organizationProfile.socialMediaTipsList.1')}</li>
+                                            <li>{t('recruiter.organizationProfile.socialMediaTipsList.2')}</li>
+                                            <li>{t('recruiter.organizationProfile.socialMediaTipsList.3')}</li>
                                         </ul>
                                     </div>
                                 </div>
@@ -1229,7 +1231,7 @@ const EditOrganization = () => {
                                     whileTap={{ scale: 0.98 }}
                                     className="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#00A55F] transition-colors font-medium"
                                 >
-                                    Cancel
+                                    {t('recruiter.organizationProfile.cancel')}
                                 </motion.button>
 
                                 <motion.button
@@ -1249,12 +1251,12 @@ const EditOrganization = () => {
                                     {isSaving ? (
                                         <div className="flex items-center">
                                             <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-3"></div>
-                                            Saving...
+                                            {t('recruiter.organizationProfile.saving')}
                                         </div>
                                     ) : (
                                         <div className="flex items-center">
                                             <FaSave className="h-4 w-4 mr-2" />
-                                            Save Changes
+                                            {t('recruiter.organizationProfile.saveChanges')}
                                         </div>
                                     )}
                                 </motion.button>
@@ -1284,11 +1286,11 @@ const EditOrganization = () => {
                                     <FaExclamationTriangle className="h-6 w-6 text-yellow-500" />
                                 </div>
                                 <div className="ml-3">
-                                    <h3 className="text-lg font-medium text-gray-900">Change Organization Name?</h3>
+                                    <h3 className="text-lg font-medium text-gray-900">{t('recruiter.organizationProfile.changeOrganizationName')}</h3>
                                 </div>
                             </div>
                             <p className="text-sm text-gray-600 mb-6">
-                                Changing your organization name may affect your visibility and branding. Are you sure you want to proceed?
+                                {t('recruiter.organizationProfile.changeNameWarning')}
                             </p>
                             <div className="flex justify-end space-x-3">
                                 <button
@@ -1301,7 +1303,7 @@ const EditOrganization = () => {
                                     onClick={saveChanges}
                                     className="px-4 py-2 text-sm font-medium text-white bg-[#00A55F] rounded-lg hover:bg-[#008c4f] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#00A55F] transition-colors"
                                 >
-                                    Continue
+                                    {t('recruiter.organizationProfile.continue')}
                                 </button>
                             </div>
                         </motion.div>

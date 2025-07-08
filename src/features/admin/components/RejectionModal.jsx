@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaTimes, FaExclamationTriangle, FaPaperPlane } from 'react-icons/fa';
 
 const RejectionModal = ({ isOpen, onClose, onReject, internshipTitle, loading }) => {
+    const { t } = useTranslation();
     const [reason, setReason] = useState('');
     const [isVisible, setIsVisible] = useState(false);
 
@@ -59,10 +61,10 @@ const RejectionModal = ({ isOpen, onClose, onReject, internshipTitle, loading })
                                     </div>
                                     <div>
                                         <h3 className="text-xl font-bold text-white">
-                                            Reject Internship
+                                            {t('admin.components.rejectionModal.rejectInternship')}
                                         </h3>
                                         <p className="text-red-100 text-sm">
-                                            Provide feedback to the recruiter
+                                            {t('admin.components.rejectionModal.provideFeedback')}
                                         </p>
                                     </div>
                                 </div>
@@ -81,7 +83,7 @@ const RejectionModal = ({ isOpen, onClose, onReject, internshipTitle, loading })
                             <div className="mb-6">
                                 <div className="mb-4">
                                     <h4 className="text-sm font-medium text-gray-700 mb-2">
-                                        Internship Details
+                                        {t('admin.components.rejectionModal.internshipDetails')}
                                     </h4>
                                     <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
                                         <p className="font-semibold text-gray-900 text-lg">{internshipTitle}</p>
@@ -90,20 +92,20 @@ const RejectionModal = ({ isOpen, onClose, onReject, internshipTitle, loading })
 
                                 <div className="mb-6">
                                     <label htmlFor="rejection-reason" className="block text-sm font-semibold text-gray-700 mb-3">
-                                        Rejection Reason *
+                                        {t('admin.components.rejectionModal.rejectionReason')}
                                     </label>
                                     <textarea
                                         id="rejection-reason"
                                         value={reason}
                                         onChange={(e) => setReason(e.target.value)}
-                                        placeholder="Please provide a clear and constructive reason for rejection. This feedback will help the recruiter improve their future submissions..."
+                                        placeholder={t('admin.components.rejectionModal.rejectionPlaceholder')}
                                         className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 resize-none transition-all duration-200"
                                         rows={5}
                                         required
                                         disabled={loading}
                                     />
                                     <p className="text-xs text-gray-500 mt-2">
-                                        {reason.length}/500 characters
+                                        {reason.length}/500 {t('admin.components.rejectionModal.characters')}
                                     </p>
                                 </div>
                             </div>
@@ -116,7 +118,7 @@ const RejectionModal = ({ isOpen, onClose, onReject, internshipTitle, loading })
                                     disabled={loading}
                                     className="px-6 py-3 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-xl hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
                                 >
-                                    Cancel
+                                    {t('admin.components.rejectionModal.cancel')}
                                 </button>
                                 <button
                                     type="submit"
@@ -127,12 +129,12 @@ const RejectionModal = ({ isOpen, onClose, onReject, internshipTitle, loading })
                                     {loading ? (
                                         <>
                                             <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                                            Rejecting...
+                                            {t('admin.components.rejectionModal.rejecting')}
                                         </>
                                     ) : (
                                         <>
                                             <FaPaperPlane className="w-4 h-4" />
-                                            Reject Internship
+                                            {t('admin.components.rejectionModal.rejectInternshipButton')}
                                         </>
                                     )}
                                 </button>

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import toast from "react-hot-toast";
 import { createInternship, updateInternship } from "@/services/internshipApi";
 
@@ -25,24 +26,7 @@ const defaultForm = {
     openings: 1,
 };
 
-const SUGGESTED_QUESTIONS = [
-    "Have you ever organized a community event or workshop?",
-    "How would you grow engagement for a student-based platform like Stage222?",
-    "Please link to any writing samples, blogs, or public communications you've done",
-    "What experience do you have with social media management?",
-    "Describe a time you had to communicate with diverse stakeholders"
-];
-
-const SUGGESTED_PERKS = [
-    "Certificate of Completion",
-    "Letter of Recommendation",
-    "Networking opportunities with NGOs & startups",
-    "Flexible working hours",
-    "Free Stage222 merch",
-    "Mentorship from industry professionals",
-    "Access to exclusive events",
-    "Remote work options"
-];
+// These will be replaced with translation keys in the component
 
 const MAURITANIAN_CITIES = [
     "Nouakchott",
@@ -62,6 +46,7 @@ const MAURITANIAN_CITIES = [
 
 const PostInternshipJob = ({ initialFormData = null, isEdit = false, internshipId = null, onSuccess }) => {
     const navigate = useNavigate();
+    const { t } = useTranslation();
     const [form, setForm] = useState(initialFormData ? { ...defaultForm, ...initialFormData } : defaultForm);
     const [errors, setErrors] = useState({});
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -132,13 +117,13 @@ const PostInternshipJob = ({ initialFormData = null, isEdit = false, internshipI
     // Validate required fields
     const validate = () => {
         const newErrors = {};
-        if (!form.title.trim()) newErrors.title = "Title is required";
-        if (!form.description.trim()) newErrors.description = "Description is required";
-        if (!form.location.trim()) newErrors.location = "Location is required";
-        if (!form.deadline) newErrors.deadline = "Deadline is required";
-        if (!form.stipend_type) newErrors.stipend_type = "Stipend type is required";
+        if (!form.title.trim()) newErrors.title = t('jobPosting.titleRequired');
+        if (!form.description.trim()) newErrors.description = t('jobPosting.descriptionRequired');
+        if (!form.location.trim()) newErrors.location = t('jobPosting.locationRequired');
+        if (!form.deadline) newErrors.deadline = t('jobPosting.deadlineRequired');
+        if (!form.stipend_type) newErrors.stipend_type = t('jobPosting.stipendTypeRequired');
         if (form.stipend_type === "paid" && (!form.stipend || form.stipend.trim() === "")) {
-            newErrors.stipend = "Stipend amount is required for paid internships";
+            newErrors.stipend = t('jobPosting.stipendRequired');
         }
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
@@ -182,15 +167,15 @@ const PostInternshipJob = ({ initialFormData = null, isEdit = false, internshipI
             const payload = getPayload();
             if (isEdit && internshipId) {
                 await updateInternship(internshipId, payload);
-                toast.success("Internship updated!");
+                toast.success(t('jobPosting.internshipUpdated'));
             } else {
                 await createInternship(payload);
-                toast.success("Internship posted!");
+                toast.success(t('jobPosting.internshipPosted'));
             }
             if (onSuccess) onSuccess();
             else navigate("/recruiter/dashboard");
         } catch (err) {
-            toast.error("Failed to submit internship");
+            toast.error(t('jobPosting.failedToSubmit'));
         } finally {
             setIsSubmitting(false);
         }
@@ -198,16 +183,16 @@ const PostInternshipJob = ({ initialFormData = null, isEdit = false, internshipI
 
     return (
         <form onSubmit={handleSubmit} className="max-w-2xl mx-auto bg-gradient-to-br from-white via-[#f3fdf7] to-[#e6f9f0] p-8 rounded-2xl shadow-xl border border-[#e0f2ea] space-y-8">
-            <h2 className="text-3xl font-extrabold text-[#00A55F] mb-2">{isEdit ? "Edit Internship" : "Post Internship"}</h2>
+            <h2 className="text-3xl font-extrabold text-[#00A55F] mb-2">{isEdit ? t('jobPosting.editInternship') : t('jobPosting.postInternship')}</h2>
             <div className="border-b border-gray-200 pb-4 mb-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <label className="block font-semibold mb-1 text-gray-800">Title</label>
+                        <label className="block font-semibold mb-1 text-gray-800">{t('jobPosting.title')}</label>
                         <input name="title" value={form.title} onChange={handleChange} className="w-full border border-gray-200 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#00A55F] focus:border-transparent transition-all bg-white" />
                         {errors.title && <p className="text-red-500 text-sm mt-1">{errors.title}</p>}
                     </div>
                     <div className="relative">
-                        <label className="block font-semibold mb-1 text-gray-800">Location</label>
+                        <label className="block font-semibold mb-1 text-gray-800">{t('jobPosting.location')}</label>
                         <div className="relative">
                             <input
                                 name="location"
@@ -219,7 +204,7 @@ const PostInternshipJob = ({ initialFormData = null, isEdit = false, internshipI
                                 }}
                                 onFocus={() => setShowCityDropdown(true)}
                                 onBlur={() => setTimeout(() => setShowCityDropdown(false), 150)}
-                                placeholder="Start typing a city..."
+                                placeholder={t('jobPosting.startTypingCity')}
                                 className="w-full border border-gray-200 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#00A55F] focus:border-transparent transition-all bg-white pr-10"
                                 autoComplete="off"
                             />
@@ -249,19 +234,19 @@ const PostInternshipJob = ({ initialFormData = null, isEdit = false, internshipI
                     </div>
                 </div>
                 <div className="mt-4">
-                    <label className="block font-semibold mb-1 text-gray-800">Description</label>
+                    <label className="block font-semibold mb-1 text-gray-800">{t('jobPosting.description')}</label>
                     <textarea name="description" value={form.description} onChange={handleChange} rows={4} className="w-full border border-gray-200 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#00A55F] focus:border-transparent transition-all bg-white" />
                     {errors.description && <p className="text-red-500 text-sm mt-1">{errors.description}</p>}
                 </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                    <label className="block font-semibold mb-1 text-gray-800">Type</label>
+                    <label className="block font-semibold mb-1 text-gray-800">{t('jobPosting.type')}</label>
                     <div className="relative">
                         <select name="type" value={form.type} onChange={handleChange} className="w-full border border-gray-200 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#00A55F] focus:border-transparent transition-all bg-white appearance-none pr-10">
-                            <option value="remote">Remote</option>
-                            <option value="hybrid">Hybrid</option>
-                            <option value="in-office">In Office</option>
+                            <option value="remote">{t('jobPosting.remote')}</option>
+                            <option value="hybrid">{t('jobPosting.hybrid')}</option>
+                            <option value="in-office">{t('jobPosting.inOffice')}</option>
                         </select>
                         <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
@@ -269,11 +254,11 @@ const PostInternshipJob = ({ initialFormData = null, isEdit = false, internshipI
                     </div>
                 </div>
                 <div>
-                    <label className="block font-semibold mb-1 text-gray-800">Job Type</label>
+                    <label className="block font-semibold mb-1 text-gray-800">{t('jobPosting.jobType')}</label>
                     <div className="relative">
                         <select name="job_type" value={form.job_type} onChange={handleChange} className="w-full border border-gray-200 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#00A55F] focus:border-transparent transition-all bg-white appearance-none pr-10">
-                            <option value="full-time">Full-time</option>
-                            <option value="part-time">Part-time</option>
+                            <option value="full-time">{t('jobPosting.fullTime')}</option>
+                            <option value="part-time">{t('jobPosting.partTime')}</option>
                         </select>
                         <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
@@ -281,25 +266,25 @@ const PostInternshipJob = ({ initialFormData = null, isEdit = false, internshipI
                     </div>
                 </div>
                 <div>
-                    <label className="block font-semibold mb-1 text-gray-800">Openings</label>
+                    <label className="block font-semibold mb-1 text-gray-800">{t('jobPosting.openings')}</label>
                     <input name="openings" type="number" min="1" value={form.openings} onChange={handleChange} className="w-full border border-gray-200 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#00A55F] focus:border-transparent transition-all bg-white" />
                 </div>
                 <div>
-                    <label className="block font-semibold mb-1 text-gray-800">Duration (months)</label>
+                    <label className="block font-semibold mb-1 text-gray-800">{t('jobPosting.duration')}</label>
                     <input name="duration" value={form.duration} onChange={handleChange} className="w-full border border-gray-200 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#00A55F] focus:border-transparent transition-all bg-white" />
                 </div>
                 <div>
-                    <label className="block font-semibold mb-1 text-gray-800">Duration (weeks)</label>
+                    <label className="block font-semibold mb-1 text-gray-800">{t('jobPosting.durationWeeks')}</label>
                     <input name="duration_weeks" type="number" min="1" value={form.duration_weeks} onChange={handleChange} className="w-full border border-gray-200 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#00A55F] focus:border-transparent transition-all bg-white" />
                 </div>
             </div>
             <div className="border-t border-gray-100 pt-6 mt-6">
-                <label className="block font-semibold mb-1 text-gray-800">Responsibilities</label>
-                <textarea name="responsibilities" value={form.responsibilities} onChange={handleChange} rows={4} className="w-full border border-gray-200 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#00A55F] focus:border-transparent transition-all bg-white" placeholder="Enter detailed responsibilities..." />
+                <label className="block font-semibold mb-1 text-gray-800">{t('jobPosting.responsibilities')}</label>
+                <textarea name="responsibilities" value={form.responsibilities} onChange={handleChange} rows={4} className="w-full border border-gray-200 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#00A55F] focus:border-transparent transition-all bg-white" placeholder={t('jobPosting.enterResponsibilities')} />
             </div>
             {/* Preferences Section */}
             <div>
-                <label className="block font-semibold mb-1 text-gray-800">Preferences</label>
+                <label className="block font-semibold mb-1 text-gray-800">{t('jobPosting.preferences')}</label>
                 <div className="flex flex-wrap gap-2 mb-3">
                     {form.preferences.map((pref, i) => (
                         <div key={i} className="flex items-center bg-blue-50 border border-blue-200 rounded-full px-4 py-1 text-sm text-blue-800 shadow-sm">
@@ -313,7 +298,7 @@ const PostInternshipJob = ({ initialFormData = null, isEdit = false, internshipI
                         type="text"
                         value={newPreference}
                         onChange={e => setNewPreference(e.target.value)}
-                        placeholder="Add a preference..."
+                        placeholder={t('jobPosting.addPreference')}
                         className="flex-1 border border-gray-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#00A55F] focus:border-transparent"
                         maxLength={120}
                         onKeyPress={(e) => {
@@ -329,15 +314,15 @@ const PostInternshipJob = ({ initialFormData = null, isEdit = false, internshipI
                         className="bg-[#00A55F] text-white px-4 py-2 rounded-lg font-semibold hover:bg-[#008c4f] transition-all"
                         disabled={!newPreference.trim()}
                     >
-                        Add
+                        {t('jobPosting.add')}
                     </button>
                 </div>
             </div>
             {/* Screening Questions Section */}
             <div className="border-t border-gray-100 pt-6 mt-6">
                 <div className="flex items-center justify-between mb-2">
-                    <label className="block font-semibold text-gray-800 text-lg">Screening Questions</label>
-                    <span className="text-xs text-gray-500">Max 4</span>
+                    <label className="block font-semibold text-gray-800 text-lg">{t('jobPosting.screeningQuestions')}</label>
+                    <span className="text-xs text-gray-500">{t('jobPosting.max4')}</span>
                 </div>
                 <div className="flex flex-wrap gap-2 mb-3">
                     {form.screening_questions.map((q, i) => (
@@ -353,7 +338,7 @@ const PostInternshipJob = ({ initialFormData = null, isEdit = false, internshipI
                             type="text"
                             value={newQuestion}
                             onChange={e => setNewQuestion(e.target.value)}
-                            placeholder="Add a question..."
+                            placeholder={t('jobPosting.addQuestion')}
                             className="flex-1 border border-gray-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#00A55F] focus:border-transparent"
                             maxLength={120}
                         />
@@ -363,13 +348,13 @@ const PostInternshipJob = ({ initialFormData = null, isEdit = false, internshipI
                             className="bg-[#00A55F] text-white px-4 py-2 rounded-lg font-semibold hover:bg-[#008c4f] transition-all"
                             disabled={!newQuestion.trim()}
                         >
-                            Add
+                            {t('jobPosting.add')}
                         </button>
                     </div>
                 )}
                 {form.screening_questions.length < 4 && (
                     <div className="flex flex-wrap gap-2 mt-2">
-                        {SUGGESTED_QUESTIONS.filter(q => !form.screening_questions.includes(q)).map((q, i) => (
+                        {t('jobPosting.defaultQuestions', { returnObjects: true }).filter(q => !form.screening_questions.includes(q)).map((q, i) => (
                             <button
                                 key={i}
                                 type="button"
@@ -384,7 +369,7 @@ const PostInternshipJob = ({ initialFormData = null, isEdit = false, internshipI
             </div>
             {/* Perks Section */}
             <div>
-                <label className="block font-semibold mb-1 text-gray-800">Perks</label>
+                <label className="block font-semibold mb-1 text-gray-800">{t('jobPosting.perksLabel')}</label>
                 <div className="flex flex-wrap gap-2 mb-3">
                     {form.perks.map((perk, i) => (
                         <div key={i} className="flex items-center bg-green-50 border border-green-200 rounded-full px-4 py-1 text-sm text-green-800 shadow-sm">
@@ -394,7 +379,7 @@ const PostInternshipJob = ({ initialFormData = null, isEdit = false, internshipI
                     ))}
                 </div>
                 <div className="flex flex-wrap gap-2 mb-2">
-                    {SUGGESTED_PERKS.filter(perk => !form.perks.includes(perk)).map((perk, i) => (
+                    {t('jobPosting.defaultPerks', { returnObjects: true }).filter(perk => !form.perks.includes(perk)).map((perk, i) => (
                         <button
                             key={i}
                             type="button"
@@ -410,7 +395,7 @@ const PostInternshipJob = ({ initialFormData = null, isEdit = false, internshipI
                         type="text"
                         value={newPerk}
                         onChange={e => setNewPerk(e.target.value)}
-                        placeholder="Add a custom perk..."
+                        placeholder={t('jobPosting.addCustomPerk')}
                         className="flex-1 border border-gray-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-[#00A55F] focus:border-transparent"
                         maxLength={60}
                     />
@@ -420,22 +405,22 @@ const PostInternshipJob = ({ initialFormData = null, isEdit = false, internshipI
                         className="bg-[#00A55F] text-white px-4 py-2 rounded-lg font-semibold hover:bg-[#008c4f] transition-all"
                         disabled={!newPerk.trim()}
                     >
-                        Add
+                        {t('jobPosting.add')}
                     </button>
                 </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                    <label className="block font-semibold mb-1 text-gray-800">Stipend Type</label>
+                    <label className="block font-semibold mb-1 text-gray-800">{t('jobPosting.stipendType')}</label>
                     <select name="stipend_type" value={form.stipend_type} onChange={handleChange} className="w-full border border-gray-200 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-[#00A55F] focus:border-transparent transition-all bg-white">
-                        <option value="paid">Paid</option>
-                        <option value="unpaid">Unpaid</option>
+                        <option value="paid">{t('jobPosting.paid')}</option>
+                        <option value="unpaid">{t('jobPosting.unpaid')}</option>
                     </select>
                     {errors.stipend_type && <p className="text-red-500 text-sm mt-1">{errors.stipend_type}</p>}
                 </div>
                 <div>
                     <label className="block font-semibold mb-1 text-gray-800">
-                        Stipend Amount {form.stipend_type === "unpaid" && <span className="text-gray-500 text-sm">(Not applicable)</span>}
+                        {t('jobPosting.stipendAmount')} {form.stipend_type === "unpaid" && <span className="text-gray-500 text-sm">{t('jobPosting.notApplicable')}</span>}
                     </label>
                     <input
                         name="stipend"
@@ -462,12 +447,12 @@ const PostInternshipJob = ({ initialFormData = null, isEdit = false, internshipI
                         }`}
                 />
                 <label className={`text-sm ${form.stipend_type === "unpaid" ? "text-gray-500" : "text-gray-700"}`}>
-                    Stipend is negotiable {form.stipend_type === "unpaid" && "(Not applicable)"}
+                    {t('jobPosting.stipendNegotiable')} {form.stipend_type === "unpaid" && t('jobPosting.notApplicable')}
                 </label>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                    <label className="block font-semibold mb-1 text-gray-800">Start Date</label>
+                    <label className="block font-semibold mb-1 text-gray-800">{t('jobPosting.startDate')}</label>
                     <div className="relative">
                         <input
                             name="start_date"
@@ -483,7 +468,7 @@ const PostInternshipJob = ({ initialFormData = null, isEdit = false, internshipI
                     </div>
                 </div>
                 <div>
-                    <label className="block font-semibold mb-1 text-gray-800">Deadline</label>
+                    <label className="block font-semibold mb-1 text-gray-800">{t('jobPosting.deadline')}</label>
                     <div className="relative">
                         <input
                             name="deadline"
@@ -501,7 +486,7 @@ const PostInternshipJob = ({ initialFormData = null, isEdit = false, internshipI
                 </div>
             </div>
             <button type="submit" disabled={isSubmitting} className="w-full bg-gradient-to-r from-[#00A55F] to-[#008c4f] text-white py-3 rounded-xl font-bold text-lg shadow-md hover:from-[#008c4f] hover:to-[#00A55F] transition-all mt-4">
-                {isSubmitting ? (isEdit ? "Updating..." : "Posting...") : (isEdit ? "Update Internship" : "Post Internship")}
+                {isSubmitting ? (isEdit ? t('jobPosting.updating') : t('jobPosting.posting')) : (isEdit ? t('jobPosting.updateInternship') : t('jobPosting.postInternship'))}
             </button>
         </form>
     );

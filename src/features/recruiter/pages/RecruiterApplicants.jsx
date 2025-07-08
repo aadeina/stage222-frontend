@@ -4,6 +4,7 @@ import { FaArrowLeft, FaUser, FaEnvelope, FaClock, FaCheckCircle, FaTimesCircle,
 import api from '../../../services/api';
 import ResumeModal from '../components/ResumeModal';
 import AnswersModal from '../components/AnswersModal';
+import { useTranslation } from 'react-i18next';
 
 
 // Professional, branded applicants page for Stage222 recruiters
@@ -22,15 +23,16 @@ function useQuery() {
     return new URLSearchParams(useLocation().search);
 }
 
-const getFilterLabel = (status, shortlisted) => {
-    if (shortlisted === 'true') return 'Shortlisted Applicants';
-    if (status === 'rejected') return 'Rejected Applicants';
-    if (status === 'pending') return 'Pending Applicants';
-    if (status === 'accepted') return 'Accepted Applicants';
-    return 'All Applicants';
+const getFilterLabel = (status, shortlisted, t) => {
+    if (shortlisted === 'true') return t('recruiterApplicants.shortlisted');
+    if (status === 'rejected') return t('recruiterApplicants.rejected');
+    if (status === 'pending') return t('recruiterApplicants.pending');
+    if (status === 'accepted') return t('recruiterApplicants.accepted');
+    return t('recruiterApplicants.all');
 };
 
 const RecruiterApplicants = () => {
+    const { t } = useTranslation();
     const [applicants, setApplicants] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -91,18 +93,18 @@ const RecruiterApplicants = () => {
                 onClick={() => navigate('/recruiter/dashboard')}
                 className="flex items-center text-[#00A55F] hover:text-[#008c4f] mb-6 font-medium"
             >
-                <FaArrowLeft className="mr-2" /> Back to Dashboard
+                <FaArrowLeft className="mr-2" /> {t('recruiterApplicants.backToDashboard')}
             </button>
 
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Applicants</h1>
-            <div className="mb-6 text-sm text-gray-600 font-medium">{getFilterLabel(status, shortlisted)}</div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">{t('recruiterApplicants.title')}</h1>
+            <div className="mb-6 text-sm text-gray-600 font-medium">{getFilterLabel(status, shortlisted, t)}</div>
 
             {/* Loading and Error States */}
             {loading && (
-                <div className="text-center text-gray-500 py-12">Loading applicants...</div>
+                <div className="text-center text-gray-500 py-12">{t('recruiterApplicants.loading')}</div>
             )}
             {error && (
-                <div className="text-center text-red-600 py-12">{error}</div>
+                <div className="text-center text-red-600 py-12">{t('recruiterApplicants.error')}</div>
             )}
 
             {/* Applicants Table */}
@@ -111,19 +113,18 @@ const RecruiterApplicants = () => {
                     <table className="min-w-full divide-y divide-gray-200">
                         <thead className="bg-gray-50">
                             <tr>
-                                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Candidate</th>
-                                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Email</th>
-                                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
-                                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Applied At</th>
-                                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Resume</th>
-                                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Answers</th>
-
+                                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('recruiterApplicants.candidate')}</th>
+                                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('recruiterApplicants.email')}</th>
+                                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('recruiterApplicants.status')}</th>
+                                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('recruiterApplicants.appliedAt')}</th>
+                                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('recruiterApplicants.resume')}</th>
+                                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">{t('recruiterApplicants.answers')}</th>
                             </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-100">
                             {applicants.length === 0 ? (
                                 <tr>
-                                    <td colSpan={6} className="py-16 text-center text-gray-400">No applicants found.</td>
+                                    <td colSpan={6} className="py-16 text-center text-gray-400">{t('recruiterApplicants.noApplicants')}</td>
                                 </tr>
                             ) : (
                                 applicants.map((app, idx) => {
@@ -169,7 +170,7 @@ const RecruiterApplicants = () => {
                                             </td>
                                             <td className="px-4 py-4 whitespace-nowrap">
                                                 <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusColors[app.status] || 'bg-gray-100 text-gray-600'}`}>
-                                                    {app.status}
+                                                    {t(`recruiterApplicants.${app.status}`) || app.status}
                                                 </span>
                                             </td>
                                             <td className="px-4 py-4 whitespace-nowrap text-gray-600 text-sm">
@@ -182,10 +183,10 @@ const RecruiterApplicants = () => {
                                                         className="flex items-center gap-2 px-3 py-2 bg-[#00A55F] text-white rounded-lg hover:bg-[#008c4f] transition-colors duration-200 text-sm"
                                                     >
                                                         <FaEye className="h-4 w-4" />
-                                                        View Resume
+                                                        {t('recruiterApplicants.viewResume')}
                                                     </button>
                                                 ) : (
-                                                    <span className="text-gray-400 text-sm">No resume</span>
+                                                    <span className="text-gray-400 text-sm">{t('recruiterApplicants.noResume')}</span>
                                                 )}
                                             </td>
                                             <td className="px-4 py-4 whitespace-nowrap">

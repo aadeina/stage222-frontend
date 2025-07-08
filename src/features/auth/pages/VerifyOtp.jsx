@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import { verifyOtp, resendOtp } from '@/services/authApi';
 import { toast } from 'react-hot-toast';
 import { useAuth } from '@/context/AuthContext';
@@ -11,6 +12,7 @@ const VerifyOtp = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const { updateUser } = useAuth();
+    const { t } = useTranslation();
     const email = location.state?.email;
     const [otp, setOtp] = useState(Array(OTP_LENGTH).fill(''));
     const [isVerifying, setIsVerifying] = useState(false);
@@ -58,7 +60,7 @@ const VerifyOtp = () => {
         e.preventDefault();
         const code = otp.join('');
         if (code.length !== OTP_LENGTH) {
-            toast.error('Please enter the 6-digit OTP');
+            toast.error(t('auth.enter6DigitOtp'));
             return;
         }
         setIsVerifying(true);
@@ -76,7 +78,7 @@ const VerifyOtp = () => {
                 is_verified: true
             });
 
-            toast.success('Email verified successfully!');
+            toast.success(t('auth.emailVerifiedSuccess'));
 
             // ✅ Redirect based on role
             if (user.role === 'recruiter') {
@@ -95,7 +97,7 @@ const VerifyOtp = () => {
             toast.error(
                 error?.response?.data?.detail ||
                 error?.response?.data?.message ||
-                'Verification failed. Please try again.'
+                t('auth.verificationFailed')
             );
         } finally {
             setIsVerifying(false);
@@ -104,19 +106,19 @@ const VerifyOtp = () => {
 
     const handleResend = async () => {
         if (!email) {
-            toast.error('Email not found in context');
+            toast.error(t('auth.emailNotFound'));
             return;
         }
         setIsResending(true);
         try {
             await resendOtp(email);
-            toast.success('📩 OTP resent to your email.');
+            toast.success(t('auth.otpResent'));
             setCountdown(60);
         } catch (error) {
             toast.error(
                 error?.response?.data?.detail ||
                 error?.response?.data?.message ||
-                'Failed to resend OTP'
+                t('auth.failedToResendOtp')
             );
         } finally {
             setIsResending(false);
@@ -129,16 +131,16 @@ const VerifyOtp = () => {
             <div className="min-h-screen flex items-center justify-center bg-gray-50">
                 <div className="text-center">
                     <h1 className="text-2xl font-bold text-gray-900 mb-4">
-                        Invalid Verification Link
+                        {t('auth.invalidVerificationLink')}
                     </h1>
                     <p className="text-gray-600 mb-6">
-                        Please register first to verify your email.
+                        {t('auth.registerFirstToVerify')}
                     </p>
                     <button
                         onClick={() => navigate('/register/student')}
                         className="bg-[#00A55F] text-white px-6 py-2 rounded-lg hover:bg-[#008c4f] transition-colors"
                     >
-                        Go to Registration
+                        {t('auth.goToRegistration')}
                     </button>
                 </div>
             </div>
@@ -154,10 +156,10 @@ const VerifyOtp = () => {
                 className="bg-white p-8 rounded-xl shadow-lg max-w-md w-full"
             >
                 <h1 className="text-2xl font-bold text-gray-900 mb-2 text-center">
-                    Verify your email
+                    {t('auth.verifyEmail')}
                 </h1>
                 <p className="text-gray-600 mb-6 text-center">
-                    Enter the OTP sent to <span className="font-medium">{email.replace(/(.{3}).*(@.*)/, '$1***$2')}</span>
+                    {t('auth.enterOtpSent')} <span className="font-medium">{email.replace(/(.{3}).*(@.*)/, '$1***$2')}</span>
                 </p>
                 <form onSubmit={handleVerify} className="space-y-6">
                     <div className="flex justify-center gap-2 mb-4" onPaste={handlePaste}>
@@ -188,7 +190,7 @@ const VerifyOtp = () => {
                             : 'hover:bg-[#008c4f]'
                             }`}
                     >
-                        {isVerifying ? 'Verifying...' : 'Verify'}
+                        {isVerifying ? t('auth.verifying') : t('auth.verify')}
                     </motion.button>
                     <div className="flex flex-col items-center gap-2">
                         <motion.button
@@ -200,17 +202,17 @@ const VerifyOtp = () => {
                             className="text-sm text-[#00A55F] hover:text-[#008c4f] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             {isResending
-                                ? 'Sending...'
+                                ? t('auth.sending')
                                 : countdown > 0
-                                    ? `Resend in ${countdown}s`
-                                    : "Didn't receive the OTP? Resend"}
+                                    ? `${t('auth.resendIn')} ${countdown}s`
+                                    : t('auth.didntReceiveOtp')}
                         </motion.button>
                         <button
                             type="button"
                             onClick={() => navigate('/login')}
                             className="text-gray-500 text-xs underline mt-2"
                         >
-                            Back to Login
+                            {t('auth.backToLogin')}
                         </button>
                     </div>
                 </form>
