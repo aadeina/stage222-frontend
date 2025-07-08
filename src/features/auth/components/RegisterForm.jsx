@@ -114,7 +114,7 @@ const RegisterForm = ({ role, title, description, features }) => {
                             {description}
                         </p>
                         <div className="hidden md:block">
-                            {features.map((feature, index) => (
+                            {Array.isArray(features) && features.map((feature, index) => (
                                 <motion.div
                                     key={index}
                                     initial={{ opacity: 0, y: 20 }}

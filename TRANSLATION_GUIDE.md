@@ -6,20 +6,25 @@
 - ✅ Home page translations
 - ✅ Login page translations
 - ✅ Navbar translations
+
 - ✅ InternshipList translations
 - ✅ RegisterStudent page translations
 - ✅ RegisterEmployer page translations
 - ✅ CandidateDashboard page translations
-- ✅ RecruiterDashboard page translations
+
+
 - ✅ CandidateEditProfile page translations
 - ✅ InternshipDetail page translations
 - ✅ CandidateOnboarding page translations
 - ✅ RecruiterOnboarding page translations
+
+
 - ✅ PostInternshipJob page translations
 - ✅ RecruiterApplicants page translations
 - ✅ CandidateApplications page translations
 - ✅ RecruiterProfile page translations
 - ✅ CandidateBookmarks page translations
+
 - ✅ RecruiterHeader component translations
 - ✅ ResumeModal component translations
 - ✅ RejectionReasonModal component translations

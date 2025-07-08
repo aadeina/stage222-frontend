@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { FaArrowLeft, FaEye, FaEyeSlash, FaLock, FaCheckCircle, FaExclamationTriangle } from 'react-icons/fa';
 import { MdSecurity } from 'react-icons/md';
@@ -7,6 +8,7 @@ import toast from 'react-hot-toast';
 import api from '@/services/api';
 
 const ChangePassword = () => {
+    const { t } = useTranslation();
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
         oldPassword: '',
@@ -168,15 +170,15 @@ const ChangePassword = () => {
                         </motion.button>
 
                         <div className="flex-1">
-                            <h1 className="text-2xl font-bold text-gray-900">Change Password</h1>
-                            <p className="text-gray-600">Update your account password to keep it secure</p>
+                            <h1 className="text-2xl font-bold text-gray-900">{t('changePassword.title')}</h1>
+                            <p className="text-gray-600">{t('changePassword.subtitle')}</p>
                         </div>
 
                         <div className="flex items-center gap-3 bg-[#00A55F]/10 px-4 py-2 rounded-lg">
                             <MdSecurity className="text-[#00A55F] text-xl" />
                             <div>
-                                <p className="text-sm font-medium text-[#00A55F]">Security</p>
-                                <p className="text-xs text-[#00A55F]/70">Account Protection</p>
+                                <p className="text-sm font-medium text-[#00A55F]">{t('changePassword.security')}</p>
+                                <p className="text-xs text-[#00A55F]/70">{t('changePassword.accountProtection')}</p>
                             </div>
                         </div>
                     </div>
@@ -195,15 +197,15 @@ const ChangePassword = () => {
                             className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8"
                         >
                             <div className="mb-8">
-                                <h2 className="text-xl font-semibold text-gray-900 mb-2">Update Password</h2>
-                                <p className="text-gray-600">Enter your current password and choose a new secure password</p>
+                                <h2 className="text-xl font-semibold text-gray-900 mb-2">{t('changePassword.updatePassword')}</h2>
+                                <p className="text-gray-600">{t('changePassword.enterCurrentAndChooseNewSecurePassword')}</p>
                             </div>
 
                             <form onSubmit={handleSubmit} className="space-y-6">
                                 {/* Current Password */}
                                 <div>
                                     <label htmlFor="oldPassword" className="block text-sm font-medium text-gray-700 mb-2">
-                                        Current Password
+                                        {t('changePassword.currentPassword')}
                                     </label>
                                     <div className="relative">
                                         <input
@@ -214,7 +216,7 @@ const ChangePassword = () => {
                                             onChange={handleChange}
                                             className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#00A55F] focus:border-transparent transition-colors ${errors.oldPassword ? 'border-red-300' : 'border-gray-300'
                                                 }`}
-                                            placeholder="Enter your current password"
+                                            placeholder={t('changePassword.enterYourCurrentPassword')}
                                         />
                                         <button
                                             type="button"
@@ -235,7 +237,7 @@ const ChangePassword = () => {
                                 {/* New Password */}
                                 <div>
                                     <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700 mb-2">
-                                        New Password
+                                        {t('changePassword.newPassword')}
                                     </label>
                                     <div className="relative">
                                         <input
@@ -246,7 +248,7 @@ const ChangePassword = () => {
                                             onChange={handleChange}
                                             className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#00A55F] focus:border-transparent transition-colors ${errors.newPassword ? 'border-red-300' : 'border-gray-300'
                                                 }`}
-                                            placeholder="Enter your new password"
+                                            placeholder={t('changePassword.enterYourNewPassword')}
                                         />
                                         <button
                                             type="button"
@@ -267,7 +269,7 @@ const ChangePassword = () => {
                                 {/* Confirm Password */}
                                 <div>
                                     <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">
-                                        Confirm New Password
+                                        {t('changePassword.confirmNewPassword')}
                                     </label>
                                     <div className="relative">
                                         <input
@@ -278,7 +280,7 @@ const ChangePassword = () => {
                                             onChange={handleChange}
                                             className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#00A55F] focus:border-transparent transition-colors ${errors.confirmPassword ? 'border-red-300' : 'border-gray-300'
                                                 }`}
-                                            placeholder="Confirm your new password"
+                                            placeholder={t('changePassword.confirmYourNewPassword')}
                                         />
                                         <button
                                             type="button"
@@ -310,12 +312,12 @@ const ChangePassword = () => {
                                     {loading ? (
                                         <div className="flex items-center justify-center gap-2">
                                             <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                                            <span>Updating Password...</span>
+                                            <span>{t('changePassword.updatingPassword')}</span>
                                         </div>
                                     ) : (
                                         <div className="flex items-center justify-center gap-2">
                                             <FaLock className="h-5 w-5" />
-                                            <span>Update Password</span>
+                                            <span>{t('changePassword.updatePassword')}</span>
                                         </div>
                                     )}
                                 </motion.button>
@@ -336,11 +338,11 @@ const ChangePassword = () => {
                                 <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
                                     <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
                                         <MdSecurity className="text-[#00A55F]" />
-                                        Password Strength
+                                        {t('changePassword.passwordStrength')}
                                     </h3>
                                     <div className="space-y-3">
                                         <div className="flex items-center justify-between">
-                                            <span className="text-sm text-gray-600">Strength:</span>
+                                            <span className="text-sm text-gray-600">{t('changePassword.strength')}:</span>
                                             <span className={`text-sm font-medium text-${passwordStrength.color}-600`}>
                                                 {passwordStrength.label}
                                             </span>
@@ -358,7 +360,7 @@ const ChangePassword = () => {
                                             ></div>
                                         </div>
                                         <div className="text-xs text-gray-500">
-                                            {passwordStrength.score}/5 criteria met
+                                            {t('changePassword.scoreCriteriaMet')} {passwordStrength.score}/5
                                         </div>
                                     </div>
                                 </div>
@@ -368,28 +370,28 @@ const ChangePassword = () => {
                             <div className="bg-gradient-to-br from-[#00A55F]/5 via-emerald-50 to-green-50 rounded-2xl border border-[#00A55F]/20 p-6">
                                 <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
                                     <FaLock className="text-[#00A55F]" />
-                                    Security Tips
+                                    {t('changePassword.securityTips')}
                                 </h3>
                                 <div className="space-y-3">
                                     <div className="flex items-start gap-3">
                                         <FaCheckCircle className="text-[#00A55F] mt-1 flex-shrink-0" />
-                                        <p className="text-sm text-gray-700">Use at least 8 characters</p>
+                                        <p className="text-sm text-gray-700">{t('changePassword.useAtLeast8Characters')}</p>
                                     </div>
                                     <div className="flex items-start gap-3">
                                         <FaCheckCircle className="text-[#00A55F] mt-1 flex-shrink-0" />
-                                        <p className="text-sm text-gray-700">Include uppercase and lowercase letters</p>
+                                        <p className="text-sm text-gray-700">{t('changePassword.includeUppercaseAndLowercaseLetters')}</p>
                                     </div>
                                     <div className="flex items-start gap-3">
                                         <FaCheckCircle className="text-[#00A55F] mt-1 flex-shrink-0" />
-                                        <p className="text-sm text-gray-700">Add numbers and special characters</p>
+                                        <p className="text-sm text-gray-700">{t('changePassword.addNumbersAndSpecialCharacters')}</p>
                                     </div>
                                     <div className="flex items-start gap-3">
                                         <FaCheckCircle className="text-[#00A55F] mt-1 flex-shrink-0" />
-                                        <p className="text-sm text-gray-700">Avoid common words and patterns</p>
+                                        <p className="text-sm text-gray-700">{t('changePassword.avoidCommonWordsAndPatterns')}</p>
                                     </div>
                                     <div className="flex items-start gap-3">
                                         <FaCheckCircle className="text-[#00A55F] mt-1 flex-shrink-0" />
-                                        <p className="text-sm text-gray-700">Don't reuse passwords from other accounts</p>
+                                        <p className="text-sm text-gray-700">{t('changePassword.dontReusePasswordsFromOtherAccounts')}</p>
                                     </div>
                                 </div>
                             </div>
@@ -398,16 +400,16 @@ const ChangePassword = () => {
                             <div className="bg-blue-50 rounded-2xl border border-blue-200 p-6">
                                 <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
                                     <MdSecurity className="text-blue-600" />
-                                    Account Security
+                                    {t('changePassword.accountSecurity')}
                                 </h3>
                                 <p className="text-sm text-gray-700 mb-3">
-                                    Keep your account secure by regularly updating your password and enabling two-factor authentication.
+                                    {t('changePassword.keepAccountSecureByRegularlyUpdatingPasswordAndEnablingTwoFactorAuthentication')}
                                 </p>
                                 <button
                                     onClick={() => navigate('/recruiter/security-settings')}
                                     className="text-sm text-blue-600 hover:text-blue-800 font-medium transition-colors"
                                 >
-                                    Security Settings →
+                                    {t('changePassword.securitySettings')} →
                                 </button>
                             </div>
                         </motion.div>

@@ -4,7 +4,12 @@ import RegisterForm from '../components/RegisterForm';
 const RegisterEmployer = () => {
     const { t } = useTranslation();
 
-    const employerFeatures = t('registration.employerFeatures', { returnObjects: true });
+    const employerFeatures = t('registration.employerFeatures', { returnObjects: true }) || [
+        "Publiez des offres illimitées",
+        "Gérez vos candidatures facilement",
+        "Analytics détaillées",
+        "Support prioritaire"
+    ];
 
     return (
         <RegisterForm

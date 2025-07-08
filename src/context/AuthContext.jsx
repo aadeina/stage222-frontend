@@ -35,7 +35,7 @@ export const AuthProvider = ({ children }) => {
                 localStorage.removeItem('signupData');
             }
         } else {
-            console.log('AuthContext: No stored signup data found');
+            // No stored signup data found - this is normal for new users
         }
 
         setLoading(false);

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import {
     FaArrowLeft,
@@ -29,6 +30,7 @@ import api from '@/services/api';
 
 const RecruiterBilling = () => {
     const navigate = useNavigate();
+    const { t } = useTranslation();
     const [activeTab, setActiveTab] = useState('overview');
     const [loading, setLoading] = useState(false);
     const [billingData, setBillingData] = useState({
@@ -139,31 +141,31 @@ const RecruiterBilling = () => {
         try {
             // Simulate API call
             await new Promise(resolve => setTimeout(resolve, 1000));
-            toast.success(`Successfully upgraded to ${planName} plan!`);
+            toast.success(t('billing.actions.successfullyUpgraded', { planName }));
             // Update current plan in state
             setBillingData(prev => ({
                 ...prev,
                 currentPlan: plans.find(p => p.name === planName)
             }));
         } catch (error) {
-            toast.error('Failed to change plan. Please try again.');
+            toast.error(t('billing.actions.failedToChangePlan'));
         } finally {
             setLoading(false);
         }
     };
 
     const downloadInvoice = (invoiceId) => {
-        toast.success(`Downloading invoice ${invoiceId}...`);
+        toast.success(t('billing.actions.downloadingInvoice', { invoiceId }));
         // Simulate download
     };
 
     const viewInvoice = (invoiceId) => {
-        toast.success(`Opening invoice ${invoiceId}...`);
+        toast.success(t('billing.actions.openingInvoice', { invoiceId }));
         // Simulate opening invoice
     };
 
     const addPaymentMethod = () => {
-        toast.success('Redirecting to add payment method...');
+        toast.success(t('billing.actions.redirectingToAddPaymentMethod'));
         // Simulate redirect to payment method form
     };
 
@@ -216,8 +218,8 @@ const RecruiterBilling = () => {
                         </motion.button>
 
                         <div className="flex-1">
-                            <h1 className="text-2xl font-bold text-gray-900">Billing & Subscription</h1>
-                            <p className="text-gray-600">Manage your subscription, payments, and billing information</p>
+                            <h1 className="text-2xl font-bold text-gray-900">{t('billing.title')}</h1>
+                            <p className="text-gray-600">{t('billing.subtitle')}</p>
                         </div>
 
                         <div className="flex items-center gap-3 bg-[#00A55F]/10 px-4 py-2 rounded-lg">
@@ -237,10 +239,10 @@ const RecruiterBilling = () => {
                 <div className="mb-8">
                     <nav className="flex space-x-8 border-b border-gray-200">
                         {[
-                            { id: 'overview', label: 'Overview', icon: FaChartLine },
-                            { id: 'subscription', label: 'Subscription', icon: FaCrown },
-                            { id: 'payment-methods', label: 'Payment Methods', icon: FaCreditCard },
-                            { id: 'invoices', label: 'Invoices', icon: FaReceipt }
+                            { id: 'overview', label: t('billing.overview'), icon: FaChartLine },
+                            { id: 'subscription', label: t('billing.plans'), icon: FaCrown },
+                            { id: 'payment-methods', label: t('billing.paymentMethods'), icon: FaCreditCard },
+                            { id: 'invoices', label: t('billing.invoices'), icon: FaReceipt }
                         ].map((tab) => {
                             const Icon = tab.icon;
                             return (

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '@/context/AuthContext';
 import { FaUser, FaGraduationCap, FaMapMarkerAlt, FaPhone, FaUniversity, FaCalendarAlt, FaFileAlt, FaCamera, FaCheck, FaArrowRight, FaArrowLeft, FaPlus, FaTimes } from 'react-icons/fa';
 import toast from 'react-hot-toast';
@@ -8,6 +9,7 @@ import { completeCandidateOnboarding } from '@/features/candidate/api/candidateA
 
 const CandidateOnboarding = () => {
     const navigate = useNavigate();
+    const { t } = useTranslation();
     const { user, updateUser } = useAuth();
     const [currentStep, setCurrentStep] = useState(1);
     const [isLoading, setIsLoading] = useState(false);
@@ -66,12 +68,12 @@ const CandidateOnboarding = () => {
         const missing = required.filter(field => !formData[field]);
 
         if (missing.length > 0) {
-            toast.error(`Please fill in all required fields: ${missing.join(', ')}`);
+            toast.error(t('candidateOnboarding.validation.fillAllFields'));
             return false;
         }
 
         if (!formData.profile_picture) {
-            toast.error('Please upload a profile picture');
+            toast.error(t('candidateOnboarding.validation.uploadPicture'));
             return false;
         }
 
@@ -80,12 +82,12 @@ const CandidateOnboarding = () => {
 
     const validateStep2 = () => {
         if (formData.skills.length < 3) {
-            toast.error('Please select at least 3 skills');
+            toast.error(t('candidateOnboarding.validation.selectSkills'));
             return false;
         }
 
         if (!formData.resume) {
-            toast.error('Please upload your resume');
+            toast.error(t('candidateOnboarding.validation.uploadResume'));
             return false;
         }
 
@@ -137,12 +139,12 @@ const CandidateOnboarding = () => {
             // Update user data
             updateUser(response.user);
 
-            toast.success('Onboarding completed successfully!');
+            toast.success(t('candidateOnboarding.onboardingCompleted'));
             navigate('/candidate/dashboard');
 
         } catch (error) {
             console.error('Onboarding error:', error);
-            toast.error(error.response?.data?.message || 'Onboarding failed. Please try again.');
+            toast.error(error.response?.data?.message || t('candidateOnboarding.onboardingFailed'));
         } finally {
             setIsLoading(false);
         }
@@ -212,8 +214,8 @@ const CandidateOnboarding = () => {
                                 className="space-y-6"
                             >
                                 <div className="text-center mb-6">
-                                    <h2 className="text-2xl font-bold text-gray-900 mb-2">Personal Information</h2>
-                                    <p className="text-gray-600">Tell us about yourself</p>
+                                    <h2 className="text-2xl font-bold text-gray-900 mb-2">{t('candidateOnboarding.personalInfo')}</h2>
+                                    <p className="text-gray-600">{t('candidateOnboarding.tellUsAboutYourself')}</p>
                                 </div>
 
                                 {/* Profile Picture Upload */}
@@ -240,7 +242,7 @@ const CandidateOnboarding = () => {
                                             />
                                         </label>
                                     </div>
-                                    <p className="text-sm text-gray-500 mt-2">Upload your profile picture</p>
+                                    <p className="text-sm text-gray-500 mt-2">{t('candidateOnboarding.uploadPicture')}</p>
                                 </div>
 
                                 {/* Form Fields */}
@@ -248,7 +250,7 @@ const CandidateOnboarding = () => {
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-2">
                                             <FaUser className="inline w-4 h-4 mr-2" />
-                                            First Name *
+                                            {t('candidateOnboarding.firstName')} *
                                         </label>
                                         <input
                                             type="text"
@@ -256,14 +258,14 @@ const CandidateOnboarding = () => {
                                             value={formData.first_name}
                                             onChange={handleInputChange}
                                             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00A55F] focus:border-[#00A55F] transition-colors"
-                                            placeholder="Enter your first name"
+                                            placeholder={t('candidateOnboarding.enterFirstName')}
                                         />
                                     </div>
 
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-2">
                                             <FaUser className="inline w-4 h-4 mr-2" />
-                                            Last Name *
+                                            {t('candidateOnboarding.lastName')} *
                                         </label>
                                         <input
                                             type="text"
@@ -271,14 +273,14 @@ const CandidateOnboarding = () => {
                                             value={formData.last_name}
                                             onChange={handleInputChange}
                                             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00A55F] focus:border-[#00A55F] transition-colors"
-                                            placeholder="Enter your last name"
+                                            placeholder={t('candidateOnboarding.enterLastName')}
                                         />
                                     </div>
 
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-2">
                                             <FaPhone className="inline w-4 h-4 mr-2" />
-                                            Phone Number *
+                                            {t('candidateOnboarding.phone')} *
                                         </label>
                                         <input
                                             type="tel"
@@ -293,7 +295,7 @@ const CandidateOnboarding = () => {
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-2">
                                             <FaMapMarkerAlt className="inline w-4 h-4 mr-2" />
-                                            City *
+                                            {t('candidateOnboarding.city')} *
                                         </label>
                                         <input
                                             type="text"
@@ -308,7 +310,7 @@ const CandidateOnboarding = () => {
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-2">
                                             <FaUniversity className="inline w-4 h-4 mr-2" />
-                                            University *
+                                            {t('candidateOnboarding.university')} *
                                         </label>
                                         <input
                                             type="text"
@@ -316,14 +318,14 @@ const CandidateOnboarding = () => {
                                             value={formData.university}
                                             onChange={handleInputChange}
                                             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00A55F] focus:border-[#00A55F] transition-colors"
-                                            placeholder="e.g., ISCAE Nouakchott"
+                                            placeholder={t('candidateOnboarding.enterUniversity')}
                                         />
                                     </div>
 
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-2">
                                             <FaGraduationCap className="inline w-4 h-4 mr-2" />
-                                            Degree *
+                                            {t('candidateOnboarding.degree')} *
                                         </label>
                                         <input
                                             type="text"
@@ -331,14 +333,14 @@ const CandidateOnboarding = () => {
                                             value={formData.degree}
                                             onChange={handleInputChange}
                                             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00A55F] focus:border-[#00A55F] transition-colors"
-                                            placeholder="e.g., Computer Science"
+                                            placeholder={t('candidateOnboarding.enterDegree')}
                                         />
                                     </div>
 
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-2">
                                             <FaCalendarAlt className="inline w-4 h-4 mr-2" />
-                                            Graduation Year *
+                                            {t('candidateOnboarding.graduationYear')} *
                                         </label>
                                         <select
                                             name="graduation_year"
@@ -366,8 +368,8 @@ const CandidateOnboarding = () => {
                                 className="space-y-6"
                             >
                                 <div className="text-center mb-6">
-                                    <h2 className="text-2xl font-bold text-gray-900 mb-2">Skills & Resume</h2>
-                                    <p className="text-gray-600">Showcase your expertise</p>
+                                    <h2 className="text-2xl font-bold text-gray-900 mb-2">{t('candidateOnboarding.skillsResume')}</h2>
+                                    <p className="text-gray-600">{t('candidateOnboarding.showcaseYourExpertise')}</p>
                                 </div>
 
                                 {/* Resume Upload */}
@@ -376,20 +378,20 @@ const CandidateOnboarding = () => {
                                         <FaFileAlt className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                                         {formData.resume ? (
                                             <div>
-                                                <p className="text-sm text-gray-600 mb-2">Resume uploaded: {formData.resume.name}</p>
+                                                <p className="text-sm text-gray-600 mb-2">{t('candidateOnboarding.resumeUploaded')}: {formData.resume.name}</p>
                                                 <button
                                                     onClick={() => setFormData(prev => ({ ...prev, resume: null }))}
                                                     className="text-red-500 hover:text-red-700 text-sm"
                                                 >
                                                     <FaTimes className="inline w-4 h-4 mr-1" />
-                                                    Remove
+                                                    {t('forms.remove')}
                                                 </button>
                                             </div>
                                         ) : (
                                             <div>
-                                                <p className="text-gray-600 mb-2">Upload your resume (PDF, DOC, DOCX)</p>
+                                                <p className="text-gray-600 mb-2">{t('candidateOnboarding.uploadResumeFormat')}</p>
                                                 <label className="bg-[#00A55F] text-white px-6 py-2 rounded-lg cursor-pointer hover:bg-[#008c4f] transition-colors">
-                                                    Choose File
+                                                    {t('forms.chooseFile')}
                                                     <input
                                                         type="file"
                                                         accept=".pdf,.doc,.docx"
@@ -405,7 +407,7 @@ const CandidateOnboarding = () => {
                                 {/* Skills Selection */}
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-4">
-                                        Select your skills (minimum 3) *
+                                        {t('candidateOnboarding.selectSkills')}
                                     </label>
                                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                                         {availableSkills.map(skill => (

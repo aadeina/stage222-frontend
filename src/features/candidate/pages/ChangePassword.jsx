@@ -3,9 +3,11 @@
 // Uses mock logic for now; ready for API integration
 
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { FaEye, FaEyeSlash, FaLock } from 'react-icons/fa';
 
 const ChangePassword = () => {
+    const { t } = useTranslation();
     const [current, setCurrent] = useState('');
     const [next, setNext] = useState('');
     const [confirm, setConfirm] = useState('');
@@ -21,21 +23,21 @@ const ChangePassword = () => {
         setError('');
         setSuccess('');
         if (!current || !next || !confirm) {
-            setError('All fields are required.');
+            setError(t('changePassword.allFieldsRequired'));
             return;
         }
         if (next !== confirm) {
-            setError('New passwords do not match.');
+            setError(t('changePassword.passwordsDoNotMatch'));
             return;
         }
         if (next.length < 6) {
-            setError('Password must be at least 6 characters.');
+            setError(t('changePassword.passwordTooShort'));
             return;
         }
         setLoading(true);
         setTimeout(() => {
             setLoading(false);
-            setSuccess('Password changed successfully!');
+            setSuccess(t('changePassword.passwordChangedSuccessfully'));
             setCurrent('');
             setNext('');
             setConfirm('');
@@ -44,18 +46,18 @@ const ChangePassword = () => {
 
     return (
         <div className="max-w-md mx-auto py-12 px-2 sm:px-6 lg:px-8">
-            <h1 className="text-2xl sm:text-3xl font-bold text-center text-gray-900 mb-8">Change Password</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold text-center text-gray-900 mb-8">{t('changePassword.title')}</h1>
             <form onSubmit={handleSubmit} className="bg-white border rounded-xl shadow p-6 space-y-6">
                 {/* Current Password */}
                 <div>
-                    <label className="block font-semibold text-gray-700 mb-2">Current Password</label>
+                    <label className="block font-semibold text-gray-700 mb-2">{t('changePassword.currentPassword')}</label>
                     <div className="relative">
                         <input
                             type={showCurrent ? 'text' : 'password'}
                             value={current}
                             onChange={e => setCurrent(e.target.value)}
                             className="w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#00A55F] pr-10"
-                            placeholder="Enter your current password"
+                            placeholder={t('changePassword.enterCurrentPassword')}
                             autoComplete="current-password"
                         />
                         <button type="button" className="absolute right-2 top-2 text-gray-400 hover:text-[#00A55F]" onClick={() => setShowCurrent(v => !v)}>
@@ -65,14 +67,14 @@ const ChangePassword = () => {
                 </div>
                 {/* New Password */}
                 <div>
-                    <label className="block font-semibold text-gray-700 mb-2">New Password</label>
+                    <label className="block font-semibold text-gray-700 mb-2">{t('changePassword.newPassword')}</label>
                     <div className="relative">
                         <input
                             type={showNext ? 'text' : 'password'}
                             value={next}
                             onChange={e => setNext(e.target.value)}
                             className="w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#00A55F] pr-10"
-                            placeholder="Enter your new password"
+                            placeholder={t('changePassword.enterNewPassword')}
                             autoComplete="new-password"
                         />
                         <button type="button" className="absolute right-2 top-2 text-gray-400 hover:text-[#00A55F]" onClick={() => setShowNext(v => !v)}>
@@ -82,14 +84,14 @@ const ChangePassword = () => {
                 </div>
                 {/* Confirm New Password */}
                 <div>
-                    <label className="block font-semibold text-gray-700 mb-2">Confirm New Password</label>
+                    <label className="block font-semibold text-gray-700 mb-2">{t('changePassword.confirmNewPassword')}</label>
                     <div className="relative">
                         <input
                             type={showConfirm ? 'text' : 'password'}
                             value={confirm}
                             onChange={e => setConfirm(e.target.value)}
                             className="w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#00A55F] pr-10"
-                            placeholder="Re-enter your new password"
+                            placeholder={t('changePassword.reEnterNewPassword')}
                             autoComplete="new-password"
                         />
                         <button type="button" className="absolute right-2 top-2 text-gray-400 hover:text-[#00A55F]" onClick={() => setShowConfirm(v => !v)}>
@@ -102,7 +104,7 @@ const ChangePassword = () => {
                 {success && <div className="text-green-600 text-sm text-center">{success}</div>}
                 {/* Save Button */}
                 <button type="submit" disabled={loading} className="w-full bg-[#00A55F] hover:bg-[#008c4f] text-white font-semibold py-2 rounded-lg shadow transition flex items-center justify-center gap-2 disabled:opacity-60">
-                    <FaLock /> {loading ? 'Saving...' : 'Change Password'}
+                    <FaLock /> {loading ? t('changePassword.saving') : t('changePassword.changePassword')}
                 </button>
             </form>
         </div>
