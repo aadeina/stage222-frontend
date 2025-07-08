@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import { FaMapMarkerAlt, FaMoneyBillWave, FaClock, FaArrowRight, FaBuilding, FaCheckCircle, FaTimes, FaClock as FaClockIcon } from 'react-icons/fa';
 import moment from 'moment';
 import VerifiedBadge from '@/components/VerifiedBadge';
@@ -6,6 +7,7 @@ import VerifiedBadge from '@/components/VerifiedBadge';
 const fallbackLogo = '/Stage222-icon.png';
 
 const InternshipCard = ({ internship, onClick }) => {
+    const { t } = useTranslation();
     const {
         id,
         title,
@@ -76,15 +78,15 @@ const InternshipCard = ({ internship, onClick }) => {
     const formatStatus = (status) => {
         switch (status?.toLowerCase()) {
             case 'open':
-                return 'OPEN';
+                return t('internshipCard.open');
             case 'closed':
-                return 'CLOSED';
+                return t('internshipCard.closed');
             case 'draft':
-                return 'DRAFT';
+                return t('internshipCard.draft');
             case 'pending':
-                return 'PENDING';
+                return t('internshipCard.pending');
             default:
-                return status?.toUpperCase() || 'UNKNOWN';
+                return status?.toUpperCase() || t('internshipCard.unknown');
         }
     };
 
@@ -101,10 +103,10 @@ const InternshipCard = ({ internship, onClick }) => {
         } else if (stipend) {
             stipendDisplay = `MRU ${stipend}`;
         } else {
-            stipendDisplay = 'Paid';
+            stipendDisplay = t('internshipCard.paid');
         }
     } else {
-        stipendDisplay = 'Unpaid';
+        stipendDisplay = t('internshipCard.unpaid');
     }
 
     // Duration display
@@ -138,7 +140,7 @@ const InternshipCard = ({ internship, onClick }) => {
                         <div className="flex flex-wrap items-center gap-1 sm:gap-2">
                             {isActivelyHiring && (
                                 <span className="px-2 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-[#00A55F]">
-                                    Actively hiring
+                                    {t('internshipCard.activelyHiring')}
                                 </span>
                             )}
                             {/* Status Badge */}
@@ -159,25 +161,25 @@ const InternshipCard = ({ internship, onClick }) => {
                         </span>
                     </div>
                     <div className="flex flex-wrap gap-2 sm:gap-3 items-center text-xs mb-2">
-                        <span className="flex items-center gap-1 text-gray-500"><FaMapMarkerAlt /> <span className="hidden sm:inline">{location || 'Remote'}</span><span className="sm:hidden">{location ? (location.length > 10 ? location.substring(0, 10) + '...' : location) : 'Remote'}</span></span>
+                        <span className="flex items-center gap-1 text-gray-500"><FaMapMarkerAlt /> <span className="hidden sm:inline">{location || t('internshipCard.remote')}</span><span className="sm:hidden">{location ? (location.length > 10 ? location.substring(0, 10) + '...' : location) : t('internshipCard.remote')}</span></span>
                         <span className="flex items-center gap-1 text-gray-500"><FaMoneyBillWave /> <span className="hidden sm:inline">{stipendDisplay}</span><span className="sm:hidden">{stipendDisplay.length > 8 ? stipendDisplay.substring(0, 8) + '...' : stipendDisplay}</span></span>
                         {durationDisplay && (
                             <span className="flex items-center gap-1 text-gray-500"><FaClock /> <span className="hidden sm:inline">{durationDisplay}</span><span className="sm:hidden">{durationDisplay.length > 8 ? durationDisplay.substring(0, 8) + '...' : durationDisplay}</span></span>
                         )}
                         {isPartTime && (
-                            <span className="px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 font-semibold">Part-time</span>
+                            <span className="px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 font-semibold">{t('internshipCard.partTime')}</span>
                         )}
                         {hasJobOffer && (
                             <span className="px-2 py-0.5 rounded-full bg-yellow-50 text-yellow-700 font-semibold">
-                                <span className="hidden sm:inline">Job offer after internship</span>
-                                <span className="sm:hidden">Job offer</span>
+                                <span className="hidden sm:inline">{t('internshipCard.jobOfferAfterInternship')}</span>
+                                <span className="sm:hidden">{t('internshipCard.jobOffer')}</span>
                             </span>
                         )}
                     </div>
                 </div>
                 <div className="flex items-center justify-between mt-2">
                     <div className="flex items-center gap-2 sm:gap-3">
-                        <span className="text-xs text-gray-400"><span className="hidden sm:inline">Posted </span>{postedTime}</span>
+                        <span className="text-xs text-gray-400"><span className="hidden sm:inline">{t('internshipCard.posted')} </span>{postedTime}</span>
                         {/* Status Indicator */}
                         {status && (
                             <div className="flex items-center gap-1">
@@ -185,15 +187,15 @@ const InternshipCard = ({ internship, onClick }) => {
                                     status?.toLowerCase() === 'closed' ? 'bg-red-500' : 'bg-yellow-500'
                                     }`} />
                                 <span className="text-xs text-gray-500 font-medium hidden sm:inline">
-                                    {status?.toLowerCase() === 'open' ? 'Open' :
-                                        status?.toLowerCase() === 'closed' ? 'Closed' : 'Draft'}
+                                    {status?.toLowerCase() === 'open' ? t('internshipCard.openStatus') :
+                                        status?.toLowerCase() === 'closed' ? t('internshipCard.closedStatus') : t('internshipCard.draftStatus')}
                                 </span>
                             </div>
                         )}
                     </div>
                     <button
                         className="ml-2 p-2 rounded-full bg-[#00A55F] hover:bg-[#008c4f] text-white transition-colors"
-                        aria-label="View details"
+                        aria-label={t('internshipCard.viewDetails')}
                     >
                         <FaArrowRight />
                     </button>

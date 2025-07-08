@@ -199,33 +199,33 @@ const RecruiterOnboarding = () => {
         const newErrors = {};
         switch (step) {
             case 1:
-                if (!formData.firstName) newErrors.firstName = 'First name is required';
-                if (!formData.lastName) newErrors.lastName = 'Last name is required';
-                if (!formData.email) newErrors.email = 'Email is required';
-                else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = 'Invalid email format';
-                if (!formData.designation) newErrors.designation = 'Designation is required';
-                if (!formData.phone) newErrors.phone = 'Phone number is required';
-                else if (!/^\d{8}$/.test(formData.phone)) newErrors.phone = 'Phone number must be 8 digits';
-                if (!phoneVerified) newErrors.phone = 'Please verify your phone number first';
+                if (!formData.firstName) newErrors.firstName = t('recruiterOnboarding.validation.firstNameRequired');
+                if (!formData.lastName) newErrors.lastName = t('recruiterOnboarding.validation.lastNameRequired');
+                if (!formData.email) newErrors.email = t('recruiterOnboarding.validation.emailRequired');
+                else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = t('recruiterOnboarding.validation.invalidEmail');
+                if (!formData.designation) newErrors.designation = t('recruiterOnboarding.validation.designationRequired');
+                if (!formData.phone) newErrors.phone = t('recruiterOnboarding.validation.phoneRequired');
+                else if (!/^\d{8}$/.test(formData.phone)) newErrors.phone = t('recruiterOnboarding.validation.phoneFormat');
+                if (!phoneVerified) newErrors.phone = t('recruiterOnboarding.validation.phoneVerified');
                 break;
             case 2:
-                if (!formData.orgName) newErrors.orgName = 'Organization name is required';
-                if (!formData.about) newErrors.about = 'About is required';
-                if (!formData.city) newErrors.city = 'City is required';
-                if (!formData.industry) newErrors.industry = 'Industry is required';
-                if (!formData.employeeCount) newErrors.employeeCount = 'Employee range is required';
-                if (!formData.website) newErrors.website = 'Website is required';
-                if (!formData.logo) newErrors.logo = 'Company logo is required';
+                if (!formData.orgName) newErrors.orgName = t('recruiterOnboarding.validation.orgNameRequired');
+                if (!formData.about) newErrors.about = t('recruiterOnboarding.validation.aboutRequired');
+                if (!formData.city) newErrors.city = t('recruiterOnboarding.validation.cityRequired');
+                if (!formData.industry) newErrors.industry = t('recruiterOnboarding.validation.industryRequired');
+                if (!formData.employeeCount) newErrors.employeeCount = t('recruiterOnboarding.validation.employeeCountRequired');
+                if (!formData.website) newErrors.website = t('recruiterOnboarding.validation.websiteRequired');
+                if (!formData.logo) newErrors.logo = t('recruiterOnboarding.validation.logoRequired');
                 // Verification method: at least one
                 const hasLicenseFile = !!formData.licenseFile;
                 const hasWebsite = !!formData.website;
                 const hasSocialMediaLinks = !!(formData.socialMediaUrls && formData.socialMediaUrls.split(',').filter(Boolean).length > 0);
                 if (!hasLicenseFile && !hasWebsite && !hasSocialMediaLinks) {
-                    newErrors.verification = 'Please complete at least one verification method (license, website, or social media).';
+                    newErrors.verification = t('recruiterOnboarding.validation.verificationRequired');
                 }
                 break;
             case 3:
-                if (!formData.logo) newErrors.logo = 'Company logo is required';
+                if (!formData.logo) newErrors.logo = t('recruiterOnboarding.validation.logoRequired');
                 break;
         }
         setErrors(newErrors);
@@ -647,7 +647,7 @@ const RecruiterOnboarding = () => {
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                                            First Name
+                                            {t('recruiterOnboarding.firstName')}
                                         </label>
                                         <input
                                             type="text"
@@ -663,7 +663,7 @@ const RecruiterOnboarding = () => {
                                     </div>
                                     <div>
                                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                                            Last Name
+                                            {t('recruiterOnboarding.lastName')}
                                         </label>
                                         <input
                                             type="text"
@@ -681,7 +681,7 @@ const RecruiterOnboarding = () => {
 
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Email
+                                        {t('recruiterOnboarding.email')}
                                     </label>
                                     <input
                                         type="email"
@@ -698,7 +698,7 @@ const RecruiterOnboarding = () => {
 
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Designation
+                                        {t('recruiterOnboarding.designation')}
                                     </label>
                                     <div className="relative designation-dropdown">
                                         <div className="relative">
@@ -708,7 +708,7 @@ const RecruiterOnboarding = () => {
                                                 onChange={handleDesignationChange}
                                                 onFocus={() => setShowDesignationDropdown(true)}
                                                 onBlur={handleDesignationBlur}
-                                                placeholder="Select or type your designation"
+                                                placeholder={t('recruiterOnboarding.enterDesignation')}
                                                 className={`w-full px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-[#00A55F] focus:border-[#00A55F] outline-none transition-colors ${errors.designation ? 'border-red-500' : 'border-gray-300'
                                                     } ${selectedDesignation ? 'bg-gray-50' : ''}`}
                                             />
@@ -758,7 +758,7 @@ const RecruiterOnboarding = () => {
                                                                     animate={{ opacity: 1 }}
                                                                     className="px-4 py-2.5 text-sm text-gray-500"
                                                                 >
-                                                                    Designation not found. I'll specify
+                                                                    {t('recruiterOnboarding.designationNotFound')}
                                                                 </motion.div>
                                                             )}
                                                     </div>
@@ -776,7 +776,7 @@ const RecruiterOnboarding = () => {
                                             className="mt-2"
                                         >
                                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                                Specify the designation (e.g. Senior Hiring Manager)
+                                                {t('recruiterOnboarding.specifyDesignation')}
                                             </label>
                                             <div className="relative">
                                                 <input
@@ -819,7 +819,7 @@ const RecruiterOnboarding = () => {
 
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Phone Number
+                                        {t('recruiterOnboarding.phoneNumber')}
                                     </label>
                                     <div className="flex flex-col sm:flex-row gap-2">
                                         <div className="flex gap-2">
@@ -834,7 +834,7 @@ const RecruiterOnboarding = () => {
                                                 name="phone"
                                                 value={formData.phone}
                                                 onChange={handleChange}
-                                                placeholder="Enter your phone number"
+                                                placeholder={t('recruiterOnboarding.phonePlaceholder')}
                                                 className={`flex-1 px-4 py-2.5 border rounded-lg focus:ring-2 focus:ring-[#00A55F] focus:border-[#00A55F] outline-none transition-colors ${errors.phone ? 'border-red-500' : 'border-gray-300'}`}
                                             />
                                         </div>
@@ -850,7 +850,7 @@ const RecruiterOnboarding = () => {
                                                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                                     </svg>
-                                                    Sending...
+                                                    {t('recruiterOnboarding.sending')}
                                                 </div>
                                             ) : (
                                                 'Verify'
@@ -871,11 +871,11 @@ const RecruiterOnboarding = () => {
                                     >
                                         <div className="flex items-center justify-between">
                                             <p className="text-sm text-gray-600">
-                                                OTP sent to your mobile. Valid for 10 minutes.
+                                                {t('recruiterOnboarding.otpSentToMobile')}
                                             </p>
                                             {otpTimer > 0 ? (
                                                 <span className="text-sm text-gray-500">
-                                                    Resend in {otpTimer}s
+                                                    {t('recruiterOnboarding.resendIn')} {otpTimer}s
                                                 </span>
                                             ) : (
                                                 <button
@@ -893,7 +893,7 @@ const RecruiterOnboarding = () => {
                                                 type="text"
                                                 value={otp}
                                                 onChange={handleOtpChange}
-                                                placeholder="Enter 6-digit OTP"
+                                                placeholder={t('recruiterOnboarding.enterOtp')}
                                                 className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00A55F] focus:border-[#00A55F] outline-none transition-colors"
                                             />
                                             <button
@@ -942,19 +942,19 @@ const RecruiterOnboarding = () => {
                                 {/* Organization Details Section */}
                                 <div className="space-y-6">
                                     <div>
-                                        <h2 className="text-lg font-semibold text-gray-900 mb-4">Organization Details</h2>
+                                        <h2 className="text-lg font-semibold text-gray-900 mb-4">{t('recruiterOnboarding.organizationDetails')}</h2>
 
                                         {/* Organization Name */}
                                         <div className="mb-6">
                                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                                Organization Name
+                                                {t('recruiterOnboarding.organizationName')}
                                             </label>
                                             <input
                                                 type="text"
                                                 name="orgName"
                                                 value={formData.orgName}
                                                 onChange={handleChange}
-                                                placeholder="e.g., Amar Med"
+                                                placeholder={t('recruiterOnboarding.organizationNamePlaceholder')}
                                                 className={`w-full px-3 sm:px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#00A55F] focus:border-[#00A55F] outline-none transition-colors ${errors.orgName ? 'border-red-500' : 'border-gray-300'
                                                     }`}
                                             />
@@ -966,7 +966,7 @@ const RecruiterOnboarding = () => {
                                         {/* Logo Upload Field (moved here) */}
                                         <div className="mb-6">
                                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                                Company Logo
+                                                {t('recruiterOnboarding.companyLogo')}
                                             </label>
                                             <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg">
                                                 <div className="space-y-1 text-center">
@@ -999,7 +999,7 @@ const RecruiterOnboarding = () => {
                                                                 onChange={handleLogoChange}
                                                             />
                                                         </label>
-                                                        <p className="pl-1">or drag and drop</p>
+                                                        <p className="pl-1">{t('recruiterOnboarding.dragAndDrop')}</p>
                                                     </div>
                                                     <p className="text-xs text-gray-500">
                                                         PNG, JPG, GIF up to 10MB
@@ -1008,7 +1008,7 @@ const RecruiterOnboarding = () => {
                                             </div>
                                             {formData.logo && (
                                                 <p className="mt-2 text-sm text-gray-500">
-                                                    Selected file: {formData.logo.name}
+                                                    {t('recruiterOnboarding.selectedFile')}: {formData.logo.name}
                                                 </p>
                                             )}
                                             {errors.logo && (
@@ -1027,7 +1027,7 @@ const RecruiterOnboarding = () => {
                                                     className="mt-1 h-4 w-4 text-[#00A55F] border-gray-300 rounded focus:ring-[#00A55F]"
                                                 />
                                                 <span className="text-sm text-gray-700">
-                                                    I am an independent practitioner (freelancer, architect, lawyer etc.) hiring for myself and NOT on behalf of a company.
+                                                    {t('recruiterOnboarding.independentPractitioner')}
                                                 </span>
                                             </label>
                                         </div>
@@ -1035,7 +1035,7 @@ const RecruiterOnboarding = () => {
                                         {/* About Section */}
                                         <div className="mb-6">
                                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                                About Yourself
+                                                {t('recruiterOnboarding.aboutYourself')}
                                             </label>
                                             <div className="relative">
                                                 <textarea
@@ -1048,7 +1048,7 @@ const RecruiterOnboarding = () => {
                                                         }`}
                                                 />
                                                 <div className="absolute bottom-2 right-2 text-xs text-gray-500">
-                                                    {500 - (formData.about?.length || 0)} characters left
+                                                    {500 - (formData.about?.length || 0)} {t('recruiterOnboarding.charactersLeft')}
                                                 </div>
                                             </div>
                                         </div>
@@ -1056,7 +1056,7 @@ const RecruiterOnboarding = () => {
                                         {/* City */}
                                         <div className="mb-6">
                                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                                City
+                                                {t('recruiterOnboarding.city')}
                                             </label>
                                             <div className="relative">
                                                 <button
@@ -1066,7 +1066,7 @@ const RecruiterOnboarding = () => {
                                                 >
                                                     <span className="flex items-center justify-between">
                                                         <span className="text-sm text-gray-700">
-                                                            {formData.city || 'Select a city'}
+                                                            {formData.city || t('recruiterOnboarding.selectCity')}
                                                         </span>
                                                         <svg
                                                             className={`w-5 h-5 text-gray-400 transform transition-transform ${showCityDropdown ? 'rotate-180' : ''
@@ -1115,7 +1115,7 @@ const RecruiterOnboarding = () => {
                                         {/* Industry Selection */}
                                         <div className="mb-6">
                                             <label className="block text-sm font-medium text-gray-700 mb-1">
-                                                Industry
+                                                {t('recruiterOnboarding.industry')}
                                             </label>
                                             <div className="space-y-2">
                                                 {/* Selected Industries Tags */}
@@ -1152,8 +1152,8 @@ const RecruiterOnboarding = () => {
                                                         <span className="flex items-center justify-between">
                                                             <span className="text-sm text-gray-700">
                                                                 {selectedIndustries.length > 0
-                                                                    ? 'Select industry'
-                                                                    : 'Select industries'}
+                                                                    ? t('recruiterOnboarding.selectIndustry')
+                                                                    : t('recruiterOnboarding.selectIndustries')}
                                                             </span>
                                                             <svg
                                                                 className={`w-5 h-5 text-gray-400 transform transition-transform ${showIndustryDropdown ? 'rotate-180' : ''}`}
@@ -1180,7 +1180,7 @@ const RecruiterOnboarding = () => {
                                                                         type="text"
                                                                         value={industrySearch}
                                                                         onChange={(e) => setIndustrySearch(e.target.value)}
-                                                                        placeholder="Search industries..."
+                                                                        placeholder={t('recruiterOnboarding.searchIndustry')}
                                                                         className="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#00A55F] focus:border-[#00A55F] outline-none transition-colors"
                                                                     />
                                                                     <svg
@@ -1211,7 +1211,7 @@ const RecruiterOnboarding = () => {
                                                                     ))}
                                                                     {filteredIndustries.length === 0 && (
                                                                         <div className="px-3 py-2 text-sm text-gray-500">
-                                                                            No matching industries found
+                                                                            {t('recruiterOnboarding.noMatchingIndustries')}
                                                                         </div>
                                                                     )}
                                                                 </div>
@@ -1222,7 +1222,7 @@ const RecruiterOnboarding = () => {
 
                                                 {hasReachedLimit && (
                                                     <p className="text-sm text-red-500">
-                                                        You can select up to 5 industries
+                                                        {t('recruiterOnboarding.maxIndustriesLimit')}
                                                     </p>
                                                 )}
 
@@ -1245,7 +1245,7 @@ const RecruiterOnboarding = () => {
                                                 >
                                                     <span className="flex items-center justify-between">
                                                         <span className="text-sm text-gray-700">
-                                                            {formData.employeeCount || 'Select range'}
+                                                            {formData.employeeCount || t('recruiterOnboarding.selectRange')}
                                                         </span>
                                                         <svg
                                                             className={`w-5 h-5 text-gray-400 transform transition-transform ${showEmployeeDropdown ? 'rotate-180' : ''
@@ -1313,7 +1313,7 @@ const RecruiterOnboarding = () => {
                                     <div className="mt-8 pt-6 border-t border-gray-200">
                                         <div className="flex items-center justify-between mb-6">
                                             <div>
-                                                <h2 className="text-lg font-semibold text-gray-900">Account Verification</h2>
+                                                <h2 className="text-lg font-semibold text-gray-900">{t('recruiterOnboarding.accountVerification')}</h2>
                                                 <p className="mt-1 text-sm text-gray-500">
                                                     Get your organization verified to start posting internships/jobs
                                                 </p>
@@ -1322,7 +1322,7 @@ const RecruiterOnboarding = () => {
                                                 <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                                 </svg>
-                                                Why verify?
+                                                {t('recruiterOnboarding.whyVerify')}
                                             </div>
                                         </div>
 
@@ -1354,7 +1354,7 @@ const RecruiterOnboarding = () => {
                                                 </div>
                                                 <div className="ml-3">
                                                     <p className="text-sm text-blue-700">
-                                                        Choose one of the following verification methods to get started. This helps us ensure the authenticity of organizations on our platform.
+                                                        {t('recruiterOnboarding.verificationMethodsDescription')}
                                                     </p>
                                                 </div>
                                             </div>
@@ -1380,11 +1380,11 @@ const RecruiterOnboarding = () => {
                                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                                         </svg>
                                                         <div className="text-sm font-medium text-gray-900">
-                                                            Business License
+                                                            {t('recruiterOnboarding.businessLicense')}
                                                         </div>
                                                     </div>
                                                     <div className="mt-1 text-sm text-gray-500">
-                                                        Upload a government-issued document (PDF or Image)
+                                                        {t('recruiterOnboarding.uploadGovernmentDocument')}
                                                     </div>
                                                     {formData.verificationType === 'license' && (
                                                         <div className="mt-3">
@@ -1395,7 +1395,7 @@ const RecruiterOnboarding = () => {
                                                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                                                                         </svg>
                                                                         <p className="mb-2 text-sm text-gray-500">
-                                                                            <span className="font-semibold">Click to upload</span> or drag and drop
+                                                                            <span className="font-semibold">{t('recruiterOnboarding.uploadFile')}</span> or drag and drop
                                                                         </p>
                                                                         <p className="text-xs text-gray-500">PDF, JPG, PNG (MAX. 10MB)</p>
                                                                     </div>
@@ -1443,11 +1443,11 @@ const RecruiterOnboarding = () => {
                                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
                                                         </svg>
                                                         <div className="text-sm font-medium text-gray-900">
-                                                            Active Website
+                                                            {t('recruiterOnboarding.activeWebsite')}
                                                         </div>
                                                     </div>
                                                     <div className="mt-1 text-sm text-gray-500">
-                                                        Enter your company website URL
+                                                        {t('recruiterOnboarding.enterCompanyWebsite')}
                                                     </div>
                                                     {formData.verificationType === 'website' && (
                                                         <div className="mt-3">
@@ -1490,11 +1490,11 @@ const RecruiterOnboarding = () => {
                                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z" />
                                                         </svg>
                                                         <div className="text-sm font-medium text-gray-900">
-                                                            Social Media Pages
+                                                            {t('recruiterOnboarding.socialMediaPages')}
                                                         </div>
                                                     </div>
                                                     <div className="mt-1 text-sm text-gray-500">
-                                                        Add up to 3 public pages (LinkedIn, Facebook, Instagram, etc.) with at least 1000 followers
+                                                        {t('recruiterOnboarding.addSocialMediaDescription')}
                                                     </div>
                                                     {formData.verificationType === 'social' && (
                                                         <div className="mt-3 space-y-3">
@@ -1534,7 +1534,7 @@ const RecruiterOnboarding = () => {
                                                                     <svg className="h-5 w-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                                                                     </svg>
-                                                                    Add another link
+                                                                    {t('recruiterOnboarding.addAnotherLink')}
                                                                 </button>
                                                             )}
                                                         </div>
@@ -1548,7 +1548,7 @@ const RecruiterOnboarding = () => {
                                             <svg className="h-5 w-5 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                             </svg>
-                                            Need help? Contact Stage222 support via WhatsApp at +222 35 00 00 00 (Mon–Fri, 9AM–5PM)
+                                            {t('recruiterOnboarding.needHelp')}
                                         </div>
                                     </div>
                                 </div>
@@ -1562,26 +1562,26 @@ const RecruiterOnboarding = () => {
                                 className="space-y-4"
                             >
                                 <div className="mt-6 bg-gray-50 p-4 rounded-lg">
-                                    <h3 className="text-lg font-medium text-gray-900 mb-4">Review Your Information</h3>
+                                    <h3 className="text-lg font-medium text-gray-900 mb-4">{t('recruiterOnboarding.reviewInformation')}</h3>
                                     <dl className="space-y-4">
                                         <div className="grid grid-cols-2 gap-4">
-                                            <dt className="text-sm font-medium text-gray-500">Name</dt>
+                                            <dt className="text-sm font-medium text-gray-500">{t('recruiterOnboarding.name')}</dt>
                                             <dd className="text-sm text-gray-900">{formData.firstName} {formData.lastName}</dd>
                                         </div>
                                         <div className="grid grid-cols-2 gap-4">
-                                            <dt className="text-sm font-medium text-gray-500">Email</dt>
+                                            <dt className="text-sm font-medium text-gray-500">{t('recruiterOnboarding.email')}</dt>
                                             <dd className="text-sm text-gray-900">{formData.email}</dd>
                                         </div>
                                         <div className="grid grid-cols-2 gap-4">
-                                            <dt className="text-sm font-medium text-gray-500">Designation</dt>
+                                            <dt className="text-sm font-medium text-gray-500">{t('recruiterOnboarding.designation')}</dt>
                                             <dd className="text-sm text-gray-900">{formData.designation}</dd>
                                         </div>
                                         <div className="grid grid-cols-2 gap-4">
-                                            <dt className="text-sm font-medium text-gray-500">Organization</dt>
+                                            <dt className="text-sm font-medium text-gray-500">{t('recruiterOnboarding.organization')}</dt>
                                             <dd className="text-sm text-gray-900">{formData.orgName}</dd>
                                         </div>
                                         <div className="grid grid-cols-2 gap-4">
-                                            <dt className="text-sm font-medium text-gray-500">Industry</dt>
+                                            <dt className="text-sm font-medium text-gray-500">{t('recruiterOnboarding.industry')}</dt>
                                             <dd className="text-sm text-gray-900">{formData.industry}</dd>
                                         </div>
                                     </dl>
@@ -1600,7 +1600,7 @@ const RecruiterOnboarding = () => {
                                 onClick={handleBack}
                                 className="w-full sm:w-auto px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#00A55F] transition-colors"
                             >
-                                Back
+                                {t('recruiterOnboarding.back')}
                             </motion.button>
                         )}
                         <div className="flex-1" />
@@ -1647,7 +1647,7 @@ const RecruiterOnboarding = () => {
                                         Submitting...
                                     </div>
                                 ) : (
-                                    'Complete Onboarding'
+                                    t('recruiterOnboarding.completeOnboarding')
                                 )}
                             </motion.button>
                         )}

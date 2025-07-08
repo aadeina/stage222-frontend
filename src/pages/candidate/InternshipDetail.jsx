@@ -97,7 +97,7 @@ const InternshipDetail = () => {
                 <div className="flex items-center justify-center min-h-[40vh]">
                     <div className={`animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-${color}`} />
                     <span className={`ml-4 text-${color} font-semibold text-lg`}>
-                        {t('redirectingToRole', { role: roleText })}
+                        {t('internshipDetail.redirectingToRole', { role: roleText })}
                     </span>
                 </div>
             );
@@ -240,15 +240,15 @@ const InternshipDetail = () => {
 
             // Show notification for auto-refresh updates
             if (isUpdate && !isRefreshing) {
-                toast.success('Internship status updated!', {
+                toast.success(t('internshipDetail.internshipStatusUpdated'), {
                     duration: 3000,
                     icon: '🔄'
                 });
             }
         } catch (err) {
             console.error('Error fetching internship:', err);
-            setError('Failed to load internship details.');
-            toast.error('Failed to load internship details.');
+            setError(t('internshipDetail.failedToLoadInternship'));
+            toast.error(t('internshipDetail.failedToLoadInternship'));
         } finally {
             setLoading(false);
         }
@@ -258,7 +258,7 @@ const InternshipDetail = () => {
         setIsRefreshing(true);
         await fetchInternship();
         setIsRefreshing(false);
-        toast.success('Internship data refreshed!');
+        toast.success(t('internshipDetail.internshipDataRefreshed'));
     };
 
     useEffect(() => {
@@ -431,17 +431,17 @@ const InternshipDetail = () => {
 
             if (response.data.bookmarked) {
                 setIsSaved(true);
-                toast.success('Internship saved to bookmarks!');
+                toast.success(t('internshipDetail.internshipSaved'));
             } else {
                 setIsSaved(false);
-                toast.success('Removed from bookmarks');
+                toast.success(t('internshipDetail.removedFromBookmarks'));
             }
 
             // Notify other components about the bookmark change
             window.dispatchEvent(new Event('bookmarkChanged'));
         } catch (error) {
             console.error('Error toggling bookmark:', error);
-            toast.error('Failed to update bookmark');
+            toast.error(t('internshipDetail.failedToUpdateBookmark'));
         }
     };
 
@@ -452,18 +452,18 @@ const InternshipDetail = () => {
         }
 
         if (user?.role !== 'candidate') {
-            toast.error('Only candidates can apply for internships');
+            toast.error(t('internshipDetail.onlyCandidatesCanApply'));
             return;
         }
 
         setIsApplying(true);
         try {
             await applyToInternship(internship.id, {});
-            toast.success('Application submitted successfully!');
+            toast.success(t('internshipDetail.applicationSubmitted'));
             // You could redirect to application status page or show success modal
         } catch (err) {
             console.error('Application error:', err);
-            toast.error(err.response?.data?.message || 'Failed to submit application');
+            toast.error(err.response?.data?.message || t('internshipDetail.failedToSubmitApplication'));
         } finally {
             setIsApplying(false);
         }
@@ -501,14 +501,14 @@ const InternshipDetail = () => {
             <div className="min-h-screen bg-gray-50 py-10 px-4 sm:px-6 lg:px-8">
                 <div className="max-w-4xl mx-auto text-center">
                     <div className="bg-white rounded-2xl shadow-sm p-8">
-                        <h2 className="text-xl font-semibold text-gray-900 mb-2">Internship Not Found</h2>
-                        <p className="text-gray-600 mb-6">{error || 'The internship you are looking for does not exist.'}</p>
+                        <h2 className="text-xl font-semibold text-gray-900 mb-2">{t('internshipDetail.internshipNotFound')}</h2>
+                        <p className="text-gray-600 mb-6">{error || t('internshipDetail.internshipNotFoundMessage')}</p>
                         <button
                             onClick={() => navigate(getBackPath())}
                             className="inline-flex items-center gap-2 px-4 py-2 bg-[#00A55F] text-white rounded-lg hover:bg-[#008c4f] transition-colors"
                         >
                             <FaArrowLeft />
-                            Back to Internships
+                            {t('internshipDetail.backToInternships')}
                         </button>
                     </div>
                 </div>
@@ -555,7 +555,7 @@ const InternshipDetail = () => {
                                 </p>
                                 {lastUpdated && (
                                     <p className="text-xs text-gray-400 mt-1">
-                                        Last updated: {moment(lastUpdated).fromNow()}
+                                        {t('internshipDetail.lastUpdated')}: {moment(lastUpdated).fromNow()}
                                     </p>
                                 )}
                             </div>
@@ -567,7 +567,7 @@ const InternshipDetail = () => {
                                 onClick={handleRefresh}
                                 disabled={isRefreshing}
                                 className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-                                title="Refresh data"
+                                title={t('internshipDetail.refreshData')}
                             >
                                 <motion.div
                                     animate={{ rotate: isRefreshing ? 360 : 0 }}
@@ -583,14 +583,14 @@ const InternshipDetail = () => {
                             <button
                                 onClick={handleShare}
                                 className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-                                title="Share"
+                                title={t('internshipDetail.share')}
                             >
                                 <BsShare className="text-gray-600" />
                             </button>
                             <button
                                 onClick={handleSave}
                                 className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-                                title={isSaved ? "Remove from saved" : "Save internship"}
+                                title={isSaved ? t('internshipDetail.removeFromSaved') : t('internshipDetail.saveInternship')}
                             >
                                 {isSaved ? (
                                     <BsBookmarkFill className="text-[#00A55F]" />
@@ -639,12 +639,12 @@ const InternshipDetail = () => {
                             </motion.div>
                             <div>
                                 <h2 className="text-xl font-bold text-white">
-                                    {internship.status === 'closed' ? 'Applications Closed' : 'Applications Open'}
+                                    {internship.status === 'closed' ? t('internshipDetail.applicationsClosed') : t('internshipDetail.applicationsOpen')}
                                 </h2>
                                 <p className="text-white/90 text-sm">
                                     {internship.status === 'closed'
-                                        ? 'This position is no longer accepting applications'
-                                        : 'Apply now before the deadline'
+                                        ? t('internshipDetail.noLongerAccepting')
+                                        : t('internshipDetail.applyNowBeforeDeadline')
                                     }
                                 </p>
                             </div>
@@ -664,7 +664,7 @@ const InternshipDetail = () => {
                                 : 'bg-green-400 text-white'
                                 }`}
                         >
-                            {internship.status === 'closed' ? 'CLOSED' : 'OPEN'}
+                            {internship.status === 'closed' ? t('internshipDetail.closed') : t('internshipDetail.open')}
                         </motion.div>
                     </div>
 
@@ -811,7 +811,7 @@ const InternshipDetail = () => {
                                                     <FaGlobe className="text-white" />
                                                 </div>
                                                 <div>
-                                                    <h4 className="font-semibold text-gray-900">Company Website</h4>
+                                                    <h4 className="font-semibold text-gray-900">{t('internshipDetail.companyWebsite')}</h4>
                                                     <p className="text-sm text-gray-600 flex items-center gap-1">
                                                         {organization?.name}
                                                         {organization?.is_verified && <VerifiedBadge size={16} />}
@@ -824,7 +824,7 @@ const InternshipDetail = () => {
                                                 rel="noopener noreferrer"
                                                 className="inline-flex items-center gap-2 px-4 py-2 bg-[#00A55F] text-white rounded-lg hover:bg-[#008c4f] transition-colors text-sm font-medium"
                                             >
-                                                Visit Website
+                                                {t('internshipDetail.visitWebsite')}
                                                 <FaExternalLinkAlt className="text-xs" />
                                             </a>
                                         </div>
@@ -866,17 +866,17 @@ const InternshipDetail = () => {
                                                     transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
                                                     className="w-5 h-5 border-2 border-white border-t-transparent rounded-full"
                                                 />
-                                                <span>Applying...</span>
+                                                <span>{t('internshipDetail.applying')}</span>
                                             </>
                                         ) : internship.status === 'closed' ? (
                                             <>
                                                 <FaTimes className="text-lg" />
-                                                <span>Applications Closed</span>
+                                                <span>{t('internshipDetail.applicationsClosed')}</span>
                                             </>
                                         ) : (
                                             <>
                                                 <FaHandshake className="text-lg" />
-                                                <span>Apply Now</span>
+                                                <span>{t('internshipDetail.applyNow')}</span>
                                             </>
                                         )}
                                     </div>
@@ -1436,17 +1436,17 @@ const InternshipDetail = () => {
                                                 transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
                                                 className="w-5 h-5 border-2 border-white border-t-transparent rounded-full"
                                             />
-                                            <span>Applying...</span>
+                                            <span>{t('internshipDetail.applying')}</span>
                                         </>
                                     ) : internship.status === 'closed' ? (
                                         <>
                                             <FaTimes className="text-lg" />
-                                            <span>Applications Closed</span>
+                                            <span>{t('internshipDetail.applicationsClosed')}</span>
                                         </>
                                     ) : (
                                         <>
                                             <FaHandshake className="text-lg" />
-                                            <span>Apply Now</span>
+                                            <span>{t('internshipDetail.applyNow')}</span>
                                         </>
                                     )}
                                 </div>

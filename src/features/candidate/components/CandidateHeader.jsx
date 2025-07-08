@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useTranslation } from 'react-i18next';
 import {
     FaBell,
     FaUser,
@@ -32,6 +33,7 @@ import getMediaUrl from '../../../utils/mediaUrl';
 // RESPONSIVE: Mobile-friendly navigation, responsive dropdown positioning
 
 const CandidateHeader = () => {
+    const { t } = useTranslation();
     const { user, logout } = useAuth();
     const navigate = useNavigate();
     const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -61,7 +63,7 @@ const CandidateHeader = () => {
     const handleLogout = () => {
         logout();
         navigate('/login');
-        toast.success('Logged out successfully');
+        toast.success(t('auth.logoutSuccess'));
     };
 
     const handleProfileAction = (action) => {
@@ -92,7 +94,7 @@ const CandidateHeader = () => {
                     <Link to="/candidate/dashboard" className="flex items-center">
                         <img
                             src={logo}
-                            alt="Stage222 Logo"
+                            alt={t('candidateHeader.logoAlt')}
                             className="h-8 sm:h-10 w-auto"
                             draggable="false"
                         />
@@ -104,19 +106,19 @@ const CandidateHeader = () => {
                             to="/candidate/dashboard"
                             className="text-gray-700 hover:text-[#00A55F] font-medium transition-colors text-sm lg:text-base"
                         >
-                            Dashboard
+                            {t('candidateHeader.dashboard')}
                         </Link>
                         <Link
                             to="/candidate/internships"
                             className="text-gray-700 hover:text-[#00A55F] font-medium transition-colors text-sm lg:text-base"
                         >
-                            Internships
+                            {t('candidateHeader.internships')}
                         </Link>
                         <Link
                             to="/jobs"
                             className="text-gray-700 hover:text-[#00A55F] font-medium transition-colors text-sm lg:text-base"
                         >
-                            Jobs
+                            {t('candidateHeader.jobs')}
                         </Link>
                     </nav>
 
@@ -136,7 +138,7 @@ const CandidateHeader = () => {
                                     {currentUser?.profile_picture ? (
                                         <img
                                             src={getMediaUrl(currentUser.profile_picture)}
-                                            alt={`${currentUser?.first_name || 'User'} profile`}
+                                            alt={`${currentUser?.first_name || t('candidateHeader.user')} ${t('candidateHeader.profile')}`}
                                             className="w-full h-full object-cover"
                                             onLoad={() => {
                                                 console.log('Profile picture loaded successfully:', currentUser.profile_picture);
@@ -159,7 +161,7 @@ const CandidateHeader = () => {
                                     </div>
                                 </div>
                                 <span className="hidden sm:block text-sm font-medium">
-                                    {currentUser?.first_name ? `${currentUser.first_name} ${currentUser.last_name || ''}`.trim() : 'Candidate'}
+                                    {currentUser?.first_name ? `${currentUser.first_name} ${currentUser.last_name || ''}`.trim() : t('candidateHeader.candidate')}
                                 </span>
                                 <FaChevronDown className={`h-3 w-3 transition-transform ${isProfileOpen ? 'rotate-180' : ''}`} />
                             </motion.button>
@@ -183,7 +185,7 @@ const CandidateHeader = () => {
                                                         {currentUser?.profile_picture ? (
                                                             <img
                                                                 src={getMediaUrl(currentUser.profile_picture)}
-                                                                alt={`${currentUser?.first_name || 'User'} profile`}
+                                                                alt={`${currentUser?.first_name || t('candidateHeader.user')} ${t('candidateHeader.profile')}`}
                                                                 className="w-full h-full object-cover"
                                                                 onLoad={() => {
                                                                     console.log('Dropdown profile picture loaded successfully:', currentUser.profile_picture);
@@ -207,7 +209,7 @@ const CandidateHeader = () => {
                                                     </div>
                                                     <div className="min-w-0">
                                                         <h3 className="font-semibold text-lg truncate">
-                                                            {currentUser?.first_name ? `${currentUser.first_name} ${currentUser.last_name || ''}`.trim() : 'Candidate'}
+                                                            {currentUser?.first_name ? `${currentUser.first_name} ${currentUser.last_name || ''}`.trim() : t('candidateHeader.candidate')}
                                                         </h3>
                                                         <p className="text-white/80 text-sm truncate">{currentUser?.email || ''}</p>
                                                     </div>
@@ -229,7 +231,7 @@ const CandidateHeader = () => {
                                                 className="w-full flex items-center space-x-3 px-3 sm:px-4 py-3 text-left text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
                                             >
                                                 <FaHome className="h-5 w-5 text-[#00A55F] flex-shrink-0" />
-                                                <span className="font-medium">Home</span>
+                                                <span className="font-medium">{t('candidateHeader.home')}</span>
                                             </button>
 
                                             <button
@@ -237,7 +239,7 @@ const CandidateHeader = () => {
                                                 className="w-full flex items-center space-x-3 px-3 sm:px-4 py-3 text-left text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
                                             >
                                                 <FaFileAlt className="h-5 w-5 text-blue-600 flex-shrink-0" />
-                                                <span className="font-medium">My Applications</span>
+                                                <span className="font-medium">{t('candidateHeader.myApplications')}</span>
                                             </button>
 
                                             <button
@@ -245,7 +247,7 @@ const CandidateHeader = () => {
                                                 className="w-full flex items-center space-x-3 px-3 sm:px-4 py-3 text-left text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
                                             >
                                                 <FaBookmark className="h-5 w-5 text-yellow-600 flex-shrink-0" />
-                                                <span className="font-medium">My Bookmarks</span>
+                                                <span className="font-medium">{t('candidateHeader.myBookmarks')}</span>
                                             </button>
 
                                             <button
@@ -253,7 +255,7 @@ const CandidateHeader = () => {
                                                 className="w-full flex items-center space-x-3 px-3 sm:px-4 py-3 text-left text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
                                             >
                                                 <FaUserCog className="h-5 w-5 text-green-600 flex-shrink-0" />
-                                                <span className="font-medium">Edit Profile</span>
+                                                <span className="font-medium">{t('candidateHeader.editProfile')}</span>
                                             </button>
 
                                             {/* Divider */}
@@ -266,7 +268,7 @@ const CandidateHeader = () => {
                                                 type="button"
                                             >
                                                 <FaKey className="h-5 w-5 text-indigo-600 flex-shrink-0" />
-                                                <span className="font-medium">Change Password</span>
+                                                <span className="font-medium">{t('candidateHeader.changePassword')}</span>
                                             </button>
 
                                             <button
@@ -274,7 +276,7 @@ const CandidateHeader = () => {
                                                 className="w-full flex items-center space-x-3 px-3 sm:px-4 py-3 text-left text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                                             >
                                                 <FaSignOutAlt className="h-5 w-5 flex-shrink-0" />
-                                                <span className="font-medium">Logout</span>
+                                                <span className="font-medium">{t('candidateHeader.logout')}</span>
                                             </button>
                                         </div>
                                     </motion.div>
