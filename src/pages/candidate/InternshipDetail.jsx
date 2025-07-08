@@ -728,7 +728,7 @@ const InternshipDetail = () => {
                                     </div>
                                     {isActivelyHiring && (
                                         <span className="px-3 py-1 rounded-full text-sm font-semibold bg-green-100 text-[#00A55F] border border-green-200">
-                                            Actively hiring
+                                            {t('internshipDetail.activelyHiring')}
                                         </span>
                                     )}
                                     {/* Status Badge */}
@@ -781,13 +781,13 @@ const InternshipDetail = () => {
                                     </div>
                                     <div className="flex items-center gap-2 text-gray-600">
                                         <FaCalendarAlt className="text-[#00A55F]" />
-                                        <span>Apply by {formatDeadline()}</span>
+                                        <span>{t('internshipDetail.applyBy')} {formatDeadline()}</span>
                                     </div>
                                 </div>
 
                                 {/* Meta Info with Number of Applicants */}
                                 <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500 mb-6">
-                                    <span>Posted {formatPostedTime()}</span>
+                                    <span>{t('internshipDetail.posted')} {formatPostedTime()}</span>
                                     {/* Enhanced Number of Applicants Display */}
                                     <div className="flex items-center gap-2 bg-blue-50 px-3 py-1.5 rounded-full border border-blue-200">
                                         <FaUsers className="text-[#00A55F] text-sm" />
@@ -913,7 +913,7 @@ const InternshipDetail = () => {
                                     <FaUsers className="text-white text-xl" />
                                 </motion.div>
                                 <div>
-                                    <h3 className="text-lg font-bold text-gray-900">Total Applicants</h3>
+                                    <h3 className="text-lg font-bold text-gray-900">{t('internshipDetail.totalApplicants')}</h3>
                                     <p className="text-sm text-gray-600">
                                         {internship.status === 'closed'
                                             ? 'Applications are now closed for this position'
@@ -1532,26 +1532,7 @@ const InternshipDetail = () => {
                                             }
                                         })()}
                                     </div>
-                                    <p className="text-sm text-gray-600 font-medium">Opportunities Posted</p>
-                                    <div className="mt-2 text-xs text-gray-500">
-                                        {(() => {
-                                            const count = (() => {
-                                                // Use the same dashboard data source as the recruiter dashboard
-                                                if (user && user.role === 'recruiter') {
-                                                    // For authenticated recruiters, use dashboard data
-                                                    return organization?.total_opportunities_posted || 0;
-                                                } else {
-                                                    // For non-recruiters, show the data we already fetched
-                                                    return organization?.total_opportunities_posted || 0;
-                                                }
-                                            })();
-
-                                            if (count > 10) return 'Very Active';
-                                            if (count > 5) return 'Active';
-                                            if (count > 0) return 'Getting Started';
-                                            return 'No opportunities yet';
-                                        })()}
-                                    </div>
+                                    <p className="text-sm text-gray-600 font-medium">{t('internshipDetail.opportunitiesPosted')}</p>
                                     <div className="mt-3 text-xs text-purple-600 font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                                         Click to view all opportunities →
                                     </div>
@@ -1575,7 +1556,7 @@ const InternshipDetail = () => {
                                             organization?.successful_applications ||
                                             '3+'}
                                     </div>
-                                    <p className="text-sm text-gray-600 font-medium">Candidates Hired</p>
+                                    <p className="text-sm text-gray-600 font-medium">{t('internshipDetail.candidatesHired')}</p>
                                     <div className="mt-2 text-xs text-gray-500">
                                         {organization?.total_hires > 10 ? 'High Success Rate' :
                                             organization?.total_hires > 5 ? 'Good Track Record' : 'Building Success'}
@@ -1595,8 +1576,8 @@ const InternshipDetail = () => {
                             <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 border border-white/50">
                                 <div className="flex items-center justify-between">
                                     <div>
-                                        <h4 className="text-lg font-semibold text-gray-900 mb-1">Response Rate</h4>
-                                        <p className="text-sm text-gray-600">Average response time to applications</p>
+                                        <h4 className="text-lg font-semibold text-gray-900 mb-1">{t('internshipDetail.responseRate')}</h4>
+                                        <p className="text-sm text-gray-600">{t('internshipDetail.averageResponseTime')}</p>
                                     </div>
                                     <div className="text-right">
                                         <div className="text-2xl font-bold text-[#00A55F]">
@@ -1611,7 +1592,7 @@ const InternshipDetail = () => {
                             <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 border border-white/50">
                                 <div className="flex items-center justify-between">
                                     <div>
-                                        <h4 className="text-lg font-semibold text-gray-900 mb-1">Verification Status</h4>
+                                        <h4 className="text-lg font-semibold text-gray-900 mb-1">{t('internshipDetail.verificationStatus')}</h4>
                                         <p className="text-sm text-gray-600">Organization verification level</p>
                                     </div>
                                     <div className="text-right">

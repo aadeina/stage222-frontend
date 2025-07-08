@@ -320,6 +320,13 @@ const CandidateBookmarks = () => {
                                 return 'Recently';
                             };
 
+                            const formatStipendType = () => {
+                                if (internship.stipend_type === 'paid') {
+                                    return t('candidateBookmarks.paid');
+                                }
+                                return t('candidateBookmarks.unpaid');
+                            };
+
                             return (
                                 <motion.div
                                     key={bookmark.id}
@@ -364,12 +371,11 @@ const CandidateBookmarks = () => {
                                                             <FaClock className="w-3 h-3" />
                                                             {formatDuration()}
                                                         </span>
-                                                        <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium ${internship.stipend_type === 'paid'
-                                                            ? 'bg-yellow-100 text-yellow-800'
+                                                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${internship.stipend_type === 'paid'
+                                                            ? 'bg-green-100 text-green-800'
                                                             : 'bg-gray-100 text-gray-800'
                                                             }`}>
-                                                            <FaMoneyBillWave className="w-3 h-3" />
-                                                            {formatStipend()}
+                                                            {formatStipendType()}
                                                         </span>
                                                         {internship.is_urgent && (
                                                             <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
@@ -381,7 +387,7 @@ const CandidateBookmarks = () => {
 
                                                     {/* Posted time */}
                                                     <p className="text-sm text-gray-500">
-                                                        Posted {formatPostedTime()}
+                                                        {t('candidateBookmarks.posted')} {formatPostedTime()}
                                                     </p>
                                                 </div>
 

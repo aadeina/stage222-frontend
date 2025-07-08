@@ -41,7 +41,7 @@
 
 ### **Priority 2: Settings & Utilities (HIGH)**
 1. `src/features/candidate/pages/ChangePassword.jsx` - Password management
-2. `src/features/recruiter/pages/ChangePassword.jsx` - Password management
+2. `src/features/recruiter/pages/ChangePassword.jsx` - Password management 
 3. `src/features/recruiter/pages/RecruiterBilling.jsx` - Billing management
 4. `src/features/recruiter/pages/RecruiterPricing.jsx` - Pricing plans
 
