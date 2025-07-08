@@ -38,7 +38,16 @@
       "viewProfile": "Voir le Profil",
       "editOrganization": "Modifier l'Organisation",
       "changePassword": "Changer le Mot de Passe",
-      "applicationsOverview": "Vue d'Ensemble des Candidatures"
+      "applicationsOverview": "Vue d'Ensemble des Candidatures",
+      "type": {
+        "internship": "Stage",
+        "job": "Emploi"
+      },
+      "approvalStatus": {
+        "approved": "Approuvé",
+        "pendingApproval": "En Attente d'Approbation",
+        "rejected": "Rejeté"
+      }
     },
     "status": {
       "active": "Actif",
@@ -352,6 +361,7 @@
   "recruiterDashboard": {
     "title": "Tableau de Bord Recruteur",
     "welcome": "Bienvenue",
+    "refresh": "Actualiser",
     "stats": {
       "totalOpportunities": "Total des Opportunités",
       "activeOpportunities": "Opportunités Actives",
@@ -377,6 +387,15 @@
       "active": "Actif",
       "pending": "En Attente",
       "closed": "Fermé"
+    },
+    "approvalStatus": {
+      "approved": "Approuvé",
+      "pendingApproval": "En Attente d'Approbation",
+      "rejected": "Rejeté"
+    },
+    "type": {
+      "internship": "Stage",
+      "job": "Emploi"
     }
   },
   "recruiterOnboarding": {
